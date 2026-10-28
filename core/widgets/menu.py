@@ -10,13 +10,14 @@ from collections.abc import Callable, Sequence
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.theme import Color, Theme
 from core.widgets.button import Button, Variant
 
 MenuItem = tuple[str, Callable[[], None]]
 
 
-def draw_panel(surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+def draw_panel(surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
     """Draw a raised rounded panel (shadow + surface color)."""
     draw.shadow(surface, rect, theme.radius.lg, theme.palette.shadow, (0, 10), 18)
     draw.rounded_rect(surface, rect, theme.palette.surface, theme.radius.lg)
@@ -86,6 +87,6 @@ class ButtonMenu:
         for button in self.buttons:
             button.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         for button in self.buttons:
             button.draw(surface)

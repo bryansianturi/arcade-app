@@ -5,8 +5,9 @@ from __future__ import annotations
 import pygame
 
 from apps.calculator.logic import Calculator
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Theme, lerp_color
 from core.widgets import Button, Grid, draw_panel
@@ -48,7 +49,7 @@ class CalculatorApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         key = rect.width // 4
         gap = rect.width // 10
@@ -57,7 +58,7 @@ class CalculatorApp(BaseApp):
         for i in range(4):
             r = pygame.Rect(x0 + (i % 2) * (key + gap), y0 + (i // 2) * (key + gap), key, key)
             color = (255, 255, 255) if i != 3 else (120, 60, 10)
-            pygame.draw.rect(surface, color, r, border_radius=3)
+            gfx.rect(surface, color, r, border_radius=3)
 
     def on_enter(self) -> None:
         self.calc = Calculator()
@@ -118,7 +119,7 @@ class CalculatorApp(BaseApp):
         for button in self.buttons.values():
             button.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -136,7 +137,7 @@ class CalculatorApp(BaseApp):
             "center",
         )
 
-    def _draw_display(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_display(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         draw.rounded_rect(surface, self.display, p.surface_alt, t.radius.md)
         right = self.display.right - 20
@@ -168,7 +169,7 @@ class CalculatorApp(BaseApp):
             "midright",
         )
 
-    def _draw_history(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_history(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         rect = self.history_rect
         draw_panel(surface, rect, t)

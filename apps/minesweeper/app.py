@@ -8,8 +8,9 @@ import random
 import pygame
 
 from apps.minesweeper.logic import DIFFICULTIES, Cell, Difficulty, Minefield
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp, format_score
+from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -58,7 +59,7 @@ class MinesweeperApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         _draw_mine(surface, rect.center, rect.width * 0.24, (30, 30, 36))
 
@@ -182,7 +183,7 @@ class MinesweeperApp(BaseApp):
         self.new_btn.update(dt)
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -196,7 +197,7 @@ class MinesweeperApp(BaseApp):
         frame = self.board.inflate(16, 16)
         draw.shadow(surface, frame, t.radius.lg, p.shadow, (0, 8), 16)
         draw.rounded_rect(surface, frame, p.surface, t.radius.lg)
-        hover = None if self.keyboard_nav else self._cell_at(pygame.mouse.get_pos())
+        hover = None if self.keyboard_nav else self._cell_at(mouse_pos())
         for y in range(self.field.height):
             for x in range(self.field.width):
                 self._draw_cell(surface, t, (x, y), hover)
@@ -205,7 +206,7 @@ class MinesweeperApp(BaseApp):
             draw.rounded_rect(surface, ring, ACCENT, 6, 3)
         self._draw_banner(surface, t)
 
-    def _draw_stats(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_stats(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         font = t.font(t.size.title, "bold")
         f = self.field
@@ -221,9 +222,9 @@ class MinesweeperApp(BaseApp):
         )
         # A simple clock: circle and two hands.
         c = (timer.x + 24, timer.centery)
-        pygame.draw.circle(surface, p.text_muted, c, 9, 2)
-        pygame.draw.line(surface, p.text_muted, c, (c[0], c[1] - 5), 2)
-        pygame.draw.line(surface, p.text_muted, c, (c[0] + 4, c[1]), 2)
+        gfx.circle(surface, p.text_muted, c, 9, 2)
+        gfx.line(surface, p.text_muted, c, (c[0], c[1] - 5), 2)
+        gfx.line(surface, p.text_muted, c, (c[0] + 4, c[1]), 2)
         draw.text(
             surface,
             format_score(f.elapsed, "time"),
@@ -233,7 +234,7 @@ class MinesweeperApp(BaseApp):
             "midright",
         )
 
-    def _draw_cell(self, surface: pygame.Surface, t: Theme, cell: Cell, hover: Cell | None) -> None:
+    def _draw_cell(self, surface: Canvas, t: Theme, cell: Cell, hover: Cell | None) -> None:
         p = t.palette
         f = self.field
         rect = self._cell_rect(cell)
@@ -245,7 +246,7 @@ class MinesweeperApp(BaseApp):
             bg = lerp_color(p.surface, p.bg, 0.55)
             if cell == f.exploded:
                 bg = p.danger
-            pygame.draw.rect(surface, bg, tile, border_radius=radius)
+            gfx.rect(surface, bg, tile, border_radius=radius)
             if cell in f.mines:
                 color = (255, 255, 255) if cell == f.exploded else p.text_muted
                 _draw_mine(surface, rect.center, self.cell * 0.22, color)
@@ -265,20 +266,20 @@ class MinesweeperApp(BaseApp):
             base = lerp_color(p.surface, p.bg, 0.4)
         elif cell == hover and not f.finished:
             base = lerp_color(base, ACCENT, 0.18)
-        pygame.draw.rect(surface, base, tile, border_radius=radius)
+        gfx.rect(surface, base, tile, border_radius=radius)
         if not pressed:
             # Light top edge for a subtle raised look.
             top = pygame.Rect(tile.x + 2, tile.y + 1, tile.width - 4, 2)
-            pygame.draw.rect(surface, lerp_color(base, (255, 255, 255), 0.12), top, border_radius=1)
+            gfx.rect(surface, lerp_color(base, (255, 255, 255), 0.12), top, border_radius=1)
         if cell in f.flags:
             _draw_flag(surface, rect, self.cell, p.danger, p.text)
             if lost and cell not in f.mines:  # wrong flag
                 k = self.cell * 0.28
                 cx, cy = rect.center
-                pygame.draw.line(surface, p.text, (cx - k, cy - k), (cx + k, cy + k), 3)
-                pygame.draw.line(surface, p.text, (cx - k, cy + k), (cx + k, cy - k), 3)
+                gfx.line(surface, p.text, (cx - k, cy - k), (cx + k, cy + k), 3)
+                gfx.line(surface, p.text, (cx - k, cy + k), (cx + k, cy - k), 3)
 
-    def _draw_banner(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_banner(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         f = self.field
         font = t.font(t.size.label, "semibold")
@@ -294,32 +295,26 @@ class MinesweeperApp(BaseApp):
         draw.text(surface, text, font, color, (640, 704), "center")
 
 
-def _draw_mine(
-    surface: pygame.Surface, center: tuple[float, float], r: float, color: Color
-) -> None:
+def _draw_mine(surface: Canvas, center: tuple[float, float], r: float, color: Color) -> None:
     cx, cy = center
     for i in range(8):
         a = i * math.pi / 4
-        pygame.draw.line(
+        gfx.line(
             surface,
             color,
             (cx + math.cos(a) * r * 0.6, cy + math.sin(a) * r * 0.6),
             (cx + math.cos(a) * r * 1.35, cy + math.sin(a) * r * 1.35),
             max(2, round(r / 4)),
         )
-    pygame.draw.circle(surface, color, (cx, cy), r)
-    pygame.draw.circle(surface, (255, 255, 255), (cx - r * 0.35, cy - r * 0.35), max(1.0, r * 0.22))
+    gfx.circle(surface, color, (cx, cy), r)
+    gfx.circle(surface, (255, 255, 255), (cx - r * 0.35, cy - r * 0.35), max(1.0, r * 0.22))
 
 
-def _draw_flag(
-    surface: pygame.Surface, rect: pygame.Rect, size: int, flag: Color, pole: Color
-) -> None:
+def _draw_flag(surface: Canvas, rect: pygame.Rect, size: int, flag: Color, pole: Color) -> None:
     u = size / 10
     x = rect.x + rect.width * 0.42
     top = rect.y + 2.4 * u
     bottom = rect.bottom - 2.4 * u
-    pygame.draw.line(surface, pole, (x, top), (x, bottom), max(2, round(u * 0.5)))
-    pygame.draw.polygon(surface, flag, [(x, top), (x + 3.6 * u, top + 1.6 * u), (x, top + 3.2 * u)])
-    pygame.draw.line(
-        surface, pole, (x - 1.8 * u, bottom), (x + 1.8 * u, bottom), max(2, round(u * 0.5))
-    )
+    gfx.line(surface, pole, (x, top), (x, bottom), max(2, round(u * 0.5)))
+    gfx.polygon(surface, flag, [(x, top), (x + 3.6 * u, top + 1.6 * u), (x, top + 3.2 * u)])
+    gfx.line(surface, pole, (x - 1.8 * u, bottom), (x + 1.8 * u, bottom), max(2, round(u * 0.5)))

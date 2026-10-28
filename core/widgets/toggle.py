@@ -6,7 +6,8 @@ from collections.abc import Callable
 
 import pygame
 
-from core import draw
+from core import draw, gfx
+from core.canvas import Canvas
 from core.theme import Theme, lerp_color
 from core.widgets.base import Widget, approach
 
@@ -51,7 +52,7 @@ class Toggle(Widget):
         super().update(dt)
         self._knob_t = approach(self._knob_t, 1.0 if self.value else 0.0, dt, 18)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         p = self.theme.palette
         track = lerp_color(p.surface_hover, p.primary, self._knob_t)
         draw.rounded_rect(surface, self.rect, track, self.HEIGHT // 2)
@@ -60,4 +61,4 @@ class Toggle(Widget):
         r = self.HEIGHT // 2 - 3
         travel = self.WIDTH - 2 * (r + 3)
         cx = self.rect.x + 3 + r + round(travel * self._knob_t)
-        pygame.draw.circle(surface, (255, 255, 255), (cx, self.rect.centery), r)
+        gfx.circle(surface, (255, 255, 255), (cx, self.rect.centery), r)

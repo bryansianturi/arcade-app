@@ -9,8 +9,9 @@ from typing import Any, Literal
 import pygame
 
 from apps.twenty48.logic import GOAL, SIZE, Direction, Game2048, MoveResult
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets import Button, ButtonMenu, draw_panel
@@ -81,7 +82,7 @@ class Twenty48App(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (30, 41, 59), theme.radius.md)
         half = (rect.width - 9) // 2
         values = (2, 4, 8, 2048)
@@ -89,7 +90,7 @@ class Twenty48App(BaseApp):
             r = pygame.Rect(
                 rect.x + 3 + (i % 2) * (half + 3), rect.y + 3 + (i // 2) * (half + 3), half, half
             )
-            pygame.draw.rect(surface, tile_color(v), r, border_radius=4)
+            gfx.rect(surface, tile_color(v), r, border_radius=4)
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
@@ -194,7 +195,7 @@ class Twenty48App(BaseApp):
             self.menu.update(dt)
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -205,7 +206,7 @@ class Twenty48App(BaseApp):
         draw.rounded_rect(surface, BOARD, board_color, t.radius.lg)
         for r in range(SIZE):
             for c in range(SIZE):
-                pygame.draw.rect(surface, empty_color, cell_rect((r, c)), border_radius=t.radius.md)
+                gfx.rect(surface, empty_color, cell_rect((r, c)), border_radius=t.radius.md)
 
         if self.last is not None and self.anim < SLIDE_SECONDS:
             k = self.anim / SLIDE_SECONDS
@@ -235,22 +236,22 @@ class Twenty48App(BaseApp):
             self._draw_dialog(surface, t)
 
     def _draw_tile(
-        self, surface: pygame.Surface, t: Theme, value: int, rect: pygame.Rect, scale: float
+        self, surface: Canvas, t: Theme, value: int, rect: pygame.Rect, scale: float
     ) -> None:
         if scale <= 0.05:
             return
         r = rect.inflate(round(rect.width * (scale - 1)), round(rect.height * (scale - 1)))
         color = tile_color(value)
-        pygame.draw.rect(surface, color, r, border_radius=t.radius.md)
+        gfx.rect(surface, color, r, border_radius=t.radius.md)
         if t.mode == "light":  # pale tiles need an edge against the light board
             outline = lerp_color(color, (15, 23, 42), 0.15)
-            pygame.draw.rect(surface, outline, r, 2, border_radius=t.radius.md)
+            gfx.rect(surface, outline, r, 2, border_radius=t.radius.md)
         digits = len(str(value))
         size = {1: 56, 2: 52, 3: 44, 4: 36}.get(digits, 28)
         fg = DARK_TEXT if value <= 4 else readable_on(color)
         draw.text(surface, str(value), t.font(round(size * scale), "bold"), fg, r.center, "center")
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         draw.text(surface, "2048", t.font(64, "bold"), ACCENT, (SIDE_X, BOARD.y - 8))
         draw.text(
@@ -290,11 +291,11 @@ class Twenty48App(BaseApp):
         for i, text in enumerate(lines):
             draw.text(surface, text, t.font(t.size.label), p.text_muted, (SIDE_X, 420 + i * 26))
 
-    def _draw_dialog(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_dialog(self, surface: Canvas, t: Theme) -> None:
         assert self.menu is not None
         p = t.palette
-        layer = pygame.Surface(BOARD.size, pygame.SRCALPHA)
-        pygame.draw.rect(layer, (*p.bg, 200), layer.get_rect(), border_radius=t.radius.lg)
+        layer = Canvas.new(BOARD.size, alpha=True)
+        gfx.rect(layer, (*p.bg, 200), layer.get_rect(), border_radius=t.radius.lg)
         surface.blit(layer, BOARD.topleft)
         if self.dialog == "won":
             title, sub, color = f"You made {GOAL}!", "Keep going for a higher score?", ACCENT

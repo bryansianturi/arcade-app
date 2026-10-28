@@ -8,8 +8,9 @@ from typing import Any, Literal
 import pygame
 
 from apps.sudoku.logic import DIFFICULTIES, PEERS, Difficulty, SudokuGame
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp, format_score
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, ButtonMenu, Grid, draw_panel
@@ -66,15 +67,15 @@ class SudokuApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         inner = rect.inflate(-rect.width // 3, -rect.height // 3)
         step = inner.width / 3
         for k in (1, 2):
             x = round(inner.x + k * step)
             y = round(inner.y + k * step)
-            pygame.draw.line(surface, (255, 255, 255), (x, inner.y), (x, inner.bottom), 2)
-            pygame.draw.line(surface, (255, 255, 255), (inner.x, y), (inner.right, y), 2)
+            gfx.line(surface, (255, 255, 255), (x, inner.y), (x, inner.bottom), 2)
+            gfx.line(surface, (255, 255, 255), (inner.x, y), (inner.right, y), 2)
         font = theme.font(max(8, round(step * 0.8)), "bold")
         for (c, r), digit in (((0, 0), "5"), ((2, 1), "3"), ((1, 2), "9")):
             pos = (round(inner.x + (c + 0.5) * step), round(inner.y + (r + 0.5) * step))
@@ -264,7 +265,7 @@ class SudokuApp(BaseApp):
             self.dialog.update(dt)
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         surface.fill(t.palette.bg)
         self._draw_board(surface, t)
@@ -273,7 +274,7 @@ class SudokuApp(BaseApp):
             draw.overlay(surface, t.palette.overlay)
             self._draw_dialog(surface, t)
 
-    def _draw_board(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_board(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         draw.shadow(surface, BOARD, t.radius.md, p.shadow, (0, 8), 16)
         draw.rounded_rect(surface, BOARD, p.surface, t.radius.md)
@@ -287,11 +288,11 @@ class SudokuApp(BaseApp):
             width = 3 if thick else 1
             x = BOARD.x + k * CELL
             y = BOARD.y + k * CELL
-            pygame.draw.line(surface, color, (x, BOARD.y), (x, BOARD.bottom - 1), width)
-            pygame.draw.line(surface, color, (BOARD.x, y), (BOARD.right - 1, y), width)
+            gfx.line(surface, color, (x, BOARD.y), (x, BOARD.bottom - 1), width)
+            gfx.line(surface, color, (BOARD.x, y), (BOARD.right - 1, y), width)
         draw.rounded_rect(surface, BOARD, p.text_muted, t.radius.md, 3)
 
-    def _draw_cells(self, surface: pygame.Surface, t: Theme, game: SudokuGame) -> None:
+    def _draw_cells(self, surface: Canvas, t: Theme, game: SudokuGame) -> None:
         p = t.palette
         sel = game.selected
         sel_value = game.values[sel]
@@ -318,7 +319,7 @@ class SudokuApp(BaseApp):
                     tint or p.surface, p.danger, 0.3 if i in self.check_cells else 0.18
                 )
             if tint is not None:
-                pygame.draw.rect(surface, tint, rect)
+                gfx.rect(surface, tint, rect)
 
             if value:
                 given = game.is_given(i)
@@ -336,7 +337,7 @@ class SudokuApp(BaseApp):
                     draw.text(surface, str(d), small, ACCENT if hl else p.text_muted, pos, "center")
         surface.set_clip(clip)
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         game = self.game
         draw.text(surface, "Sudoku", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 50))
@@ -394,7 +395,7 @@ class SudokuApp(BaseApp):
             "bottomleft",
         )
 
-    def _draw_dialog(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_dialog(self, surface: Canvas, t: Theme) -> None:
         assert self.dialog is not None
         p = t.palette
         menu = self.dialog.rect

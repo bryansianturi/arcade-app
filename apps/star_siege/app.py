@@ -21,8 +21,9 @@ from apps.star_siege.logic import (
     Event,
     SiegeGame,
 )
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -69,23 +70,21 @@ class StarSiegeApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, SPACE, theme.radius.md)
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md, 2)
         u = rect.width / 8
         cx = rect.centerx
         for i, color in enumerate(ENEMY_COLORS):
             x = rect.x + (2 + i * 2) * u
-            pygame.draw.circle(surface, color, (x, rect.y + 2.2 * u), u * 0.6)
-        pygame.draw.line(
-            surface, (220, 245, 255), (cx, rect.y + 3.6 * u), (cx, rect.y + 4.6 * u), 2
-        )
+            gfx.circle(surface, color, (x, rect.y + 2.2 * u), u * 0.6)
+        gfx.line(surface, (220, 245, 255), (cx, rect.y + 3.6 * u), (cx, rect.y + 4.6 * u), 2)
         body = [
             (cx, rect.y + 5 * u),
             (cx + 1.6 * u, rect.y + 6.6 * u),
             (cx - 1.6 * u, rect.y + 6.6 * u),
         ]
-        pygame.draw.polygon(surface, PLAYER_COLOR, body)
+        gfx.polygon(surface, PLAYER_COLOR, body)
 
     def on_enter(self) -> None:
         self.rng = random.Random()
@@ -209,11 +208,11 @@ class StarSiegeApp(BaseApp):
         self.particles = alive
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         surface.fill(t.palette.bg)
         self._draw_hud(surface, t)
-        field = pygame.Surface(FIELD.size)
+        field = Canvas.new(FIELD.size, alpha=True)
         field.fill(SPACE)
         self._draw_stars(field)
         self._draw_shields(field)
@@ -224,10 +223,7 @@ class StarSiegeApp(BaseApp):
         if self.flash > 0:
             field.fill((int(90 * self.flash / 0.25),) * 3, special_flags=pygame.BLEND_RGB_ADD)
         # Round the corners of the playfield.
-        mask = pygame.Surface(FIELD.size, pygame.SRCALPHA)
-        pygame.draw.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=t.radius.lg)
-        field = field.convert_alpha()
-        field.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        draw.round_corners(field, t.radius.lg)
         draw.shadow(surface, FIELD, t.radius.lg, t.palette.shadow, (0, 8), 16)
         surface.blit(field, FIELD.topleft)
 
@@ -257,7 +253,7 @@ class StarSiegeApp(BaseApp):
             )
             self.menu.draw(surface)
 
-    def _draw_hud(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_hud(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         y = FIELD.y - 30
         draw.text(
@@ -282,19 +278,19 @@ class StarSiegeApp(BaseApp):
             cx = FIELD.right - 18 - i * 40
             self._ship_shape(surface, cx, y - 9, 0.6, PLAYER_COLOR)
 
-    def _draw_stars(self, field: pygame.Surface) -> None:
+    def _draw_stars(self, field: Canvas) -> None:
         for x, y, size, phase in self.stars:
             yy = (y + self.time * (8 + size * 10)) % FIELD_H
             twinkle = 0.55 + 0.45 * math.sin(self.time * 2 + phase)
             c = round(150 * twinkle) + 40
-            pygame.draw.circle(field, (c, c, min(255, c + 30)), (x, yy), size * 0.8)
+            gfx.circle(field, (c, c, min(255, c + 30)), (x, yy), size * 0.8)
 
-    def _draw_shields(self, field: pygame.Surface) -> None:
+    def _draw_shields(self, field: Canvas) -> None:
         dark = lerp_color(SHIELD_COLOR, SPACE, 0.35)
         for shield in self.game.shields:
             for r, c in shield.cells:
                 color = SHIELD_COLOR if (r + c) % 3 else dark
-                pygame.draw.rect(
+                gfx.rect(
                     field,
                     color,
                     (
@@ -305,7 +301,7 @@ class StarSiegeApp(BaseApp):
                     ),
                 )
 
-    def _draw_enemies(self, field: pygame.Surface) -> None:
+    def _draw_enemies(self, field: Canvas) -> None:
         flap = math.sin(self.time * 6)
         for e in self.game.alive_enemies():
             box = self.game.enemy_box(e)
@@ -314,11 +310,11 @@ class StarSiegeApp(BaseApp):
             if e.kind == 0:  # diamond core
                 s = ENEMY_H * 0.5
                 pts = [(cx, cy - s), (cx + s * 1.1, cy), (cx, cy + s), (cx - s * 1.1, cy)]
-                pygame.draw.polygon(field, color, pts)
-                pygame.draw.circle(field, SPACE, (cx, cy), 6)
-                pygame.draw.circle(field, (255, 255, 255), (cx, cy), 3)
+                gfx.polygon(field, color, pts)
+                gfx.circle(field, SPACE, (cx, cy), 6)
+                gfx.circle(field, (255, 255, 255), (cx, cy), 3)
                 for side in (-1, 1):
-                    pygame.draw.line(
+                    gfx.line(
                         field,
                         color,
                         (cx + side * s * 1.1, cy),
@@ -336,39 +332,39 @@ class StarSiegeApp(BaseApp):
                     (cx - w * 0.55, cy + h),
                     (cx - w, cy - h * 0.2 - wing),
                 ]
-                pygame.draw.polygon(field, color, pts)
+                gfx.polygon(field, color, pts)
                 for side in (-1, 1):
-                    pygame.draw.circle(field, SPACE, (cx + side * 6, cy - 2), 3)
+                    gfx.circle(field, SPACE, (cx + side * 6, cy - 2), 3)
             else:  # ringed orb
                 r = ENEMY_H * 0.38
                 ring = pygame.Rect(0, 0, ENEMY_W, 10 + flap * 3)
                 ring.center = (round(cx), round(cy + 2))
-                pygame.draw.ellipse(field, lerp_color(color, SPACE, 0.4), ring, 3)
-                pygame.draw.circle(field, color, (cx, cy), r)
-                pygame.draw.circle(
+                gfx.ellipse(field, lerp_color(color, SPACE, 0.4), ring, 3)
+                gfx.circle(field, color, (cx, cy), r)
+                gfx.circle(
                     field,
                     lerp_color(color, (255, 255, 255), 0.6),
                     (cx - r * 0.35, cy - r * 0.35),
                     r * 0.3,
                 )
 
-    def _draw_bullets(self, field: pygame.Surface) -> None:
+    def _draw_bullets(self, field: Canvas) -> None:
         for b in self.game.bullets:
             box = b.box
             rect = pygame.Rect(round(box.x), round(box.y), round(box.w), round(box.h))
             if b.friendly:
                 glow = rect.inflate(6, 6)
-                pygame.draw.rect(field, lerp_color(PLAYER_COLOR, SPACE, 0.6), glow, border_radius=4)
-                pygame.draw.rect(field, (220, 245, 255), rect, border_radius=2)
+                gfx.rect(field, lerp_color(PLAYER_COLOR, SPACE, 0.6), glow, border_radius=4)
+                gfx.rect(field, (220, 245, 255), rect, border_radius=2)
             else:
                 # A little zig-zag bolt.
                 x, y = rect.centerx, rect.y
                 wob = 3 if int(self.time * 20) % 2 else -3
                 pts = [(x, y), (x + wob, y + 5), (x - wob, y + 10), (x, y + rect.height)]
-                pygame.draw.lines(field, ENEMY_SHOT, False, pts, 3)
+                gfx.lines(field, ENEMY_SHOT, False, pts, 3)
 
     def _ship_shape(
-        self, surface: pygame.Surface, cx: float, top: float, scale: float, color: Color
+        self, surface: Canvas, cx: float, top: float, scale: float, color: Color
     ) -> None:
         w, h = PLAYER_W * scale, PLAYER_H * scale
         body = [
@@ -378,10 +374,10 @@ class StarSiegeApp(BaseApp):
             (cx - w * 0.18, top + h * 0.78),
             (cx - w * 0.5, top + h),
         ]
-        pygame.draw.polygon(surface, color, body)
-        pygame.draw.circle(surface, (225, 245, 255), (cx, top + h * 0.5), max(2, 4 * scale))
+        gfx.polygon(surface, color, body)
+        gfx.circle(surface, (225, 245, 255), (cx, top + h * 0.5), max(2, 4 * scale))
 
-    def _draw_player(self, field: pygame.Surface) -> None:
+    def _draw_player(self, field: Canvas) -> None:
         game = self.game
         if game.over and self.state != "ready":
             return
@@ -389,7 +385,7 @@ class StarSiegeApp(BaseApp):
             return  # blink while invulnerable
         cx = game.player_x
         flame = 6 + 4 * abs(math.sin(self.time * 30))
-        pygame.draw.polygon(
+        gfx.polygon(
             field,
             (255, 170, 60),
             [
@@ -400,15 +396,15 @@ class StarSiegeApp(BaseApp):
         )
         self._ship_shape(field, cx, PLAYER_Y, 1.0, PLAYER_COLOR)
 
-    def _draw_particles(self, field: pygame.Surface) -> None:
+    def _draw_particles(self, field: Canvas) -> None:
         for p in self.particles:
             k = p.life / p.max_life
             color = lerp_color(SPACE, p.color, min(1.0, k * 1.4))
-            pygame.draw.circle(field, color, (p.x, p.y), max(1.0, p.size * k))
+            gfx.circle(field, color, (p.x, p.y), max(1.0, p.size * k))
 
     def _draw_card(
         self,
-        surface: pygame.Surface,
+        surface: Canvas,
         t: Theme,
         title: str,
         sub: str,

@@ -8,8 +8,9 @@ import random
 import pygame
 
 from apps.five_letters.logic import MAX_GUESSES, WORD_LENGTH, FiveLetters, Mark, Stats
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, Toggle, draw_panel
@@ -48,7 +49,7 @@ class FiveLettersApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (30, 41, 59), theme.radius.md)
         u = rect.width / 9
         colors = (MARK_COLORS["absent"], MARK_COLORS["present"], MARK_COLORS["correct"])
@@ -58,7 +59,7 @@ class FiveLettersApp(BaseApp):
                 r = pygame.Rect(
                     rect.x + u * (0.9 + col * 2.6), rect.y + u * (2 + row * 2.8), u * 2.2, u * 2.2
                 )
-                pygame.draw.rect(surface, color, r, border_radius=3)
+                gfx.rect(surface, color, r, border_radius=3)
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
@@ -182,7 +183,7 @@ class FiveLettersApp(BaseApp):
             self._show_toast(f"The word was {self.game.answer.upper()}", 30)
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         surface.fill(t.palette.bg)
         self._draw_grid(surface, t)
@@ -196,7 +197,7 @@ class FiveLettersApp(BaseApp):
             draw.rounded_rect(surface, rect, t.palette.text, t.radius.md)
             draw.text(surface, self.toast, font, t.palette.bg, rect.center, "center")
 
-    def _draw_grid(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_grid(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         g = self.game
         font = t.font(32, "bold")
@@ -234,24 +235,24 @@ class FiveLettersApp(BaseApp):
                     border = p.text_muted
                 tile = rect.inflate(0, -round(TILE * (1 - height)))
                 if tile.height > 0:
-                    pygame.draw.rect(surface, fill, tile, border_radius=6)
+                    gfx.rect(surface, fill, tile, border_radius=6)
                     if fill == p.bg:
-                        pygame.draw.rect(surface, border, tile, 2, border_radius=6)
+                        gfx.rect(surface, border, tile, 2, border_radius=6)
                     if letter and height > 0.3:
                         draw.text(surface, letter.upper(), font, fg, tile.center, "center")
 
-    def _draw_keyboard(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_keyboard(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         # Only colour keys for rows whose flip has finished, so the keyboard doesn't spoil it.
         states = self.game.letter_states() if not self._animating() else self._settled_states()
-        mouse = pygame.mouse.get_pos()
+        mouse = mouse_pos()
         for key, rect in self._key_rects():
             mark = states.get(key)
             fill = MARK_COLORS[mark] if mark else p.surface_hover
             fg = (255, 255, 255) if mark else p.text
             if rect.collidepoint(mouse):
                 fill = lerp_color(fill, (255, 255, 255), 0.12)
-            pygame.draw.rect(surface, fill, rect, border_radius=6)
+            gfx.rect(surface, fill, rect, border_radius=6)
             label = {"+": "ENTER", "-": "⌫"}.get(key, key.upper())
             size = t.size.caption if key == "+" else t.size.label
             draw.text(surface, label, t.font(size, "bold"), fg, rect.center, "center")
@@ -260,7 +261,7 @@ class FiveLettersApp(BaseApp):
         settled = FiveLetters(self.game.answer, history=self.game.history[:-1])
         return settled.letter_states()
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         s = self.stats
         draw.text(surface, "Five Letters", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 40))
@@ -309,7 +310,7 @@ class FiveLettersApp(BaseApp):
             won_with = (
                 self.game.status == "won" and len(self.game.history) == i + 1 and self.recorded
             )
-            pygame.draw.rect(surface, ACCENT if won_with else p.surface_hover, bar, border_radius=4)
+            gfx.rect(surface, ACCENT if won_with else p.surface_hover, bar, border_radius=4)
             draw.text(
                 surface,
                 str(count),

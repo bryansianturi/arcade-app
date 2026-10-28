@@ -16,8 +16,9 @@ from apps.stackfall.logic import (
     StepResult,
     rotated_cells,
 )
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -50,16 +51,16 @@ HOLD_KEYS = (pygame.K_c, pygame.K_LSHIFT, pygame.K_RSHIFT)
 State = Literal["ready", "playing", "paused", "over"]
 
 
-def draw_block(surface: pygame.Surface, rect: pygame.Rect, color: Color) -> None:
+def draw_block(surface: Canvas, rect: pygame.Rect, color: Color) -> None:
     """One rounded block with a soft highlight."""
     inner = rect.inflate(-2, -2)
-    pygame.draw.rect(surface, color, inner, border_radius=5)
+    gfx.rect(surface, color, inner, border_radius=5)
     hi = pygame.Rect(inner.x + 3, inner.y + 3, inner.width - 6, max(2, inner.height // 4))
-    pygame.draw.rect(surface, lerp_color(color, (255, 255, 255), 0.35), hi, border_radius=3)
+    gfx.rect(surface, lerp_color(color, (255, 255, 255), 0.35), hi, border_radius=3)
 
 
 def draw_mini(
-    surface: pygame.Surface, kind: Kind, center: tuple[int, int], size: int, color: Color
+    surface: Canvas, kind: Kind, center: tuple[int, int], size: int, color: Color
 ) -> None:
     """A piece centred in a preview box."""
     cells = rotated_cells(kind, 0)
@@ -87,7 +88,7 @@ class StackfallApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (30, 27, 50), theme.radius.md)
         u = rect.width // 5
         cells: tuple[tuple[tuple[int, int], Kind], ...] = (
@@ -102,7 +103,7 @@ class StackfallApp(BaseApp):
         )
         for (x, y), kind in cells:
             r = pygame.Rect(rect.x + u // 2 + x * u, rect.y + u // 2 + y * u, u, u)
-            pygame.draw.rect(surface, COLORS[kind], r.inflate(-2, -2), border_radius=2)
+            gfx.rect(surface, COLORS[kind], r.inflate(-2, -2), border_radius=2)
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
@@ -220,7 +221,7 @@ class StackfallApp(BaseApp):
         """Screen rect of board cell (x, y) in *grid* coordinates (including hidden rows)."""
         return pygame.Rect(BOARD.x + x * CELL, BOARD.y + (y - HIDDEN) * CELL, CELL, CELL)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         g = self.game
@@ -233,14 +234,14 @@ class StackfallApp(BaseApp):
         draw.rounded_rect(surface, frame, p.border, t.radius.lg, 2)
         grid_line = lerp_color(well, (255, 255, 255), 0.05)
         for x in range(1, WIDTH):
-            pygame.draw.line(
+            gfx.line(
                 surface,
                 grid_line,
                 (BOARD.x + x * CELL, BOARD.y),
                 (BOARD.x + x * CELL, BOARD.bottom),
             )
         for y in range(1, HEIGHT):
-            pygame.draw.line(
+            gfx.line(
                 surface, grid_line, (BOARD.x, BOARD.y + y * CELL), (BOARD.right, BOARD.y + y * CELL)
             )
 
@@ -255,14 +256,12 @@ class StackfallApp(BaseApp):
             ghost = g.ghost()
             for x, y in ghost.cells():
                 r = self._cell_rect(x, y).inflate(-4, -4)
-                pygame.draw.rect(
-                    surface, lerp_color(COLORS[ghost.kind], well, 0.45), r, 2, border_radius=5
-                )
+                gfx.rect(surface, lerp_color(COLORS[ghost.kind], well, 0.45), r, 2, border_radius=5)
             for x, y in g.piece.cells():
                 draw_block(surface, self._cell_rect(x, y), COLORS[g.piece.kind])
         for flash_row, left in self.flashes:
             k = left / FLASH_SECONDS
-            layer = pygame.Surface((BOARD.width, CELL), pygame.SRCALPHA)
+            layer = Canvas.new((BOARD.width, CELL), alpha=True)
             layer.fill((255, 255, 255, round(200 * k)))
             surface.blit(layer, (BOARD.x, BOARD.y + flash_row * CELL))
         surface.set_clip(clip)
@@ -279,7 +278,7 @@ class StackfallApp(BaseApp):
             )
             self.menu.draw(surface)
 
-    def _box(self, surface: pygame.Surface, t: Theme, rect: pygame.Rect, title: str) -> None:
+    def _box(self, surface: Canvas, t: Theme, rect: pygame.Rect, title: str) -> None:
         draw_panel(surface, rect, t)
         draw.text(
             surface,
@@ -289,7 +288,7 @@ class StackfallApp(BaseApp):
             (rect.x + 16, rect.y + 14),
         )
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         g = self.game
         hold = pygame.Rect(LEFT_X, BOARD.y, 200, 130)
@@ -347,7 +346,7 @@ class StackfallApp(BaseApp):
 
     def _card(
         self,
-        surface: pygame.Surface,
+        surface: Canvas,
         t: Theme,
         title: str,
         sub: str,

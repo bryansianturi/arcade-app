@@ -20,6 +20,7 @@ import pygame
 
 from core import draw
 from core.base_app import AppContext, BaseApp
+from core.canvas import Canvas
 from core.scene_manager import Scene
 from core.widgets import ButtonMenu, draw_panel
 
@@ -161,7 +162,7 @@ class AppHost(Scene):
         if self._menu is not None:
             self._menu.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         theme = self.services.theme
         if self.app is not None:
             app = self.app
@@ -175,7 +176,7 @@ class AppHost(Scene):
         if self._menu is not None:
             self._draw_dialog(surface)
 
-    def _draw_dialog(self, surface: pygame.Surface) -> None:
+    def _draw_dialog(self, surface: Canvas) -> None:
         assert self._menu is not None
         t = self.services.theme
         p = t.palette

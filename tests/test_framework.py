@@ -6,6 +6,7 @@ import pygame
 
 from core.app_host import AppHost, HostState
 from core.base_app import AppMeta, BaseApp, format_score
+from core.canvas import Canvas, Viewport, set_viewport
 from core.scene_manager import Scene, SceneManager
 from core.services import Services
 from core.widgets import Grid
@@ -71,7 +72,7 @@ def test_transitions_block_input_and_finish(services: Services) -> None:
     sm.push(Sink(services))
     assert sm.transitioning is True
     sm.handle_event(pygame.event.Event(pygame.USEREVENT))
-    sm.draw(pygame.Surface((64, 36)))
+    sm.draw(Canvas.new((64, 36)))
     sm.update(1.0)
     assert not sm.transitioning
     sm.handle_event(pygame.event.Event(pygame.USEREVENT))
@@ -93,7 +94,7 @@ class Exploding(BaseApp):
 
     def update(self, dt: float) -> None: ...
 
-    def draw(self, surface: pygame.Surface) -> None: ...
+    def draw(self, surface: Canvas) -> None: ...
 
 
 def test_crashing_app_is_contained(services: Services) -> None:
@@ -103,7 +104,7 @@ def test_crashing_app_is_contained(services: Services) -> None:
     assert state(host) is HostState.CRASHED
     assert host.app is None and "kaboom" in host.error
     assert Exploding.exits == 1  # on_exit still ran so the app could save
-    host.draw(pygame.Surface(services.scenes.size))  # dialog renders without the app
+    host.draw(Canvas.new(services.scenes.size))  # dialog renders without the app
     host.handle_event(key(pygame.K_RETURN))  # "Back to menu"
     assert services.scenes.current is not host
 
@@ -177,7 +178,7 @@ def test_launcher_filtering(services: Services) -> None:
     assert len(launcher.cards) == 1
     launcher.handle_event(key(pygame.K_TAB))  # Tools -> hidden
     assert launcher.cards == []
-    launcher.draw(pygame.Surface(services.scenes.size))
+    launcher.draw(Canvas.new(services.scenes.size))
 
 
 def test_launcher_enter_launches_app(services: Services) -> None:
@@ -206,3 +207,29 @@ def test_high_score_rows(services: Services) -> None:
     rows = build_rows(services)
     assert len(rows) == 1
     assert [(c.variant, c.value) for c in rows[0].cells] == [("Easy", "—"), ("Hard", "1:30")]
+
+
+def test_screens_and_transitions_draw_at_2x(services: Services) -> None:
+    from screens.high_scores import HighScoresScreen
+    from screens.settings_screen import SettingsScreen
+
+    services.apps = [Exploding]
+    scenes = SceneManager(services.scenes.size, animations=True)
+    services.scenes = scenes
+    set_viewport(Viewport(scale=2.0))
+    try:
+        canvas = Canvas.new(scenes.size)
+        scenes.push(LauncherScreen(services), transition="none")
+        for screen in (SettingsScreen(services), HighScoresScreen(services)):
+            scenes.push(screen)
+            scenes.draw(canvas)  # mid-transition
+            scenes.update(1.0)
+            scenes.draw(canvas)
+            scenes.pop()
+            scenes.update(0.1)
+            scenes.draw(canvas)
+    finally:
+        set_viewport(Viewport())
+    # The window is "resized" back to 1x mid-transition: the 2x snapshot is rescaled.
+    assert scenes.transitioning
+    scenes.draw(Canvas.new(scenes.size))

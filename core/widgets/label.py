@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-import pygame
-
 from core import draw
+from core.canvas import Canvas
 from core.theme import Theme, Weight
 from core.widgets.base import Widget
 
@@ -34,7 +33,7 @@ class Label(Widget):
         self.tone: Tone = tone
         self.anchor: draw.Anchor = anchor
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         if not self.visible:
             return
         color = getattr(self.theme.palette, self.tone)

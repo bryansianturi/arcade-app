@@ -7,6 +7,7 @@ import pygame
 from apps._template.logic import ClickCounter
 from core import draw
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.widgets import Button
 
@@ -52,7 +53,7 @@ class TemplateApp(BaseApp):
     def update(self, dt: float) -> None:
         self.button.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         surface.fill(t.palette.bg)
         cx, cy = self.ctx.screen_rect.center

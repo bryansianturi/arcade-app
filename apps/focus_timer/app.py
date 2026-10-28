@@ -9,8 +9,9 @@ from collections.abc import Callable
 import pygame
 
 from apps.focus_timer.logic import PHASE_LABELS, PHASES, Phase, Pomodoro, Stopwatch
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl, draw_panel
@@ -53,17 +54,13 @@ class FocusTimerApp(BaseApp):
     now: Callable[[], float] = staticmethod(time.time)
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         r = rect.width * 0.32
-        pygame.draw.circle(surface, (255, 255, 255), rect.center, r, 3)
+        gfx.circle(surface, (255, 255, 255), rect.center, r, 3)
         draw.ring_arc(surface, (255, 255, 255), rect.center, r, 3, 0.7)
-        pygame.draw.line(
-            surface, (255, 255, 255), rect.center, (rect.centerx, rect.centery - r * 0.6), 3
-        )
-        pygame.draw.line(
-            surface, (255, 255, 255), rect.center, (rect.centerx + r * 0.45, rect.centery), 3
-        )
+        gfx.line(surface, (255, 255, 255), rect.center, (rect.centerx, rect.centery - r * 0.6), 3)
+        gfx.line(surface, (255, 255, 255), rect.center, (rect.centerx + r * 0.45, rect.centery), 3)
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
@@ -184,7 +181,7 @@ class FocusTimerApp(BaseApp):
         return clock.accumulated > 0
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         surface.fill(t.palette.bg)
         self.tabs.draw(surface)
@@ -195,7 +192,7 @@ class FocusTimerApp(BaseApp):
         for widget in self._widgets():
             widget.draw(surface)
 
-    def _draw_pomodoro(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_pomodoro(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         pomo = self.pomodoro
         now = self.now()
@@ -204,7 +201,7 @@ class FocusTimerApp(BaseApp):
         alert = pomo.just_finished is not None
         pulse = 0.5 + 0.5 * math.sin((self.time - self.alert_started) * 6) if alert else 0.0
         track = lerp_color(p.surface_alt, color, 0.12 + 0.3 * pulse)
-        pygame.draw.circle(surface, track, RING_CENTER, RING_R, 18)
+        gfx.circle(surface, track, RING_CENTER, RING_R, 18)
         draw.ring_arc(surface, color, RING_CENTER, RING_R, 18, pomo.progress(now))
         draw.text(
             surface,
@@ -228,9 +225,7 @@ class FocusTimerApp(BaseApp):
         for i in range(n):
             cx = RING_CENTER[0] + (i - (n - 1) / 2) * 26
             filled = i < done
-            pygame.draw.circle(
-                surface, color if filled else p.surface_hover, (cx, RING_CENTER[1] + 72), 7
-            )
+            gfx.circle(surface, color if filled else p.surface_hover, (cx, RING_CENTER[1] + 72), 7)
         draw.text(
             surface,
             f"{pomo.completed} session{'s' if pomo.completed != 1 else ''} completed",
@@ -261,7 +256,7 @@ class FocusTimerApp(BaseApp):
         )
         for phase, minus, plus in self.adjusters:
             y = minus.rect.centery
-            pygame.draw.circle(surface, PHASE_COLORS[phase], (RIGHT_X + 8, y), 6)
+            gfx.circle(surface, PHASE_COLORS[phase], (RIGHT_X + 8, y), 6)
             draw.text(
                 surface,
                 PHASE_LABELS[phase],
@@ -293,12 +288,12 @@ class FocusTimerApp(BaseApp):
             (RIGHT_X, 480),
         )
 
-    def _draw_stopwatch(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_stopwatch(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         sw = self.stopwatch
         now = self.now()
         elapsed = sw.clock.elapsed(now)
-        pygame.draw.circle(surface, p.surface_alt, RING_CENTER, RING_R, 18)
+        gfx.circle(surface, p.surface_alt, RING_CENTER, RING_R, 18)
         draw.ring_arc(
             surface, ACCENT, RING_CENTER, RING_R, 18, (elapsed % 60) / 60
         )  # one lap per minute

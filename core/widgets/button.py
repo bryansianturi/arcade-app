@@ -8,6 +8,7 @@ from typing import Literal
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets.base import Widget, approach
 
@@ -86,7 +87,7 @@ class Button(Widget):
             return lerp_color(p.bg, p.surface_hover, h), p.text
         return lerp_color(p.surface_alt, p.surface_hover, h), p.text
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         if not self.visible:
             return
         theme = self.theme

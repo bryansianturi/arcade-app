@@ -1,44 +1,40 @@
-"""The OS window: a fixed logical canvas scaled to the window by SDL.
+"""The OS window, drawn at native resolution.
 
-Everything is drawn onto a 1280×720 canvas. ``pygame.SCALED`` lets SDL scale
-it on the GPU with letterboxing, and mouse coordinates are mapped back to the
-canvas automatically, so apps never deal with window sizes.
+Everything is laid out on a 1280×720 *logical* canvas. Each frame the canvas is
+mapped onto the largest 16:9 area that fits the window's real pixels (2× on a
+Retina display), letterboxed if needed, and drawn there directly through a
+:class:`~core.canvas.Canvas`, so nothing is stretched afterwards. Mouse events
+are converted back to logical coordinates, so apps never deal with window sizes.
 """
 
 from __future__ import annotations
 
 import os
-import warnings
 
 import pygame
 
+from core.canvas import Canvas, Viewport, set_viewport, to_logical
 from core.settings import Settings
 
 LOGICAL_SIZE = (1280, 720)
 MIN_WINDOW_SIZE = (640, 360)
 WINDOW_TITLE = "Arcade"
+LETTERBOX = (0, 0, 0)
+
+_MOUSE_EVENTS = (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP)
 
 
 def configure_sdl() -> None:
     """Set SDL hints. Must run before ``pygame.init()``."""
-    os.environ.setdefault("SDL_RENDER_SCALE_QUALITY", "linear")  # smooth scaling
     os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 
 
 class Display:
-    """Creates the window and applies window-size / fullscreen settings."""
+    """Owns the window, applies window-size / fullscreen settings and maps input."""
 
     def __init__(self, settings: Settings) -> None:
-        pygame.display.set_caption(WINDOW_TITLE)
-        self.surface = pygame.display.set_mode(LOGICAL_SIZE, pygame.SCALED | pygame.RESIZABLE)
-        self.rect = self.surface.get_rect()
-        # pygame-ce marks this as deprecated in favour of the pure Window API, but it is
-        # still the only way to resize a SCALED display window. Isolated here on purpose.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            self._window = pygame.Window.from_display_module()
-        # SCALED defaults the minimum window size to the canvas size; allow smaller.
-        self._window.minimum_size = MIN_WINDOW_SIZE
+        self.window = pygame.Window(WINDOW_TITLE, LOGICAL_SIZE, resizable=True, allow_high_dpi=True)
+        self.window.minimum_size = MIN_WINDOW_SIZE
         self.fullscreen = False
         self.apply(settings)
 
@@ -46,12 +42,41 @@ class Display:
         """Apply ``settings.fullscreen`` and ``settings.window_size``."""
         self.fullscreen = settings.fullscreen
         if settings.fullscreen:
-            self._window.set_fullscreen(desktop=True)
+            self.window.set_fullscreen(desktop=True)
             return
-        self._window.set_windowed()
+        self.window.set_windowed()
         desktop_w, desktop_h = pygame.display.get_desktop_sizes()[0]
         w, h = settings.window_size
         # Never open a window bigger than the screen (keep 16:9).
         scale = min(1.0, (desktop_w * 0.95) / w, (desktop_h * 0.9) / h)
-        self._window.size = (int(w * scale), int(h * scale))
-        self._window.position = pygame.WINDOWPOS_CENTERED
+        self.window.size = (int(w * scale), int(h * scale))
+        self.window.position = pygame.WINDOWPOS_CENTERED
+
+    def begin_frame(self) -> Canvas:
+        """Return this frame's logical canvas, sized to the window's current pixels."""
+        target = self.window.get_surface()
+        width, height = target.get_size()
+        scale = min(width / LOGICAL_SIZE[0], height / LOGICAL_SIZE[1])
+        area = pygame.Rect(0, 0, round(LOGICAL_SIZE[0] * scale), round(LOGICAL_SIZE[1] * scale))
+        area.center = (width // 2, height // 2)
+        area = area.clip(target.get_rect())
+        if area.size != target.get_size():
+            target.fill(LETTERBOX)
+        ratio = width / max(1, self.window.size[0])
+        set_viewport(Viewport(scale, area.topleft, ratio))
+        return Canvas(target.subsurface(area), scale, LOGICAL_SIZE)
+
+    def end_frame(self) -> None:
+        self.window.flip()
+
+    @staticmethod
+    def to_logical(event: pygame.event.Event) -> pygame.event.Event:
+        """Return ``event`` with mouse positions in logical canvas coordinates."""
+        if event.type not in _MOUSE_EVENTS:
+            return event
+        attrs = dict(event.dict)
+        attrs["pos"] = to_logical(event.pos)
+        if event.type == pygame.MOUSEMOTION:
+            x0, y0 = to_logical((event.pos[0] - event.rel[0], event.pos[1] - event.rel[1]))
+            attrs["rel"] = (attrs["pos"][0] - x0, attrs["pos"][1] - y0)
+        return pygame.event.Event(event.type, attrs)

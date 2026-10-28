@@ -8,8 +8,9 @@ import random
 import pygame
 
 from apps.memory_match.logic import LAYOUTS, SIZES, MemoryGame, Size
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp, format_score
+from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -46,7 +47,7 @@ SHAPES = (
 
 
 def draw_symbol(
-    surface: pygame.Surface, symbol: int, center: tuple[float, float], r: float, card: Color
+    surface: Canvas, symbol: int, center: tuple[float, float], r: float, card: Color
 ) -> None:
     """Draw symbol ``symbol``: a shape (cycles every 12) in a colour (cycles every 6).
 
@@ -69,48 +70,48 @@ def draw_symbol(
         return pts
 
     if shape == "circle":
-        pygame.draw.circle(surface, color, center, r * 0.8)
+        gfx.circle(surface, color, center, r * 0.8)
     elif shape == "square":
-        pygame.draw.rect(
+        gfx.rect(
             surface,
             color,
             (cx - r * 0.7, cy - r * 0.7, r * 1.4, r * 1.4),
             border_radius=round(r * 0.2),
         )
     elif shape == "triangle":
-        pygame.draw.polygon(surface, color, poly(3, r * 0.95, -90))
+        gfx.polygon(surface, color, poly(3, r * 0.95, -90))
     elif shape == "diamond":
-        pygame.draw.polygon(
+        gfx.polygon(
             surface, color, [(cx, cy - r), (cx + r * 0.7, cy), (cx, cy + r), (cx - r * 0.7, cy)]
         )
     elif shape == "star":
-        pygame.draw.polygon(surface, color, poly(5, r, -90, inner=r * 0.42))
+        gfx.polygon(surface, color, poly(5, r, -90, inner=r * 0.42))
     elif shape == "heart":
         k = r * 0.45
-        pygame.draw.circle(surface, color, (cx - k, cy - k * 0.5), k * 1.05)
-        pygame.draw.circle(surface, color, (cx + k, cy - k * 0.5), k * 1.05)
-        pygame.draw.polygon(
+        gfx.circle(surface, color, (cx - k, cy - k * 0.5), k * 1.05)
+        gfx.circle(surface, color, (cx + k, cy - k * 0.5), k * 1.05)
+        gfx.polygon(
             surface,
             color,
             [(cx - r * 0.92, cy - k * 0.2), (cx + r * 0.92, cy - k * 0.2), (cx, cy + r * 0.9)],
         )
     elif shape == "hexagon":
-        pygame.draw.polygon(surface, color, poly(6, r * 0.85, 0))
+        gfx.polygon(surface, color, poly(6, r * 0.85, 0))
     elif shape == "ring":
-        pygame.draw.circle(surface, color, center, r * 0.8, max(3, round(r * 0.28)))
+        gfx.circle(surface, color, center, r * 0.8, max(3, round(r * 0.28)))
     elif shape == "cross":
         w = r * 0.5
-        pygame.draw.rect(surface, color, (cx - w / 2, cy - r * 0.85, w, r * 1.7), border_radius=4)
-        pygame.draw.rect(surface, color, (cx - r * 0.85, cy - w / 2, r * 1.7, w), border_radius=4)
+        gfx.rect(surface, color, (cx - w / 2, cy - r * 0.85, w, r * 1.7), border_radius=4)
+        gfx.rect(surface, color, (cx - r * 0.85, cy - w / 2, r * 1.7, w), border_radius=4)
     elif shape == "moon":
-        pygame.draw.circle(surface, color, center, r * 0.8)
-        pygame.draw.circle(surface, card, (cx + r * 0.38, cy - r * 0.25), r * 0.68)
+        gfx.circle(surface, color, center, r * 0.8)
+        gfx.circle(surface, card, (cx + r * 0.38, cy - r * 0.25), r * 0.68)
     elif shape == "bolt":
         pts = [(0.2, -1), (-0.55, 0.12), (-0.02, 0.12), (-0.25, 1), (0.55, -0.15), (0.03, -0.15)]
-        pygame.draw.polygon(surface, color, [(cx + x * r, cy + y * r) for x, y in pts])
+        gfx.polygon(surface, color, [(cx + x * r, cy + y * r) for x, y in pts])
     elif shape == "drop":
-        pygame.draw.circle(surface, color, (cx, cy + r * 0.25), r * 0.62)
-        pygame.draw.polygon(
+        gfx.circle(surface, color, (cx, cy + r * 0.25), r * 0.62)
+        gfx.polygon(
             surface,
             color,
             [(cx, cy - r * 0.95), (cx + r * 0.6, cy + r * 0.1), (cx - r * 0.6, cy + r * 0.1)],
@@ -118,7 +119,7 @@ def draw_symbol(
     if symbol >= len(
         SHAPES
     ):  # second set: add a dot so same-shaped symbols differ by more than colour
-        pygame.draw.circle(surface, (255, 255, 255), center, max(3, r * 0.14))
+        gfx.circle(surface, (255, 255, 255), center, max(3, r * 0.14))
 
 
 @register_app
@@ -138,13 +139,13 @@ class MemoryMatchApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         w = rect.width * 0.36
         for i, symbol in enumerate((4, None)):
             card = pygame.Rect(0, 0, w, w * 1.3)
             card.center = (rect.centerx + (i * 2 - 1) * w * 0.55, rect.centery)
-            pygame.draw.rect(
+            gfx.rect(
                 surface,
                 (255, 255, 255) if symbol is not None else (124, 45, 18),
                 card,
@@ -266,11 +267,11 @@ class MemoryMatchApp(BaseApp):
             self.mismatch_at = None
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
-        mouse = pygame.mouse.get_pos()
+        mouse = mouse_pos()
         for i, rect in enumerate(self.rects):
             k = min(1.0, (self.time - self.flip_t.get(i, -10.0)) / FLIP_SECONDS)
             # Width shrinks to 0 at the halfway point, where the face swaps.
@@ -287,9 +288,9 @@ class MemoryMatchApp(BaseApp):
             if showing_face:
                 matched = i in self.game.matched
                 face = p.surface if not matched else lerp_color(p.surface, ACCENT, 0.12)
-                pygame.draw.rect(surface, face, card, border_radius=t.radius.md)
+                gfx.rect(surface, face, card, border_radius=t.radius.md)
                 if matched:
-                    pygame.draw.rect(surface, ACCENT, card, 2, border_radius=t.radius.md)
+                    gfx.rect(surface, ACCENT, card, 2, border_radius=t.radius.md)
                 if width > rect.width * 0.4:
                     draw_symbol(
                         surface,
@@ -300,29 +301,27 @@ class MemoryMatchApp(BaseApp):
                     )
             else:
                 back = lerp_color(ACCENT, p.bg, 0.35)
-                pygame.draw.rect(surface, back, card, border_radius=t.radius.md)
+                gfx.rect(surface, back, card, border_radius=t.radius.md)
                 inner = card.inflate(-14, -14)
                 if inner.width > 4:
-                    pygame.draw.rect(
+                    gfx.rect(
                         surface,
                         lerp_color(back, (255, 255, 255), 0.18),
                         inner,
                         2,
                         border_radius=t.radius.sm,
                     )
-                    pygame.draw.circle(
+                    gfx.circle(
                         surface,
                         lerp_color(back, (255, 255, 255), 0.25),
                         card.center,
                         min(inner.width, 24) / 3,
                     )
             if self.keyboard_nav and i == self.cursor:
-                pygame.draw.rect(
-                    surface, p.text, rect.inflate(8, 8), 3, border_radius=t.radius.md + 3
-                )
+                gfx.rect(surface, p.text, rect.inflate(8, 8), 3, border_radius=t.radius.md + 3)
         self._draw_side(surface, t)
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         g = self.game
         draw.text(surface, "Memory Match", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 60))

@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING, Literal
 
 import pygame
 
+from core.canvas import Canvas
+
 if TYPE_CHECKING:
     from core.services import Services
 
@@ -46,13 +48,13 @@ class Scene:
     def update(self, dt: float) -> None:
         """Advance animations/state by ``dt`` seconds."""
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         """Render the scene."""
 
 
 @dataclass
 class _Transition:
-    snapshot: pygame.Surface  # frozen image of the outgoing scene
+    snapshot: Canvas  # frozen image of the outgoing scene
     forward: bool  # True for push/replace, False for pop
     kind: TransitionKind
     elapsed: float = 0.0
@@ -74,7 +76,7 @@ class SceneManager:
         self.animations = animations
         self._stack: list[Scene] = []
         self._transition: _Transition | None = None
-        self._buffer = pygame.Surface(size)
+        self._buffer: Canvas | None = None
 
     # ------------------------------------------------------------------ stack
     @property
@@ -139,7 +141,7 @@ class SceneManager:
         if self.current is not None:
             self.current.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         scene = self.current
         if scene is None:
             return
@@ -150,25 +152,28 @@ class SceneManager:
 
         t = ease_out_cubic(tr.progress)
         slide = SLIDE_DISTANCE if tr.kind == "slide" else 0
-        self._buffer.fill((0, 0, 0))
-        scene.draw(self._buffer)
+        buffer = self._buffer
+        if buffer is None or buffer.scale != surface.scale:  # first use, or window resized
+            buffer = self._buffer = Canvas.new(self.size, scale=surface.scale)
+        buffer.fill((0, 0, 0))
+        scene.draw(buffer)
         if tr.forward:
             # Old screen stays put; new screen fades/slides in on top.
             surface.blit(tr.snapshot, (0, 0))
-            self._buffer.set_alpha(round(255 * t))
-            surface.blit(self._buffer, (round(slide * (1 - t)), 0))
+            buffer.set_alpha(round(255 * t))
+            surface.blit(buffer, (slide * (1 - t), 0))
         else:
             # Revealed screen is underneath; old screen fades/slides out.
-            surface.blit(self._buffer, (0, 0))
+            surface.blit(buffer, (0, 0))
             tr.snapshot.set_alpha(round(255 * (1 - t)))
-            surface.blit(tr.snapshot, (round(slide * t), 0))
-        self._buffer.set_alpha(None)
+            surface.blit(tr.snapshot, (slide * t, 0))
+        buffer.set_alpha(None)
 
     # ------------------------------------------------------------------ internals
     def _begin(self, forward: bool, kind: TransitionKind) -> None:
         if not self.animations or kind == "none" or self.current is None:
             self._transition = None
             return
-        snapshot = pygame.Surface(self.size)
+        snapshot = Canvas.new(self.size)
         self.current.draw(snapshot)
         self._transition = _Transition(snapshot=snapshot, forward=forward, kind=kind)

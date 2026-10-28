@@ -9,6 +9,7 @@ import pygame
 from core import draw
 from core.app_host import AppHost
 from core.base_app import BaseApp, format_score
+from core.canvas import Canvas, mouse_pos
 from core.scene_manager import Scene
 from core.widgets import Button, Card, Grid, SegmentedControl, TextInput, approach
 from screens.common import HEADER_Y, MARGIN_X
@@ -216,10 +217,10 @@ class LauncherScreen(Scene):
             card.rect = self.grid.cell(i, round(self.scroll))
             card.update(dt)
             # Don't show hover effects for cards scrolled out of the visible area.
-            if not self.grid.rect.collidepoint(pygame.mouse.get_pos()):
+            if not self.grid.rect.collidepoint(mouse_pos()):
                 card.hovered = False
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.services.theme
         p = t.palette
         surface.fill(p.bg)

@@ -7,6 +7,7 @@ import logging
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.display import LOGICAL_SIZE, Display, configure_sdl
 from core.logging_setup import setup_logging
 from core.paths import user_data_dir
@@ -61,18 +62,19 @@ def main() -> None:
                 settings.fullscreen = not settings.fullscreen
                 services.save_settings()
             else:
-                scenes.handle_event(event)
+                scenes.handle_event(display.to_logical(event))
         scenes.update(dt)
-        scenes.draw(display.surface)
+        canvas = display.begin_frame()
+        scenes.draw(canvas)
         if settings.show_fps:
-            _draw_fps(display.surface, theme, clock.get_fps())
-        pygame.display.flip()
+            _draw_fps(canvas, theme, clock.get_fps())
+        display.end_frame()
 
     scenes.shutdown()
     pygame.quit()
 
 
-def _draw_fps(surface: pygame.Surface, theme: Theme, fps: float) -> None:
+def _draw_fps(surface: Canvas, theme: Theme, fps: float) -> None:
     font = theme.font(theme.size.caption, "semibold")
     label = f"{fps:4.0f} FPS"
     rect = pygame.Rect(0, 0, font.size(label)[0] + 16, 24)

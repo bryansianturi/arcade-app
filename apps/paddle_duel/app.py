@@ -23,8 +23,9 @@ from apps.paddle_duel.logic import (
     PaddleDuel,
     Side,
 )
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -51,22 +52,22 @@ class PaddleDuelApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (15, 23, 42), theme.radius.md)
         u = rect.width / 8
-        pygame.draw.rect(
+        gfx.rect(
             surface,
             SIDE_COLORS["left"],
             (rect.x + u, rect.y + 2 * u, 0.7 * u, 3 * u),
             border_radius=2,
         )
-        pygame.draw.rect(
+        gfx.rect(
             surface,
             SIDE_COLORS["right"],
             (rect.right - 1.7 * u, rect.y + 3 * u, 0.7 * u, 3 * u),
             border_radius=2,
         )
-        pygame.draw.circle(surface, (255, 255, 255), (rect.x + 4.6 * u, rect.y + 3.4 * u), 0.55 * u)
+        gfx.circle(surface, (255, 255, 255), (rect.x + 4.6 * u, rect.y + 3.4 * u), 0.55 * u)
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
@@ -176,7 +177,7 @@ class PaddleDuelApp(BaseApp):
         self.menu = self._chooser()
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         g = self.game
@@ -186,7 +187,7 @@ class PaddleDuelApp(BaseApp):
         draw.rounded_rect(surface, FIELD, court, t.radius.lg)
         line = lerp_color(court, (255, 255, 255), 0.18)
         for dash_y in range(FIELD.y + 14, FIELD.bottom - 14, 28):
-            pygame.draw.rect(surface, line, (FIELD.centerx - 2, dash_y, 4, 14), border_radius=2)
+            gfx.rect(surface, line, (FIELD.centerx - 2, dash_y, 4, 14), border_radius=2)
 
         score_font = t.font(96, "bold")
         sides: tuple[tuple[Side, int], ...] = (
@@ -201,7 +202,7 @@ class PaddleDuelApp(BaseApp):
 
         for i, (x, y) in enumerate(self.trail):
             k = (i + 1) / len(self.trail)
-            pygame.draw.circle(
+            gfx.circle(
                 surface,
                 lerp_color(court, (255, 255, 255), 0.35 * k),
                 (FIELD.x + x, FIELD.y + y),
@@ -210,9 +211,7 @@ class PaddleDuelApp(BaseApp):
         for paddle in (g.left, g.right):
             self._draw_paddle(surface, paddle)
         if (not g.serving and self.state == "playing") or self.state == "over":
-            pygame.draw.circle(
-                surface, (255, 255, 255), (FIELD.x + g.ball_x, FIELD.y + g.ball_y), BALL_R
-            )
+            gfx.circle(surface, (255, 255, 255), (FIELD.x + g.ball_x, FIELD.y + g.ball_y), BALL_R)
         self._draw_hud(surface, t)
 
         if self.state == "choose" and self.menu is not None:
@@ -232,7 +231,7 @@ class PaddleDuelApp(BaseApp):
             self._card(surface, t, title, sub, good=self.new_best)
             self.menu.draw(surface)
 
-    def _draw_paddle(self, surface: pygame.Surface, paddle: Paddle) -> None:
+    def _draw_paddle(self, surface: Canvas, paddle: Paddle) -> None:
         x = PADDLE_MARGIN if paddle.side == "left" else FIELD_W - PADDLE_MARGIN - PADDLE_W
         rect = pygame.Rect(
             FIELD.x + x, round(FIELD.y + paddle.y - PADDLE_H / 2), PADDLE_W, PADDLE_H
@@ -241,9 +240,9 @@ class PaddleDuelApp(BaseApp):
         if self.flash[paddle.side] > 0:
             color = lerp_color(color, (255, 255, 255), self.flash[paddle.side] / 0.15 * 0.6)
             rect = rect.inflate(4, 4)
-        pygame.draw.rect(surface, color, rect, border_radius=PADDLE_W // 2)
+        gfx.rect(surface, color, rect, border_radius=PADDLE_W // 2)
 
-    def _draw_hud(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_hud(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         g = self.game
         y = FIELD.y - 30
@@ -274,9 +273,7 @@ class PaddleDuelApp(BaseApp):
         )
         draw.text(surface, middle, t.font(t.size.label), p.text_muted, (FIELD.centerx, y), "center")
 
-    def _card(
-        self, surface: pygame.Surface, t: Theme, title: str, sub: str, good: bool = False
-    ) -> None:
+    def _card(self, surface: Canvas, t: Theme, title: str, sub: str, good: bool = False) -> None:
         assert self.menu is not None
         p = t.palette
         draw.overlay(surface, p.overlay)

@@ -22,8 +22,9 @@ from apps.brick_blitz.logic import (
     BrickBlitz,
     Event,
 )
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -70,15 +71,15 @@ class BrickBlitzApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (15, 23, 42), theme.radius.md)
         u = rect.width / 8
         for row, color in enumerate(ROW_COLORS[:3]):
             for col in range(3):
                 r = pygame.Rect(rect.x + u + col * 2.1 * u, rect.y + u + row * 1.2 * u, 1.9 * u, u)
-                pygame.draw.rect(surface, color, r, border_radius=2)
-        pygame.draw.circle(surface, (255, 255, 255), (rect.x + 5 * u, rect.y + 5.3 * u), u * 0.5)
-        pygame.draw.rect(
+                gfx.rect(surface, color, r, border_radius=2)
+        gfx.circle(surface, (255, 255, 255), (rect.x + 5 * u, rect.y + 5.3 * u), u * 0.5)
+        gfx.rect(
             surface, ACCENT, (rect.x + 2 * u, rect.y + 6.6 * u, 4 * u, 0.6 * u), border_radius=3
         )
 
@@ -178,32 +179,30 @@ class BrickBlitzApp(BaseApp):
         self.particles = [p for p in self.particles if p.life > 0]
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         g = self.game
         surface.fill(p.bg)
         self._draw_hud(surface, t)
 
-        field = pygame.Surface(FIELD.size)
+        field = Canvas.new(FIELD.size, alpha=True)
         bg = (12, 17, 30) if t.mode == "dark" else (226, 232, 240)
         field.fill(bg)
         for brick in g.bricks:
             rect = pygame.Rect(round(brick.x), round(brick.y), round(BRICK_W), BRICK_H)
             if not brick.breakable:
-                pygame.draw.rect(field, STEEL, rect, border_radius=5)
-                pygame.draw.rect(
-                    field, lerp_color(STEEL, (255, 255, 255), 0.3), rect, 2, border_radius=5
-                )
+                gfx.rect(field, STEEL, rect, border_radius=5)
+                gfx.rect(field, lerp_color(STEEL, (255, 255, 255), 0.3), rect, 2, border_radius=5)
                 continue
             color = ROW_COLORS[brick.row % len(ROW_COLORS)]
             # Damaged bricks fade towards the background.
             color = lerp_color(color, bg, 0.45 * (1 - brick.hp / brick.max_hp))
-            pygame.draw.rect(field, color, rect, border_radius=5)
+            gfx.rect(field, color, rect, border_radius=5)
             hi = pygame.Rect(rect.x + 4, rect.y + 3, rect.width - 8, 5)
-            pygame.draw.rect(field, lerp_color(color, (255, 255, 255), 0.35), hi, border_radius=3)
+            gfx.rect(field, lerp_color(color, (255, 255, 255), 0.35), hi, border_radius=3)
             for i in range(brick.hp - 1):  # pips show remaining extra hits
-                pygame.draw.circle(
+                gfx.circle(
                     field,
                     lerp_color(color, (0, 0, 0), 0.35),
                     (rect.centerx - 6 + i * 12, rect.centery + 2),
@@ -212,21 +211,18 @@ class BrickBlitzApp(BaseApp):
 
         for i, (x, y) in enumerate(self.trail):
             k = (i + 1) / len(self.trail)
-            pygame.draw.circle(field, lerp_color(bg, ACCENT, 0.5 * k), (x, y), BALL_R * k)
+            gfx.circle(field, lerp_color(bg, ACCENT, 0.5 * k), (x, y), BALL_R * k)
         paddle = pygame.Rect(0, 0, PADDLE_W, PADDLE_H)
         paddle.midtop = (round(g.paddle_x), PADDLE_Y)
-        pygame.draw.rect(field, ACCENT, paddle, border_radius=PADDLE_H // 2)
+        gfx.rect(field, ACCENT, paddle, border_radius=PADDLE_H // 2)
         ball_color = (255, 255, 255) if t.mode == "dark" else (15, 23, 42)
-        pygame.draw.circle(field, ball_color, (g.ball_x, g.ball_y), BALL_R)
+        gfx.circle(field, ball_color, (g.ball_x, g.ball_y), BALL_R)
         for part in self.particles:
-            pygame.draw.circle(
+            gfx.circle(
                 field, lerp_color(bg, part.color, min(1.0, part.life * 2)), (part.x, part.y), 3
             )
 
-        mask = pygame.Surface(FIELD.size, pygame.SRCALPHA)
-        pygame.draw.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=t.radius.lg)
-        field = field.convert_alpha()
-        field.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        draw.round_corners(field, t.radius.lg)
         draw.shadow(surface, FIELD, t.radius.lg, p.shadow, (0, 8), 16)
         surface.blit(field, FIELD.topleft)
 
@@ -244,7 +240,7 @@ class BrickBlitzApp(BaseApp):
         if self.menu is not None:
             self._draw_over(surface, t)
 
-    def _draw_hud(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_hud(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         g = self.game
         y = FIELD.y - 30
@@ -262,7 +258,7 @@ class BrickBlitzApp(BaseApp):
             "center",
         )
         for i in range(g.lives):
-            pygame.draw.circle(surface, ACCENT, (FIELD.right - 10 - i * 26, y), 8)
+            gfx.circle(surface, ACCENT, (FIELD.right - 10 - i * 26, y), 8)
         draw.text(
             surface,
             "←/→ or mouse to move · Space / click to launch",
@@ -272,7 +268,7 @@ class BrickBlitzApp(BaseApp):
             "midtop",
         )
 
-    def _draw_over(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_over(self, surface: Canvas, t: Theme) -> None:
         assert self.menu is not None
         p = t.palette
         panel = pygame.Rect(0, 0, 400, self.menu.rect.height + 150)

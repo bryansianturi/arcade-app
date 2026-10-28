@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from core.canvas import Canvas, mouse_pos
 from core.theme import Theme
 
 #: How quickly hover/press animations settle (higher is snappier).
@@ -35,12 +36,10 @@ class Widget:
         return False
 
     def update(self, dt: float) -> None:
-        self.hovered = (
-            self.visible and self.enabled and self.rect.collidepoint(pygame.mouse.get_pos())
-        )
+        self.hovered = self.visible and self.enabled and self.rect.collidepoint(mouse_pos())
         self._hover_t = approach(self._hover_t, 1.0 if self.hovered or self.focused else 0.0, dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         raise NotImplementedError
 
     def _is_click(self, event: pygame.event.Event) -> bool:

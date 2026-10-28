@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from core import draw
+from core import draw, gfx
 from core.base_app import BaseApp, format_score
+from core.canvas import Canvas
 from core.scene_manager import Scene
 from core.widgets import approach, draw_panel
 from screens.common import MARGIN_X, SubpageHeader, is_back_key
@@ -86,7 +87,7 @@ class HighScoresScreen(Scene):
         self.header.update(dt)
         self.scroll = approach(self.scroll, self.scroll_target, dt, 16)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.services.theme
         p = t.palette
         surface.fill(p.bg)
@@ -104,7 +105,7 @@ class HighScoresScreen(Scene):
         surface.set_clip(old_clip)
 
         # The header is drawn last so rows scroll underneath it.
-        pygame.draw.rect(surface, p.bg, (0, 0, surface.get_width(), LIST_TOP - 12))
+        gfx.rect(surface, p.bg, (0, 0, surface.get_width(), LIST_TOP - 12))
         self.header.draw(surface)
 
         if not self.rows:
@@ -117,7 +118,7 @@ class HighScoresScreen(Scene):
                 "center",
             )
 
-    def _draw_row(self, surface: pygame.Surface, rect: pygame.Rect, row: ScoreRow) -> None:
+    def _draw_row(self, surface: Canvas, rect: pygame.Rect, row: ScoreRow) -> None:
         t = self.services.theme
         p = t.palette
         meta = row.app.meta

@@ -18,8 +18,9 @@ from apps.four_in_a_row.logic import (
     Player,
     choose_move,
 )
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -73,13 +74,13 @@ class FourInARowApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         u = rect.width / 4
         pattern = ((0, 1), (1, 2), (2, 1), (0, 2), (1, 1), (2, 2), (0, 0))
         for i, (c, r) in enumerate(pattern):
             color = DISC_COLORS[1] if i % 2 == 0 else DISC_COLORS[2]
-            pygame.draw.circle(
+            gfx.circle(
                 surface,
                 color,
                 (rect.x + (c + 0.5) * u + u / 2, rect.y + (r + 0.5) * u + u / 2),
@@ -255,7 +256,7 @@ class FourInARowApp(BaseApp):
             return "Your turn", p.text
         return "Thinking" + "." * (1 + int(self.time * 3) % 3), p.text_muted
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -266,13 +267,13 @@ class FourInARowApp(BaseApp):
         hole = CELL * 0.4
         frame = BOARD.inflate(24, 24)
         draw.shadow(surface, frame, t.radius.lg, p.shadow, (0, 10), 18)
-        pygame.draw.rect(surface, lerp_color(p.bg, ACCENT, 0.08), frame, border_radius=t.radius.lg)
+        gfx.rect(surface, lerp_color(p.bg, ACCENT, 0.08), frame, border_radius=t.radius.lg)
         preview = (
             not g.over and g.turn == g.human and not self.busy and g.board.can_drop(self.hover_col)
         )
         if preview:
             column = pygame.Rect(BOARD.x + self.hover_col * CELL, BOARD.y, CELL, BOARD.height)
-            pygame.draw.rect(surface, lerp_color(p.bg, ACCENT, 0.3), column)
+            gfx.rect(surface, lerp_color(p.bg, ACCENT, 0.3), column)
         for r in range(ROWS):
             for c in range(COLS):
                 v = g.board.grid[r][c]
@@ -283,14 +284,12 @@ class FourInARowApp(BaseApp):
             center = (slot_center(row, col)[0], round(y))
             self._disc(surface, center, DISC_COLORS[g.board.grid[row][col]], hole + 2)
 
-        layer = pygame.Surface(frame.size, pygame.SRCALPHA)
-        pygame.draw.rect(
-            layer, lerp_color(ACCENT, p.bg, 0.35), layer.get_rect(), border_radius=t.radius.lg
-        )
+        layer = Canvas.new(frame.size, alpha=True)
+        gfx.rect(layer, lerp_color(ACCENT, p.bg, 0.35), layer.get_rect(), border_radius=t.radius.lg)
         for r in range(ROWS):
             for c in range(COLS):
                 x, y = slot_center(r, c)
-                pygame.draw.circle(layer, (0, 0, 0, 0), (x - frame.x, y - frame.y), hole)
+                gfx.circle(layer, (0, 0, 0, 0), (x - frame.x, y - frame.y), hole)
         surface.blit(layer, frame.topleft)
         if preview:
             cx = BOARD.x + self.hover_col * CELL + CELL // 2
@@ -299,7 +298,7 @@ class FourInARowApp(BaseApp):
         if g.win_cells and not self.busy:
             pulse = 0.5 + 0.5 * math.sin(self.time * 6)
             for r, c in g.win_cells:
-                pygame.draw.circle(
+                gfx.circle(
                     surface,
                     lerp_color(p.text, (255, 255, 255), pulse),
                     slot_center(r, c),
@@ -309,11 +308,11 @@ class FourInARowApp(BaseApp):
         self._draw_side(surface, t)
 
     @staticmethod
-    def _disc(surface: pygame.Surface, center: tuple[float, float], color: Color, r: float) -> None:
-        pygame.draw.circle(surface, color, center, r)
-        pygame.draw.circle(surface, lerp_color(color, (0, 0, 0), 0.18), center, r * 0.72, 3)
+    def _disc(surface: Canvas, center: tuple[float, float], color: Color, r: float) -> None:
+        gfx.circle(surface, color, center, r)
+        gfx.circle(surface, lerp_color(color, (0, 0, 0), 0.18), center, r * 0.72, 3)
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         draw.text(surface, "Four in a Row", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 120))
         status, color = self._status()

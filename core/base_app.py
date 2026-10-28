@@ -16,8 +16,10 @@ A minimal app looks like this::
 
 The framework (see :mod:`core.app_host`) owns the Esc pause menu, restarting,
 returning to the launcher and crash recovery, so apps only deal with their own
-gameplay. Apps draw onto a fixed logical canvas of ``ctx.screen_rect`` size;
-the window scales it to whatever size the user picked.
+gameplay. Apps draw onto a :class:`~core.canvas.Canvas` of ``ctx.screen_rect``
+size (1280×720 logical pixels) using ``core.gfx`` instead of ``pygame.draw``;
+the canvas renders at the display's real resolution, so drawings stay sharp at
+any window size and on high-DPI screens.
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ from typing import ClassVar, Literal
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.settings import Settings
 from core.storage import DEFAULT_VARIANT, AppData, ScoreEntry, ScoreOrder, Storage
 from core.theme import Color, Theme, readable_on
@@ -121,7 +124,7 @@ class BaseApp(ABC):
         """Advance the simulation by ``dt`` seconds. Not called while paused."""
 
     @abstractmethod
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         """Render the current frame onto ``surface``."""
 
     # ------------------------------------------------------------------ hooks
@@ -133,7 +136,7 @@ class BaseApp(ABC):
         return False
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         """Draw the app's launcher icon inside ``rect``. Override for a custom icon.
 
         The default shows the first letter of the app's name on its accent color.

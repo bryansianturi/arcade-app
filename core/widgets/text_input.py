@@ -6,7 +6,8 @@ from collections.abc import Callable
 
 import pygame
 
-from core import draw
+from core import draw, gfx
+from core.canvas import Canvas
 from core.theme import Theme, lerp_color
 from core.widgets.base import Widget
 
@@ -74,7 +75,7 @@ class TextInput(Widget):
         super().update(dt)
         self._blink = (self._blink + dt) % 1.0
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         bg = lerp_color(p.surface_alt, p.surface_hover, self._hover_t * 0.6)
@@ -97,7 +98,7 @@ class TextInput(Widget):
         if self.focused and self._blink < 0.55:
             cx = drawn.right + 1 if self.text else x
             h = font.get_height() - 4
-            pygame.draw.line(
+            gfx.line(
                 surface,
                 p.text,
                 (cx, self.rect.centery - h // 2),

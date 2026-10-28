@@ -7,6 +7,7 @@ from collections.abc import Callable, Sequence
 import pygame
 
 from core import draw
+from core.canvas import Canvas, mouse_pos
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets.base import Widget, approach
 
@@ -60,7 +61,7 @@ class SegmentedControl(Widget):
     def update(self, dt: float) -> None:
         super().update(dt)
         self._pill_x = approach(self._pill_x, self._segment(self.index).x, dt, 18)
-        mouse = pygame.mouse.get_pos()
+        mouse = mouse_pos()
         self._hover_index = next(
             (
                 i
@@ -70,7 +71,7 @@ class SegmentedControl(Widget):
             -1,
         )
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         accent = self.accent or p.primary

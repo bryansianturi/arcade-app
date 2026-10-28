@@ -7,10 +7,11 @@ from collections.abc import Callable
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.theme import Color, Theme, lerp_color
 from core.widgets.base import Widget
 
-IconPainter = Callable[[pygame.Surface, pygame.Rect, Theme], None]
+IconPainter = Callable[[Canvas, pygame.Rect, Theme], None]
 
 
 class Card(Widget):
@@ -47,7 +48,7 @@ class Card(Widget):
             return True
         return False
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         if not self.visible:
             return
         t = self.theme

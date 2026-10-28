@@ -9,6 +9,9 @@ from typing import Literal
 
 import pygame
 
+from core import gfx
+from core.canvas import Canvas, Font
+
 Anchor = Literal[
     "topleft",
     "midtop",
@@ -23,13 +26,13 @@ Anchor = Literal[
 RGB = tuple[int, int, int]
 RGBA = tuple[int, int, int, int]
 #: A vector icon: ``painter(surface, center, color, size)``.
-IconPainter = Callable[[pygame.Surface, tuple[int, int], RGB, int], None]
+IconPainter = Callable[[Canvas, tuple[int, int], RGB, int], None]
 #: Widgets accept either a text glyph (must exist in the font) or a vector painter.
 Icon = str | IconPainter
 
 
 def rounded_rect(
-    surface: pygame.Surface,
+    surface: Canvas,
     rect: pygame.Rect,
     color: RGB | RGBA,
     radius: int,
@@ -41,31 +44,68 @@ def rounded_rect(
     """
     radius = min(radius, rect.width // 2, rect.height // 2)
     if len(color) == 4 and color[3] < 255:
-        layer = pygame.Surface(rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(layer, color, layer.get_rect(), width, border_radius=radius)
+        layer = Canvas.new(rect.size, alpha=True)
+        gfx.rect(layer, color, layer.get_rect(), width, border_radius=radius)
         surface.blit(layer, rect.topleft)
     else:
-        pygame.draw.rect(surface, color, rect, width, border_radius=radius)
+        gfx.rect(surface, color, rect, width, border_radius=radius)
 
 
 @lru_cache(maxsize=128)
-def _shadow_surface(size: tuple[int, int], radius: int, blur: int, color: RGBA) -> pygame.Surface:
+def _shadow_surface(
+    size: tuple[int, int], radius: int, blur: int, color: RGBA, scale: float
+) -> Canvas:
     """Build (and cache) a blurred rounded-rect shadow."""
     w, h = size
     pad = blur * 2
-    base = pygame.Surface((w + pad * 2, h + pad * 2), pygame.SRCALPHA)
-    pygame.draw.rect(base, color, (pad, pad, w, h), border_radius=radius)
+    base = Canvas.new((w + pad * 2, h + pad * 2), alpha=True, scale=scale)
+    gfx.rect(base, color, (pad, pad, w, h), border_radius=radius)
     # Cheap blur: shrink then grow with smoothscale, twice.
-    blurred = base
+    full = base.surface.get_size()
+    blurred = base.surface
     for factor in (4, 2):
-        small = (max(1, blurred.get_width() // factor), max(1, blurred.get_height() // factor))
+        small = (max(1, full[0] // factor), max(1, full[1] // factor))
         blurred = pygame.transform.smoothscale(blurred, small)
-        blurred = pygame.transform.smoothscale(blurred, base.get_size())
-    return blurred
+        blurred = pygame.transform.smoothscale(blurred, full)
+    return Canvas(blurred, scale, (base.width, base.height))
+
+
+@lru_cache(maxsize=16)
+def _corner_mask(size: tuple[int, int], radius: int, scale: float) -> Canvas:
+    mask = Canvas.new(size, alpha=True, scale=scale)
+    gfx.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=radius)
+    return mask
+
+
+def round_corners(layer: Canvas, radius: int) -> Canvas:
+    """Return ``layer`` with transparent rounded corners (for playfields drawn offscreen).
+
+    ``layer`` must have been created with ``alpha=True``.
+    """
+    layer.blit(
+        _corner_mask(layer.get_size(), radius, layer.scale),
+        (0, 0),
+        special_flags=pygame.BLEND_RGBA_MIN,
+    )
+    return layer
+
+
+@lru_cache(maxsize=8)
+def vertical_gradient(size: tuple[int, int], top: RGB, bottom: RGB, scale: float) -> Canvas:
+    """A cached top-to-bottom color gradient. Copy it before drawing on it."""
+    strip = pygame.Surface((1, max(1, round(size[1] * scale))), pygame.SRCALPHA)
+    rows = strip.get_height()
+    for y in range(rows):
+        t = y / rows
+        strip.set_at(
+            (0, y), tuple(round(a + (b - a) * t) for a, b in zip(top, bottom, strict=True))
+        )
+    full = pygame.transform.scale(strip, (max(1, round(size[0] * scale)), rows))
+    return Canvas(full, scale, size)
 
 
 def shadow(
-    surface: pygame.Surface,
+    surface: Canvas,
     rect: pygame.Rect,
     radius: int,
     color: RGBA,
@@ -75,15 +115,15 @@ def shadow(
     """Draw a soft drop shadow under ``rect``."""
     if color[3] <= 0:
         return
-    shadow_img = _shadow_surface(rect.size, radius, blur, color)
+    shadow_img = _shadow_surface(rect.size, radius, blur, color, surface.scale)
     pad = blur * 2
     surface.blit(shadow_img, (rect.x - pad + offset[0], rect.y - pad + offset[1]))
 
 
 def text(
-    surface: pygame.Surface,
+    surface: Canvas,
     content: str,
-    font: pygame.font.Font,
+    font: Font,
     color: RGB | RGBA,
     pos: tuple[int, int],
     anchor: Anchor = "topleft",
@@ -97,7 +137,7 @@ def text(
     return rect
 
 
-def fit_text(content: str, font: pygame.font.Font, max_width: int) -> str:
+def fit_text(content: str, font: Font, max_width: int) -> str:
     """Truncate ``content`` with an ellipsis so it renders within ``max_width``."""
     if font.size(content)[0] <= max_width:
         return content
@@ -107,7 +147,7 @@ def fit_text(content: str, font: pygame.font.Font, max_width: int) -> str:
     return content.rstrip() + ellipsis
 
 
-def wrap_text(content: str, font: pygame.font.Font, max_width: int) -> list[str]:
+def wrap_text(content: str, font: Font, max_width: int) -> list[str]:
     """Greedy word-wrap ``content`` into lines no wider than ``max_width``."""
     lines: list[str] = []
     for paragraph in content.split("\n"):
@@ -123,50 +163,48 @@ def wrap_text(content: str, font: pygame.font.Font, max_width: int) -> list[str]
     return lines
 
 
-def overlay(surface: pygame.Surface, color: RGBA) -> None:
+def overlay(surface: Canvas, color: RGBA) -> None:
     """Fill the whole surface with a translucent color (e.g. to dim behind a modal)."""
-    layer = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+    layer = Canvas.new(surface.get_size(), alpha=True)
     layer.fill(color)
     surface.blit(layer, (0, 0))
 
 
-def search_icon(
-    surface: pygame.Surface, center: tuple[int, int], color: RGB, size: int = 16
-) -> None:
+def search_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
     """A magnifying glass drawn with shapes (fonts rarely include a nice one)."""
     r = size * 0.33
     cx, cy = center[0] - size * 0.12, center[1] - size * 0.12
-    pygame.draw.circle(surface, color, (round(cx), round(cy)), round(r), 2)
+    gfx.circle(surface, color, (round(cx), round(cy)), round(r), 2)
     start = (round(cx + r * 0.72), round(cy + r * 0.72))
     end = (round(center[0] + size * 0.42), round(center[1] + size * 0.42))
-    pygame.draw.line(surface, color, start, end, 3)
+    gfx.line(surface, color, start, end, 3)
 
 
-def gear_icon(surface: pygame.Surface, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+def gear_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
     """A simple cog: a ring with eight teeth."""
     cx, cy = center
     outer, inner = size * 0.5, size * 0.34
     for i in range(8):
         a = i * math.pi / 4
-        pygame.draw.line(
+        gfx.line(
             surface,
             color,
             (round(cx + math.cos(a) * inner), round(cy + math.sin(a) * inner)),
             (round(cx + math.cos(a) * outer), round(cy + math.sin(a) * outer)),
             3,
         )
-    pygame.draw.circle(surface, color, center, round(inner), 3)
+    gfx.circle(surface, color, center, round(inner), 3)
 
 
-def icon_width(icon: Icon, font: pygame.font.Font) -> int:
+def icon_width(icon: Icon, font: Font) -> int:
     """Horizontal space an icon occupies when drawn next to text in ``font``."""
     return font.size(icon)[0] if isinstance(icon, str) else font.get_height()
 
 
 def draw_icon(
-    surface: pygame.Surface,
+    surface: Canvas,
     icon: Icon,
-    font: pygame.font.Font,
+    font: Font,
     color: RGB,
     midleft: tuple[int, int],
 ) -> int:
@@ -179,7 +217,7 @@ def draw_icon(
 
 
 def thick_line(
-    surface: pygame.Surface,
+    surface: Canvas,
     color: RGB,
     start: tuple[float, float] | pygame.Vector2,
     end: tuple[float, float] | pygame.Vector2,
@@ -187,7 +225,7 @@ def thick_line(
 ) -> None:
     """A line of constant ``width`` at any angle, with round caps.
 
-    ``pygame.draw.line`` makes diagonal thick lines thinner than straight ones;
+    ``gfx.line`` makes diagonal thick lines thinner than straight ones;
     this draws the body as a polygon instead.
     """
     a = pygame.Vector2(start)
@@ -195,13 +233,13 @@ def thick_line(
     radius = width / 2
     if (b - a).length_squared() > 0:
         normal = (b - a).normalize().rotate(90) * radius
-        pygame.draw.polygon(surface, color, [a + normal, b + normal, b - normal, a - normal])
-    pygame.draw.circle(surface, color, a, radius)
-    pygame.draw.circle(surface, color, b, radius)
+        gfx.polygon(surface, color, [a + normal, b + normal, b - normal, a - normal])
+    gfx.circle(surface, color, a, radius)
+    gfx.circle(surface, color, b, radius)
 
 
 def ring_arc(
-    surface: pygame.Surface,
+    surface: Canvas,
     color: RGB,
     center: tuple[float, float],
     radius: float,
@@ -225,6 +263,6 @@ def ring_arc(
         direction = pygame.Vector2(1, 0).rotate(angle)
         outer.append(c + direction * radius)
         inner.append(c + direction * (radius - width))
-    pygame.draw.polygon(surface, color, outer + inner[::-1])
+    gfx.polygon(surface, color, outer + inner[::-1])
     for angle in (start_deg, start_deg + 360 * fraction):  # round caps
-        pygame.draw.circle(surface, color, c + pygame.Vector2(mid, 0).rotate(angle), width / 2)
+        gfx.circle(surface, color, c + pygame.Vector2(mid, 0).rotate(angle), width / 2)

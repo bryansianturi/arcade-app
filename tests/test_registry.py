@@ -10,11 +10,13 @@ import pytest
 
 import core.registry as registry_module
 from core.base_app import AppContext, AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import AppRegistry, RegistrationError
 
 APP_SOURCE = """
 from core.base_app import AppMeta, BaseApp
 from core.registry import register_app
+from core.canvas import Canvas
 
 @register_app
 class {cls}(BaseApp):
@@ -75,7 +77,7 @@ class _Ok(BaseApp):
 
     def handle_event(self, event: pygame.event.Event) -> None: ...
     def update(self, dt: float) -> None: ...
-    def draw(self, surface: pygame.Surface) -> None: ...
+    def draw(self, surface: Canvas) -> None: ...
 
 
 def test_duplicate_ids_are_rejected() -> None:
@@ -98,7 +100,7 @@ def test_non_apps_are_rejected() -> None:
     class NoMeta(BaseApp):
         def handle_event(self, event: pygame.event.Event) -> None: ...
         def update(self, dt: float) -> None: ...
-        def draw(self, surface: pygame.Surface) -> None: ...
+        def draw(self, surface: Canvas) -> None: ...
 
     with pytest.raises(RegistrationError, match="meta"):
         reg.register(NoMeta)

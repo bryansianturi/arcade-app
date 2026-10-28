@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from core import draw
+from core import draw, gfx
+from core.canvas import Canvas
 from core.scene_manager import Scene
 from core.settings import WINDOW_PRESETS
 from core.widgets import Button, SegmentedControl, Toggle, Widget, draw_panel
@@ -158,7 +159,7 @@ class SettingsScreen(Scene):
         for row in self.rows:
             row.control.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.services.theme
         p = t.palette
         surface.fill(p.bg)
@@ -168,9 +169,7 @@ class SettingsScreen(Scene):
             rect = self._row_rect(i)
             if i:
                 y = rect.y
-                pygame.draw.line(
-                    surface, p.border, (rect.x + t.space.lg, y), (rect.right - t.space.lg, y)
-                )
+                gfx.line(surface, p.border, (rect.x + t.space.lg, y), (rect.right - t.space.lg, y))
             x = rect.x + t.space.lg
             draw.text(
                 surface,

@@ -8,8 +8,9 @@ import random
 import pygame
 
 from apps.skyhop.logic import FIELD_H, FIELD_W, GATE_W, PLAYER_R, PLAYER_X, Skyhop
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -36,12 +37,12 @@ class SkyhopApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, SKY_BOTTOM, theme.radius.md)
         u = rect.width / 8
-        pygame.draw.rect(surface, GATE, (rect.x + 5 * u, rect.y, 1.6 * u, 2.6 * u))
-        pygame.draw.rect(surface, GATE, (rect.x + 5 * u, rect.y + 5.4 * u, 1.6 * u, 2.6 * u))
-        pygame.draw.circle(surface, ACCENT, (rect.x + 2.8 * u, rect.y + 4 * u), 1.1 * u)
+        gfx.rect(surface, GATE, (rect.x + 5 * u, rect.y, 1.6 * u, 2.6 * u))
+        gfx.rect(surface, GATE, (rect.x + 5 * u, rect.y + 5.4 * u, 1.6 * u, 2.6 * u))
+        gfx.circle(surface, ACCENT, (rect.x + 2.8 * u, rect.y + 4 * u), 1.1 * u)
 
     def on_enter(self) -> None:
         self.game = Skyhop(random.Random())
@@ -54,18 +55,10 @@ class SkyhopApp(BaseApp):
             for _ in range(70)
         ]
         self.skyline = [(rng.uniform(40, 90), rng.uniform(60, 200)) for _ in range(40)]
-        self.sky = self._gradient()
 
     def restart(self) -> None:
         self.game = Skyhop(random.Random())
         self.menu = None
-
-    @staticmethod
-    def _gradient() -> pygame.Surface:
-        sky = pygame.Surface((1, FIELD_H))
-        for y in range(FIELD_H):
-            sky.set_at((0, y), lerp_color(SKY_TOP, SKY_BOTTOM, y / FIELD_H))
-        return pygame.transform.scale(sky, (FIELD_W, FIELD_H))
 
     def _hop(self) -> None:
         if self.game.state in ("ready", "flying"):
@@ -97,15 +90,15 @@ class SkyhopApp(BaseApp):
             )
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         g = self.game
         surface.fill(t.palette.bg)
-        field = self.sky.copy()
+        field = draw.vertical_gradient(FIELD.size, SKY_TOP, SKY_BOTTOM, surface.scale).copy()
         for x, y, r in self.stars:
             sx = (x - g.distance * 0.05) % FIELD_W
             twinkle = 0.6 + 0.4 * math.sin(g.time * 2 + x)
-            pygame.draw.circle(field, lerp_color(SKY_TOP, (255, 255, 255), twinkle), (sx, y), r)
+            gfx.circle(field, lerp_color(SKY_TOP, (255, 255, 255), twinkle), (sx, y), r)
         self._draw_skyline(field, g.distance * 0.3)
         for gate in g.gates:
             self._draw_gate(field, gate.x, gate.top_bottom, gate.bottom_top)
@@ -116,13 +109,10 @@ class SkyhopApp(BaseApp):
         scale = 1 + self.pulse * 0.8
         if g.state != "ready":
             img = score_font.render(str(g.score), True, (255, 255, 255))
-            img = pygame.transform.smoothscale_by(img, scale)
+            img = img.scaled(scale)
             field.blit(img, img.get_rect(midtop=(FIELD_W // 2, 24)))
 
-        mask = pygame.Surface(FIELD.size, pygame.SRCALPHA)
-        pygame.draw.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=t.radius.lg)
-        field = field.convert_alpha()
-        field.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        draw.round_corners(field, t.radius.lg)
         draw.shadow(surface, FIELD, t.radius.lg, t.palette.shadow, (0, 8), 16)
         surface.blit(field, FIELD.topleft)
         self._draw_hud(surface, t)
@@ -139,7 +129,7 @@ class SkyhopApp(BaseApp):
         if self.menu is not None:
             self._draw_over(surface, t)
 
-    def _draw_skyline(self, field: pygame.Surface, offset: float) -> None:
+    def _draw_skyline(self, field: Canvas, offset: float) -> None:
         color = lerp_color(SKY_TOP, SKY_BOTTOM, 0.55)
         total = sum(w for w, _ in self.skyline)
         x = -(offset % total)
@@ -148,52 +138,50 @@ class SkyhopApp(BaseApp):
             for w, h in self.skyline:
                 if x > FIELD_W:
                     break
-                pygame.draw.rect(field, color, (x, base - h, w - 4, h))
+                gfx.rect(field, color, (x, base - h, w - 4, h))
                 x += w
 
-    def _draw_gate(
-        self, field: pygame.Surface, x: float, top_end: float, bottom_start: float
-    ) -> None:
+    def _draw_gate(self, field: Canvas, x: float, top_end: float, bottom_start: float) -> None:
         dark = lerp_color(GATE, SKY_TOP, 0.5)
         for rect in (
             pygame.Rect(x, -10, GATE_W, top_end + 10),
             pygame.Rect(x, bottom_start, GATE_W, FIELD_H),
         ):
-            pygame.draw.rect(field, dark, rect, border_radius=10)
-            pygame.draw.rect(field, GATE, rect, 3, border_radius=10)
+            gfx.rect(field, dark, rect, border_radius=10)
+            gfx.rect(field, GATE, rect, 3, border_radius=10)
         for y in (top_end - 14, bottom_start):  # caps
-            pygame.draw.rect(field, GATE, (x - 6, y, GATE_W + 12, 14), border_radius=6)
+            gfx.rect(field, GATE, (x - 6, y, GATE_W + 12, 14), border_radius=6)
 
-    def _draw_ground(self, field: pygame.Surface, distance: float) -> None:
+    def _draw_ground(self, field: Canvas, distance: float) -> None:
         ground_y = FIELD_H - 56
-        pygame.draw.rect(field, (17, 24, 39), (0, ground_y, FIELD_W, 56))
-        pygame.draw.line(field, GATE, (0, ground_y), (FIELD_W, ground_y), 2)
+        gfx.rect(field, (17, 24, 39), (0, ground_y, FIELD_W, 56))
+        gfx.line(field, GATE, (0, ground_y), (FIELD_W, ground_y), 2)
         for i in range(-1, FIELD_W // 40 + 2):
             x = i * 40 - distance % 40
-            pygame.draw.line(
+            gfx.line(
                 field, lerp_color((17, 24, 39), GATE, 0.3), (x, ground_y + 10), (x - 20, FIELD_H), 2
             )
 
-    def _draw_player(self, field: pygame.Surface) -> None:
+    def _draw_player(self, field: Canvas) -> None:
         g = self.game
         center = pygame.Vector2(PLAYER_X, g.y)
-        glow = pygame.Surface((PLAYER_R * 6, PLAYER_R * 6), pygame.SRCALPHA)
+        glow = Canvas.new((PLAYER_R * 6, PLAYER_R * 6), alpha=True)
         for i in range(6, 0, -1):
-            pygame.draw.circle(
+            gfx.circle(
                 glow,
                 (*ACCENT, 12 * (7 - i)),
                 (PLAYER_R * 3, PLAYER_R * 3),
                 PLAYER_R * (1 + i * 0.3),
             )
         field.blit(glow, center - pygame.Vector2(PLAYER_R * 3, PLAYER_R * 3))
-        pygame.draw.circle(field, ACCENT, center, PLAYER_R)
+        gfx.circle(field, ACCENT, center, PLAYER_R)
         # A little "eye" that points where the orb is heading.
         heading = pygame.Vector2(1, 0).rotate(g.tilt)
-        pygame.draw.circle(field, (255, 255, 255), center + heading * 6, 5)
-        pygame.draw.circle(field, SKY_TOP, center + heading * 8, 2.5)
+        gfx.circle(field, (255, 255, 255), center + heading * 6, 5)
+        gfx.circle(field, SKY_TOP, center + heading * 8, 2.5)
         flap = math.sin(g.time * (30 if g.vy < 0 else 8)) * 5
         wing_base = center - heading * 4
-        pygame.draw.polygon(
+        gfx.polygon(
             field,
             lerp_color(ACCENT, (255, 255, 255), 0.4),
             [
@@ -203,7 +191,7 @@ class SkyhopApp(BaseApp):
             ],
         )
 
-    def _draw_hud(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_hud(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         best = self.best_score()
         best_value = max(self.game.score, int(best.score) if best else 0)
@@ -218,7 +206,7 @@ class SkyhopApp(BaseApp):
             "midright",
         )
 
-    def _draw_over(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_over(self, surface: Canvas, t: Theme) -> None:
         assert self.menu is not None
         p = t.palette
         panel = pygame.Rect(0, 0, 380, self.menu.rect.height + 150)

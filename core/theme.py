@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from functools import partial
 from typing import Literal
 
 import pygame
 
+from core.canvas import Font
 from core.paths import FONTS_DIR
 
 log = logging.getLogger(__name__)
@@ -127,7 +129,7 @@ class Theme:
         self.space = Spacing()
         self.radius = Radius()
         self.size = TypeScale()
-        self._fonts: dict[tuple[int, Weight], pygame.font.Font] = {}
+        self._fonts: dict[tuple[int, Weight], Font] = {}
         self._warned_fallback = False
 
     def set_mode(self, mode: Literal["dark", "light"]) -> None:
@@ -135,16 +137,17 @@ class Theme:
         self.mode = mode
         self.palette = DARK if mode == "dark" else LIGHT
 
-    def font(self, size: int, weight: Weight = "regular") -> pygame.font.Font:
-        """Return a cached font of the given pixel size and weight."""
+    def font(self, size: int, weight: Weight = "regular") -> Font:
+        """Return a cached font of the given logical pixel size and weight."""
         key = (size, weight)
         font = self._fonts.get(key)
         if font is None:
-            font = self._load_font(size, weight)
+            font = Font(partial(self._load_font, weight=weight), size)
             self._fonts[key] = font
         return font
 
     def _load_font(self, size: int, weight: Weight) -> pygame.font.Font:
+        """Load the real font at ``size`` physical pixels."""
         path = FONTS_DIR / FONT_FILES[weight]
         if path.is_file():
             return pygame.font.Font(path, size)

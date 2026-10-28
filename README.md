@@ -143,7 +143,7 @@ flowchart TD
 
 **Other design decisions**
 
-- **Fixed logical canvas.** Everything renders onto a 1280×720 surface, and `pygame.SCALED` lets SDL scale it to the window on the GPU with letterboxing and automatic mouse mapping. Game code never deals with window sizes.
+- **Logical canvas, native pixels.** Apps lay everything out on a fixed 1280×720 canvas, but `core.canvas.Canvas` rasterises shapes and text at the window's real resolution (2× on Retina, any factor when resized), so nothing is drawn small and stretched into blur. `core.gfx` mirrors `pygame.draw` in logical units, fonts measure in logical pixels, and mouse events are mapped back, so game code never deals with window sizes or pixel density.
 - **Logic is separate from drawing.** Each app has a `logic.py` with no pygame import, which holds the rules and is unit-tested directly. `app.py` only translates input and draws.
 - **Storage** is plain JSON with atomic writes (temp file + rename). Corrupt files are logged and treated as empty, never fatal.
 - **Theme tokens** (`theme.palette.surface`, `theme.space.md`, `theme.radius.lg`...) instead of hard-coded colors, so the light theme works everywhere.
@@ -157,7 +157,8 @@ core/
   registry.py           @register_app and auto-discovery
   app_host.py           runs an app: pause menu, restart, crash isolation
   scene_manager.py      scene stack with fade/slide transitions
-  display.py            window, scaling, fullscreen
+  display.py            window, high-DPI letterboxing, fullscreen, mouse mapping
+  canvas.py, gfx.py     resolution-independent Canvas, Font and pygame.draw equivalents
   theme.py, draw.py     design tokens and drawing helpers (shadows, rounded rects, text)
   storage.py            JSON saves: high scores, settings, per-app data
   settings.py           typed user settings
@@ -201,6 +202,7 @@ To create your own:
 5. **Implement the hooks** in `app.py`:
    - `on_enter()`: build or reset state (also called on Restart)
    - `handle_event(event)`, `update(dt)`, `draw(surface)`
+   - draw with `core.gfx` (same functions and arguments as `pygame.draw`) and `core.draw` helpers, in 1280×720 logical coordinates; make offscreen layers with `Canvas.new(size, alpha=True)` instead of `pygame.Surface`, and read the mouse with `core.canvas.mouse_pos()`
    - optional: `on_exit()`, `on_pause()`, `on_resume()`, `captures_escape()`, `draw_icon()`
 6. **Use the shared pieces**: `self.theme` for colors and fonts, `core.widgets` for UI, `self.submit_score(score, variant)` for high scores, and `self.data` (call `self.data.save()`) for anything else you want to persist.
 7. **Run it.** `python main.py` shows your app in the launcher. No other file needs to change.

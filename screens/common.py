@@ -7,6 +7,7 @@ from collections.abc import Callable
 import pygame
 
 from core import draw
+from core.canvas import Canvas
 from core.theme import Theme
 from core.widgets import Button
 
@@ -28,7 +29,7 @@ class SubpageHeader:
     def update(self, dt: float) -> None:
         self.back.update(dt)
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         self.back.draw(surface)
         draw.text(

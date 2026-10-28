@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterator
 
 import pygame
 import pytest
 
 from core.base_app import AppContext, BaseApp
+from core.canvas import Canvas, Viewport, set_viewport
 from core.registry import registry
 
 # Importing an app package registers it in the global registry.
@@ -64,7 +66,7 @@ def _random_events(rng: random.Random, n: int) -> list[pygame.event.Event]:
 
 @pytest.mark.parametrize("app_cls", ALL_APPS, ids=lambda a: a.meta.id)
 def test_app_runs_headless(app_cls: type[BaseApp], app_context: AppContext) -> None:
-    surface = pygame.Surface(app_context.screen_rect.size)
+    surface = Canvas.new(app_context.screen_rect.size)
     app = app_cls(app_context)
     app.on_enter()
     rng = random.Random(1234)
@@ -80,3 +82,27 @@ def test_app_runs_headless(app_cls: type[BaseApp], app_context: AppContext) -> N
     app.draw(surface)
     app.on_exit()
     app_cls.draw_icon(surface, pygame.Rect(0, 0, 48, 48), app_context.theme)
+
+
+@pytest.fixture(params=[1.5, 2.0], ids=["1.5x", "2x"])
+def hidpi(request: pytest.FixtureRequest) -> Iterator[float]:
+    scale: float = request.param
+    set_viewport(Viewport(scale=scale))
+    yield scale
+    set_viewport(Viewport())
+
+
+@pytest.mark.parametrize("app_cls", ALL_APPS, ids=lambda a: a.meta.id)
+def test_app_draws_at_native_resolution(
+    app_cls: type[BaseApp], app_context: AppContext, hidpi: float
+) -> None:
+    surface = Canvas.new(app_context.screen_rect.size)
+    assert surface.surface.get_width() == round(1280 * hidpi)
+    app = app_cls(app_context)
+    app.on_enter()
+    for event in _random_events(random.Random(99), 40):
+        app.handle_event(event)
+        app.update(1 / 60)
+    app.draw(surface)
+    app_cls.draw_icon(surface, pygame.Rect(0, 0, 48, 48), app_context.theme)
+    app.on_exit()

@@ -8,8 +8,9 @@ import random
 import pygame
 
 from apps.tictactoe.logic import Level, Mark, TicTacToe, winning_line
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -43,7 +44,7 @@ def cell_rect(index: int) -> pygame.Rect:
     return pygame.Rect(BOARD.x + (index % 3) * CELL, BOARD.y + (index // 3) * CELL, CELL, CELL)
 
 
-def draw_x(surface: pygame.Surface, rect: pygame.Rect, progress: float, width: int) -> None:
+def draw_x(surface: Canvas, rect: pygame.Rect, progress: float, width: int) -> None:
     """Draw an X whose two strokes appear one after the other as ``progress`` goes 0→1."""
     inset = rect.width * 0.26
     strokes = (
@@ -58,15 +59,15 @@ def draw_x(surface: pygame.Surface, rect: pygame.Rect, progress: float, width: i
         draw.thick_line(surface, X_COLOR, a, end, width)
 
 
-def draw_o(surface: pygame.Surface, rect: pygame.Rect, progress: float, width: int) -> None:
+def draw_o(surface: Canvas, rect: pygame.Rect, progress: float, width: int) -> None:
     radius = rect.width * 0.27
     if progress >= 1:
-        pygame.draw.circle(surface, O_COLOR, rect.center, radius, width)
+        gfx.circle(surface, O_COLOR, rect.center, radius, width)
         return
     box = pygame.Rect(0, 0, radius * 2, radius * 2)
     box.center = rect.center
     start = math.pi / 2
-    pygame.draw.arc(surface, O_COLOR, box, start, start + math.tau * progress, width)
+    gfx.arc(surface, O_COLOR, box, start, start + math.tau * progress, width)
 
 
 @register_app
@@ -82,7 +83,7 @@ class TicTacToeApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, (30, 41, 59), theme.radius.md)
         half = rect.inflate(-rect.width // 2, -rect.height // 2)
         draw_x(surface, half.move(-rect.width // 6, -rect.height // 6).inflate(8, 8), 1, 3)
@@ -228,7 +229,7 @@ class TicTacToeApp(BaseApp):
             return f"Your turn ({self.game.human})", p.text
         return "Thinking…", p.text_muted
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -237,7 +238,7 @@ class TicTacToeApp(BaseApp):
         draw.rounded_rect(surface, frame, p.surface, t.radius.lg)
 
         hover = None
-        mouse = pygame.mouse.get_pos()
+        mouse = mouse_pos()
         if self.game.result is None and self.game.turn == self.game.human:
             if self.keyboard_nav:
                 hover = self.cursor
@@ -250,8 +251,8 @@ class TicTacToeApp(BaseApp):
         for k in (1, 2):
             x = BOARD.x + k * CELL
             y = BOARD.y + k * CELL
-            pygame.draw.line(surface, p.border, (x, BOARD.y + 8), (x, BOARD.bottom - 8), 6)
-            pygame.draw.line(surface, p.border, (BOARD.x + 8, y), (BOARD.right - 8, y), 6)
+            gfx.line(surface, p.border, (x, BOARD.y + 8), (x, BOARD.bottom - 8), 6)
+            gfx.line(surface, p.border, (BOARD.x + 8, y), (BOARD.right - 8, y), 6)
         for i, cell in enumerate(self.game.board):
             if not cell:
                 continue
@@ -260,7 +261,7 @@ class TicTacToeApp(BaseApp):
         self._draw_win_line(surface, t)
         self._draw_side(surface, t)
 
-    def _draw_win_line(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_win_line(self, surface: Canvas, t: Theme) -> None:
         line = winning_line(self.game.board)
         if line is None or self.ended_at is None:
             return
@@ -274,7 +275,7 @@ class TicTacToeApp(BaseApp):
         b += direction * 40
         draw.thick_line(surface, t.palette.text, a, a + (b - a) * k, 10)
 
-    def _draw_side(self, surface: pygame.Surface, t: Theme) -> None:
+    def _draw_side(self, surface: Canvas, t: Theme) -> None:
         p = t.palette
         draw.text(surface, "Tic-tac-toe", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 96))
         status, color = self._status()

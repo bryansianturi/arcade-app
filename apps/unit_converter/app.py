@@ -8,8 +8,9 @@ from decimal import Decimal
 import pygame
 
 from apps.unit_converter.logic import CATEGORIES, Category, convert, format_value, parse_number
-from core import draw
+from core import draw, gfx
 from core.base_app import AppMeta, BaseApp
+from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, Grid, TextInput, draw_panel
@@ -34,7 +35,7 @@ class UnitConverterApp(BaseApp):
     )
 
     @classmethod
-    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+    def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:
         draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
         u = rect.width / 8
         white = (255, 255, 255)
@@ -45,7 +46,7 @@ class UnitConverterApp(BaseApp):
             draw.thick_line(surface, white, start, end, 3)
             tip = pygame.Vector2(end)
             back = pygame.Vector2(-direction * u, 0)
-            pygame.draw.polygon(
+            gfx.polygon(
                 surface,
                 white,
                 [
@@ -166,7 +167,7 @@ class UnitConverterApp(BaseApp):
             button.accent = ACCENT
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Canvas) -> None:
         t = self.theme
         p = t.palette
         surface.fill(p.bg)
@@ -198,7 +199,7 @@ class UnitConverterApp(BaseApp):
         draw.text(surface, hint, t.font(t.size.caption), p.text_muted, (SIDEBAR_X, 690), "midleft")
         self._draw_results(surface, t, value)
 
-    def _draw_results(self, surface: pygame.Surface, t: Theme, value: Decimal | None) -> None:
+    def _draw_results(self, surface: Canvas, t: Theme, value: Decimal | None) -> None:
         p = t.palette
         cat = self.category
         panel = RESULTS.copy()
@@ -213,7 +214,7 @@ class UnitConverterApp(BaseApp):
             p.text,
             (panel.x + 24, panel.y + 22),
         )
-        mouse = pygame.mouse.get_pos()
+        mouse = mouse_pos()
         for unit, rect in zip(cat.units, self._row_rects(), strict=True):
             is_source = unit.symbol == self.from_symbol
             if is_source:
