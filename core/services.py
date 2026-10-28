@@ -11,6 +11,7 @@ from core.input import InputMap
 from core.registry import DiscoveryFailure
 from core.scene_manager import SceneManager
 from core.settings import Settings
+from core.stats import StatsService
 from core.storage import Storage
 from core.theme import Theme
 from core.toasts import ToastService
@@ -30,12 +31,14 @@ class Services:
     input: InputMap = field(init=False)
     toasts: ToastService = field(init=False)
     achievements: AchievementService = field(init=False)
+    stats: StatsService = field(init=False)
 
     def __post_init__(self) -> None:
         self.input = InputMap.load(self.storage)
         self.toasts = ToastService()
         self.achievements = AchievementService(self.storage, self._announce_achievement)
         self.define_achievements()
+        self.stats = StatsService(self.storage)
 
     def define_achievements(self) -> None:
         """Register every app's achievements (again after ``apps`` changes)."""

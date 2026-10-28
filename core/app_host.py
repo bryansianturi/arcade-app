@@ -6,6 +6,7 @@ Responsibilities:
 * The pause menu (Resume / Restart / Back to menu) on the ``pause`` action (Esc,
   P or a gamepad's Start button by default), and auto-pausing games
   when the window loses focus.
+* Usage statistics (sessions, play time while running, last played).
 * Crash isolation: any exception raised by the app is logged and replaced by a
   friendly dialog instead of taking the whole arcade down.
 """
@@ -92,6 +93,7 @@ class AppHost(Scene):
             self.app = self.app_cls(ctx)
             self.app.on_enter()
 
+        self.services.stats.start_session(self.app_cls.meta.id)
         self._guard("startup", start)
 
     def on_exit(self) -> None:
@@ -99,6 +101,7 @@ class AppHost(Scene):
             app = self.app
             self._guard("on_exit", app.on_exit)
             self.app = None
+        self.services.stats.end_session(self.app_cls.meta.id)
 
     # ------------------------------------------------------------------ actions
     def pause(self) -> None:
@@ -183,6 +186,7 @@ class AppHost(Scene):
     def update(self, dt: float) -> None:
         if self.state is HostState.RUNNING and self.app is not None:
             app = self.app
+            self.services.stats.add_time(self.app_cls.meta.id, dt)
             self._guard("update", lambda: app.update(dt))
         if self._menu is not None:
             self._menu.update(dt)

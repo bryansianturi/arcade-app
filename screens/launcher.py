@@ -57,6 +57,7 @@ class LauncherScreen(Scene):
             ("Settings", 120, self._open_settings, draw.gear_icon),
             ("High Scores", 150, self._open_scores, draw.star_icon),
             ("Achievements", 166, self._open_achievements, draw.trophy_icon),
+            ("Stats", 100, self._open_stats, draw.chart_icon),
         ):
             x -= width
             self.header_buttons.insert(
@@ -144,6 +145,11 @@ class LauncherScreen(Scene):
         from screens.high_scores import HighScoresScreen
 
         self.manager.push(HighScoresScreen(self.services))
+
+    def _open_stats(self) -> None:
+        from screens.stats import StatsScreen
+
+        self.manager.push(StatsScreen(self.services))
 
     def _open_achievements(self) -> None:
         from screens.achievements import AchievementsScreen
