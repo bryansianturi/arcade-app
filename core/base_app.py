@@ -36,6 +36,7 @@ from core.achievements import Achievement, AchievementService
 from core.canvas import Canvas
 from core.daily import DailyChallenge
 from core.input import InputMap
+from core.replay import ReplayStore
 from core.settings import Settings
 from core.storage import DEFAULT_VARIANT, AppData, ScoreEntry, ScoreOrder, Storage
 from core.theme import Color, Theme, readable_on
@@ -101,6 +102,7 @@ class AppContext:
     input: InputMap
     achievements: AchievementService
     toasts: ToastService
+    replays: ReplayStore
 
 
 class BaseApp(ABC):

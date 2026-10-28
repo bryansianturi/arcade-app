@@ -61,6 +61,7 @@ def app_context(services: Services) -> AppContext:
         input=services.input,
         achievements=services.achievements,
         toasts=services.toasts,
+        replays=services.replays,
     )
 
 

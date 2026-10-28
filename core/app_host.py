@@ -91,6 +91,7 @@ class AppHost(Scene):
             input=self.services.input,
             achievements=self.services.achievements,
             toasts=self.services.toasts,
+            replays=self.services.replays,
         )
 
         def start() -> None:

@@ -14,8 +14,9 @@ from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.input import Action, action_of, is_action
 from core.registry import register_app
+from core.replay import STEP, FixedStep, Player, Recorder, Replay
 from core.theme import Color, Theme, lerp_color
-from core.widgets import ButtonMenu, SegmentedControl, draw_panel
+from core.widgets import ButtonMenu, SegmentedControl, draw_panel, draw_replay_banner
 
 ACCENT: Color = (46, 204, 113)
 FOOD: Color = (255, 99, 132)
@@ -26,12 +27,7 @@ SHAKE_SECONDS = 0.35
 DIRECTIONS: dict[Action, Direction] = {"up": UP, "down": DOWN, "left": LEFT, "right": RIGHT}
 
 
-def direction_of(event: pygame.event.Event) -> Direction | None:
-    action = action_of(event)
-    return None if action is None else DIRECTIONS.get(action)
-
-
-Mode = Literal["ready", "playing", "paused", "over"]
+Mode = Literal["ready", "playing", "paused", "over", "replay"]
 MODES = ("walls", "wrap")
 
 
@@ -80,24 +76,63 @@ class SnakeApp(BaseApp):
     def variant(self) -> str:
         return MODES[int(self.wrap)]
 
-    def _new_game(self) -> None:
-        self.game = SnakeGame(COLS, ROWS, self.wrap, random.Random())
+    def _new_game(self, seed: int | None = None) -> None:
+        # One seeded RNG drives the whole game, so seed + recorded turns replay exactly.
+        self.seed = random.getrandbits(32) if seed is None else seed
+        self.game = SnakeGame(COLS, ROWS, self.wrap, random.Random(self.seed))
+        self.stepper = FixedStep()
+        self.recorder = Recorder(self.seed)
+        self.player: Player | None = None
 
     def _start(self) -> None:
         self._new_game()
         self.state = "playing"
         self.menu = None
 
+    def _turn(self, action: Action) -> None:
+        self.game.turn(DIRECTIONS[action])
+        self.recorder.command("turn", action)
+
     def _game_over(self) -> None:
         self.state = "over"
         self.shake = SHAKE_SECONDS
-        self.new_best = self.game.score > 0 and self.submit_score(self.game.score, self.variant)
+        score = self.game.score
+        self.new_best = score > 0 and self.submit_score(score, self.variant)
+        if score > 0:
+            run = self.recorder.finish(self.meta.id, score, self.variant, self.meta.version)
+            self.ctx.replays.offer(run)
+        items = [("Play again", self._start), ("Change mode", self._to_ready)]
+        if self.best_replay() is not None:
+            items.append(("Watch best run", self._watch))
         self.menu = ButtonMenu(
-            self.theme,
-            (BOARD.centerx, BOARD.centery + 70),
-            [("Play again", self._start), ("Change mode", self._to_ready)],
-            accent=ACCENT,
+            self.theme, (BOARD.centerx, BOARD.centery + 70), items, accent=ACCENT
         )
+
+    # ------------------------------------------------------------------ replays
+    def best_replay(self) -> Replay | None:
+        return self.ctx.replays.best(self.meta.id, self.variant)
+
+    def _watch(self) -> None:
+        replay = self.best_replay()
+        if replay is None:
+            return
+        self._new_game(replay.seed)
+        self.player = Player(replay)
+        self.state = "replay"
+        self.menu = None
+
+    def _update_replay(self, dt: float) -> None:
+        player = self.player
+        assert player is not None
+        for _ in range(self.stepper.steps(dt)):
+            for command in player.commands_for(player.tick):
+                if command.name == "turn" and command.args[0] in DIRECTIONS:
+                    self.game.turn(DIRECTIONS[command.args[0]])
+            self.game.update(STEP)
+            player.advance()
+            if player.done or not self.game.alive:
+                self._to_ready()
+                return
 
     def _to_ready(self) -> None:
         self._new_game()
@@ -118,18 +153,26 @@ class SnakeApp(BaseApp):
                 return
             if is_action(event, "action", repeat=False):
                 self._start()
-            elif (direction := direction_of(event)) is not None:
+            elif (action := action_of(event)) in DIRECTIONS:
                 self._start()
-                self.game.turn(direction)
+                self._turn(action)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                self._watch()
+            return
+        if self.state == "replay":
+            if is_action(event, "action", repeat=False):
+                self._to_ready()  # stop watching
             return
         if event.type == pygame.KEYDOWN and event.key == pygame.K_p and self.state == "playing":
             self.pause()  # P is a shortcut for the pause menu
         elif self.state == "paused" and is_action(event, "action", repeat=False):
             self.state = "playing"
-        elif self.state == "playing" and (direction := direction_of(event)) is not None:
-            self.game.turn(direction)
+        elif self.state == "playing" and (action := action_of(event)) in DIRECTIONS:
+            self._turn(action)
 
     def _check_achievements(self) -> None:
+        if self.state == "replay":
+            return
         score = self.game.score
         self.unlock_milestones(score, {"first_bite": 1, "score_25": 25, "score_50": 50})
         if score >= 20 and not self.game.wrap:
@@ -140,9 +183,14 @@ class SnakeApp(BaseApp):
         self.time += dt
         self.shake = max(0.0, self.shake - dt)
         if self.state == "playing":
-            self.game.update(dt)
-            if not self.game.alive:
-                self._game_over()
+            for _ in range(self.stepper.steps(dt)):
+                self.game.update(STEP)
+                self.recorder.advance()
+                if not self.game.alive:
+                    self._game_over()
+                    break
+        elif self.state == "replay":
+            self._update_replay(dt)
         if self.state == "ready":
             self.mode_picker.update(dt)
         if self.menu is not None:
@@ -164,15 +212,16 @@ class SnakeApp(BaseApp):
         self._draw_snake(surface, board)
 
         if self.state == "ready":
-            self._draw_card(
-                surface,
-                t,
-                "Snake",
+            hint = (
                 f"{self.input.label('action')} to start · "
-                f"{self.input.labels('left', 'right')} switch mode",
-                140,
+                f"{self.input.labels('left', 'right')} switch mode"
             )
+            if self.best_replay() is not None:
+                hint += " · R watch best"
+            self._draw_card(surface, t, "Snake", hint, 140)
             self.mode_picker.draw(surface)
+        elif self.state == "replay" and self.player is not None:
+            draw_replay_banner(surface, t, BOARD, self.player, ACCENT, self.input.label("action"))
         elif self.state == "paused":
             self._draw_card(surface, t, "Paused", f"{self.input.label('action')} to continue", 0)
         elif self.state == "over" and self.menu is not None:

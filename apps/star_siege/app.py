@@ -26,8 +26,9 @@ from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.input import Action, is_action
 from core.registry import register_app
+from core.replay import STEP, FixedStep, Player, Recorder, Replay
 from core.theme import Color, Theme, lerp_color
-from core.widgets import ButtonMenu, draw_panel
+from core.widgets import ButtonMenu, draw_panel, draw_replay_banner
 
 ACCENT: Color = (236, 72, 153)
 PLAYER_COLOR: Color = (56, 189, 248)
@@ -40,7 +41,7 @@ FIELD = pygame.Rect((1280 - FIELD_W) // 2, 76, FIELD_W, FIELD_H)
 
 FIRE_ACTIONS: tuple[Action, ...] = ("action", "up")
 
-State = Literal["ready", "playing", "over"]
+State = Literal["ready", "playing", "over", "replay"]
 
 
 @dataclass
@@ -77,8 +78,8 @@ class StarSiegeApp(BaseApp):
         gfx.polygon(surface, PLAYER_COLOR, body)
 
     def on_enter(self) -> None:
-        self.rng = random.Random()
-        self.game = SiegeGame(self.rng)
+        self.rng = random.Random()  # visuals only (stars, particles)
+        self._new_game()
         self.state: State = "ready"
         self.particles: list[Particle] = []
         self.flash = 0.0
@@ -95,23 +96,52 @@ class StarSiegeApp(BaseApp):
             for _ in range(110)
         ]
 
+    def _new_game(self, seed: int | None = None) -> None:
+        # The game has its own seeded RNG, so seed + recorded commands replay exactly.
+        self.seed = random.getrandbits(32) if seed is None else seed
+        self.game = SiegeGame(random.Random(self.seed))
+        self.stepper = FixedStep()
+        self.recorder = Recorder(self.seed)
+        self.player: Player | None = None
+        self.controls: dict[str, int] = {"move": 0, "fire": 0}
+
     def _start(self) -> None:
-        self.game = SiegeGame(self.rng)
+        self._new_game()
         self.state = "playing"
         self.menu = None
         self.particles.clear()
+
+    # ------------------------------------------------------------------ commands
+    def _apply(self, name: str, value: int = 0) -> None:
+        """The only way input reaches the game, live or during a replay."""
+        if name == "shoot":
+            self.game.fire()
+        elif name in self.controls:
+            self.controls[name] = value
+
+    def _command(self, name: str, value: int = 0) -> None:
+        self._apply(name, value)
+        self.recorder.command(name, value)
 
     # ------------------------------------------------------------------ input
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.state == "over" and self.menu is not None:
             self.menu.handle_event(event)
             return
-        if self.state == "ready" and is_action(event, "action", repeat=False):
-            self._start()
+        if self.state == "ready":
+            if is_action(event, "action", repeat=False):
+                self._start()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                self._watch()
+        elif self.state == "replay":
+            if is_action(event, "action", repeat=False):
+                self._end_replay()
         elif any(is_action(event, a, repeat=False) for a in FIRE_ACTIONS):
-            self.game.fire()
+            self._command("shoot")
 
     def _check_achievements(self) -> None:
+        if self.state == "replay":
+            return
         self.unlock_milestones(self.game.wave, {"wave_2": 2, "wave_5": 5})
         self.unlock_milestones(self.game.score, {"score_5000": 5000})
 
@@ -122,28 +152,71 @@ class StarSiegeApp(BaseApp):
         self._update_particles(dt)
         if self.menu is not None:
             self.menu.update(dt)
-        if self.state != "playing":
-            return
+        if self.state == "playing":
+            # Record control changes; they take effect from the next simulation step.
+            move = int(self.input.held("right")) - int(self.input.held("left"))
+            fire = int(any(self.input.held(a) for a in FIRE_ACTIONS))
+            for name, value in (("move", move), ("fire", fire)):
+                if self.controls[name] != value:
+                    self._command(name, value)
+            for _ in range(self.stepper.steps(dt)):
+                self._step()
+                self.recorder.advance()
+                if self.game.over:
+                    self._game_over()
+                    break
+        elif self.state == "replay":
+            player = self.player
+            assert player is not None
+            for _ in range(self.stepper.steps(dt)):
+                for command in player.commands_for(player.tick):
+                    self._apply(command.name, int(command.args[0]) if command.args else 0)
+                self._step()
+                player.advance()
+                if player.done or self.game.over:
+                    self._end_replay()
+                    break
+
+    def _step(self) -> None:
         game = self.game
-        left = self.input.held("left")
-        right = self.input.held("right")
-        game.move = int(right) - int(left)
-        if any(self.input.held(a) for a in FIRE_ACTIONS):
+        game.move = self.controls["move"]
+        if self.controls["fire"]:
             game.fire()  # holding fire auto-repeats at the cooldown rate
-        for event in game.update(dt):
+        for event in game.update(STEP):
             self._on_event(event)
-        if game.over:
-            self._game_over()
 
     def _game_over(self) -> None:
         self.state = "over"
-        self.new_best = self.game.score > 0 and self.submit_score(self.game.score)
+        score = self.game.score
+        self.new_best = score > 0 and self.submit_score(score)
+        if score > 0:
+            run = self.recorder.finish(self.meta.id, score, app_version=self.meta.version)
+            self.ctx.replays.offer(run)
+        items = [("Play again", self._start), ("Back to menu", self.exit_to_launcher)]
+        if self.best_replay() is not None:
+            items.insert(1, ("Watch best run", self._watch))
         self.menu = ButtonMenu(
-            self.theme,
-            (FIELD.centerx, FIELD.centery + 80),
-            [("Play again", self._start), ("Back to menu", self.exit_to_launcher)],
-            accent=ACCENT,
+            self.theme, (FIELD.centerx, FIELD.centery + 80), items, accent=ACCENT
         )
+
+    # ------------------------------------------------------------------ replays
+    def best_replay(self) -> Replay | None:
+        return self.ctx.replays.best(self.meta.id)
+
+    def _watch(self) -> None:
+        replay = self.best_replay()
+        if replay is None:
+            return
+        self._new_game(replay.seed)
+        self.player = Player(replay)
+        self.particles.clear()
+        self.state = "replay"
+        self.menu = None
+
+    def _end_replay(self) -> None:
+        self._new_game()
+        self.particles.clear()
+        self.state = "ready"
 
     # ------------------------------------------------------------------ effects
     def _on_event(self, event: Event) -> None:
@@ -209,12 +282,12 @@ class StarSiegeApp(BaseApp):
 
         game = self.game
         if self.state == "ready":
-            self._draw_card(
-                surface,
-                t,
-                "Star Siege",
-                f"{self.input.labels('left', 'right')} move · {self.input.label('action')} fire",
-            )
+            hint = f"{self.input.labels('left', 'right')} move · {self.input.label('action')} fire"
+            if self.best_replay() is not None:
+                hint += " · R watch best"
+            self._draw_card(surface, t, "Star Siege", hint)
+        elif self.state == "replay" and self.player is not None:
+            draw_replay_banner(surface, t, FIELD, self.player, ACCENT, self.input.label("action"))
         elif self.state == "playing" and game.wave_intro > 0:
             alpha = min(1.0, game.wave_intro / 0.4)
             font = t.font(t.size.display, "bold")
