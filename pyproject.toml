@@ -29,7 +29,7 @@ ignore = [
     "B027",    # BaseApp's empty lifecycle hooks are optional overrides by design
     "RUF012",  # ClassVar annotations on mutable class attrs are noise for app metadata
 ]
-allowed-confusables = ["×", "–"]
+allowed-confusables = ["×", "–", "−"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["core", "screens", "apps"]

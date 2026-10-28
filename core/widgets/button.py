@@ -38,6 +38,11 @@ class Button(Widget):
         self._pressed = False
         self._press_t = 0.0
 
+    def flash(self) -> None:
+        """Play the press animation (e.g. when the matching keyboard key is used)."""
+        self._press_t = 1.0
+        self._hover_t = 1.0
+
     def activate(self) -> None:
         """Trigger the button as if it were clicked."""
         if self.enabled and self.on_click is not None:
