@@ -1,0 +1,33 @@
+id = "reaction_test"
+name = "Reaction Test"
+description = "Wait for green, then react. Or chase 15 targets with the mouse."
+category = "game"
+accent = "#FB7185"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.1"
+
+[scores]
+order = "lower"
+format = "ms"
+variants = ["classic", "targets"]
+
+[[achievements]]
+id = "first_finish"
+name = "Reflexes online"
+description = "Finish a Classic test."
+
+[[achievements]]
+id = "under_250"
+name = "Quick"
+description = "Average under 250 ms in Classic."
+
+[[achievements]]
+id = "under_200"
+name = "Lightning"
+description = "Average under 200 ms in Classic."
+
+[[achievements]]
+id = "sharpshooter"
+name = "Sharpshooter"
+description = "Hit all 15 targets without a single miss."

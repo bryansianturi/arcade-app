@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-26 apps (23 games and 3 tools), each one a self-contained package in `apps/`.
+27 apps (24 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
@@ -45,6 +45,7 @@ Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres,
 | **Minesweeper** | 3 board sizes, first click always safe (and opens an area), flags, chording, best time per size |
 | **Nonogram** | Picture logic puzzles: 8 bundled pictures (names hidden until solved) and a random generator, all verified uniquely solvable by a line-logic solver; drag to paint, cross out cells, completed clues fade, colour reveal |
 | **Paddle Duel** | 2 players on one keyboard, or a CPU that predicts bounces (3 levels, simulation-tested); spin; longest-rally record |
+| **Reaction Test** | Classic: wait for green, five rounds averaged, false starts repeat the round; Targets: 15 mouse targets that always jump away; timed from input timestamps, not frames; bests in ms |
 | **Skyhop** | One-button flyer through neon gates, parallax skyline, capped difficulty ramp |
 | **Sliding Tiles** | The 8 and 15 puzzles: shuffles checked with the inversion-parity test, multi-tile slides, gliding animation, best time per size |
 | **Snake** | Queued turns, speeds up as you eat, walls or wrap-around, smooth interpolated movement |
@@ -106,6 +107,7 @@ python main.py
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
+| Reaction Test | Click or **Space** when it turns green · Targets: click with the mouse |
 | Skyhop     | **Space**, **↑** or click to hop |
 | Sliding Tiles | Click a tile in the gap's row or column · **arrows** slide a tile into the gap · **U** undo |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
@@ -221,7 +223,7 @@ apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
   brick_blitz/  checkers/  chess/  crate_keeper/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
-  minesweeper/  nonogram/  paddle_duel/  skyhop/  sliding_tiles/  snake/  solitaire/
+  minesweeper/  nonogram/  paddle_duel/  reaction_test/  skyhop/  sliding_tiles/  snake/  solitaire/
   stackfall/  switchboard/
   star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
@@ -251,7 +253,7 @@ and one achievement). To create your own:
 
    [scores]                     # optional: show on the High Scores screen
    order = "higher"             # "lower" for times
-   format = "points"            # or "time"
+   format = "points"            # or "time" (m:ss) or "ms"
    variants = ["easy", "hard"]  # optional per-variant bests
 
    [[achievements]]             # optional, repeatable (games should have 2-4)
