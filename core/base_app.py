@@ -32,6 +32,7 @@ from typing import ClassVar, Literal
 import pygame
 
 from core import draw
+from core.achievements import Achievement
 from core.canvas import Canvas
 from core.settings import Settings
 from core.storage import DEFAULT_VARIANT, AppData, ScoreEntry, ScoreOrder, Storage
@@ -56,6 +57,13 @@ class AppMeta:
         score_format: How scores are displayed: plain ``"points"`` or ``"time"`` (m:ss).
         variants: Ordered score variants (e.g. difficulties). ``()`` means a single
             ``"default"`` variant.
+        version: The app's own version.
+        author: Who made it.
+        min_framework: Oldest framework version (``core.manifest.FRAMEWORK_VERSION``)
+            the app supports.
+        achievements: Achievements the app can unlock with ``self.unlock(id)``.
+
+    Discovered apps get their ``AppMeta`` from ``app.toml`` (see :mod:`core.manifest`).
     """
 
     id: str
@@ -67,6 +75,10 @@ class AppMeta:
     score_order: ScoreOrder = "higher"
     score_format: ScoreFormat = "points"
     variants: tuple[str, ...] = ()
+    version: str = "1.0.0"
+    author: str = ""
+    min_framework: str = "1.0"
+    achievements: tuple[Achievement, ...] = ()
 
     def score_variants(self) -> tuple[str, ...]:
         """Variants to display on the High Scores screen."""

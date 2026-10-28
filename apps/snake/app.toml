@@ -1,0 +1,13 @@
+id = "snake"
+name = "Snake"
+description = "Eat, grow and go faster. Don't bite yourself."
+category = "game"
+accent = "#2ECC71"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+variants = ["wrap", "walls"]

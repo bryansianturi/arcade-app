@@ -1,0 +1,12 @@
+id = "star_siege"
+name = "Star Siege"
+description = "Hold the line against waves of descending drones."
+category = "game"
+accent = "#EC4899"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

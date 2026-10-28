@@ -1,0 +1,13 @@
+id = "sudoku"
+name = "Sudoku"
+description = "Logic puzzles with notes, checks and best times."
+category = "game"
+accent = "#9B78FF"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "time"
+variants = ["easy", "medium", "hard"]

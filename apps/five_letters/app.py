@@ -9,7 +9,7 @@ import pygame
 
 from apps.five_letters.logic import MAX_GUESSES, WORD_LENGTH, FiveLetters, Mark, Stats
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -37,16 +37,6 @@ TOAST_SECONDS = 1.6
 @register_app
 class FiveLettersApp(BaseApp):
     """Guess the hidden five-letter word in six tries."""
-
-    meta = AppMeta(
-        id="five_letters",
-        name="Five Letters",
-        description="Guess the hidden word in six tries.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        variants=("streak",),
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

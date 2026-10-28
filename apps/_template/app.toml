@@ -1,0 +1,12 @@
+id = "template"
+name = "Template"
+description = "A minimal example app to copy."
+category = "tool"
+accent = "#78C8FF"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

@@ -24,7 +24,7 @@ from apps.paddle_duel.logic import (
     Side,
 )
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -40,16 +40,6 @@ State = Literal["choose", "playing", "over"]
 @register_app
 class PaddleDuelApp(BaseApp):
     """Keep the ball out of your goal. Two players or against the computer."""
-
-    meta = AppMeta(
-        id="paddle_duel",
-        name="Paddle Duel",
-        description="Two players on one keyboard, or take on the CPU.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        variants=("rally",),
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

@@ -1,0 +1,12 @@
+id = "skyhop"
+name = "Skyhop"
+description = "One button. Hop through the neon gates."
+category = "game"
+accent = "#FACC15"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

@@ -22,7 +22,7 @@ from apps.star_siege.logic import (
     SiegeGame,
 )
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -59,15 +59,6 @@ class Particle:
 @register_app
 class StarSiegeApp(BaseApp):
     """Shoot down descending drone formations before they reach you."""
-
-    meta = AppMeta(
-        id="star_siege",
-        name="Star Siege",
-        description="Hold the line against waves of descending drones.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

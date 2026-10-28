@@ -1,0 +1,12 @@
+id = "2048"
+name = "2048"
+description = "Slide and merge tiles to reach 2048."
+category = "game"
+accent = "#0EA5E9"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

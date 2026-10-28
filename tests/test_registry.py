@@ -14,17 +14,32 @@ from core.canvas import Canvas
 from core.registry import AppRegistry, RegistrationError
 
 APP_SOURCE = """
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.registry import register_app
-from core.canvas import Canvas
 
 @register_app
 class {cls}(BaseApp):
-    meta = AppMeta(id="{id}", name="{name}", description="d", category="game", accent=(1, 2, 3))
     def handle_event(self, event): pass
     def update(self, dt): pass
     def draw(self, surface): pass
 """
+
+MANIFEST = """
+id = "{id}"
+name = "{name}"
+description = "d"
+category = "game"
+accent = "#010203"
+version = "1.0.0"
+author = "Tester"
+min_framework = "{fw}"
+"""
+
+
+def write_app(root: Path, pkg: str, cls: str, app_id: str, name: str, fw: str = "1.0") -> None:
+    (root / pkg).mkdir()
+    (root / pkg / "__init__.py").write_text(APP_SOURCE.format(cls=cls))
+    (root / pkg / "app.toml").write_text(MANIFEST.format(id=app_id, name=name, fw=fw))
 
 
 @pytest.fixture
@@ -39,12 +54,17 @@ def fake_apps(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
         ("alpha", "A", "a", "Alpha"),
         ("_hidden", "H", "hidden", "Hidden"),
     ]:
-        (root / pkg).mkdir()
-        (root / pkg / "__init__.py").write_text(
-            APP_SOURCE.format(cls=cls, id=app_id, name=app_name)
-        )
-    (root / "broken").mkdir()
+        write_app(root, pkg, cls, app_id, app_name)
+    write_app(root, "broken", "Broken", "broken", "Broken")
     (root / "broken" / "__init__.py").write_text("raise RuntimeError('boom')")
+    # Skipped before import: no manifest, an invalid one, and one needing a newer framework.
+    (root / "no_manifest").mkdir()
+    (root / "no_manifest" / "__init__.py").write_text("raise AssertionError('imported')")
+    write_app(root, "invalid", "Invalid", "invalid", "Invalid")
+    (root / "invalid" / "app.toml").write_text('id = "Bad Id"\n')
+    (root / "invalid" / "__init__.py").write_text("raise AssertionError('imported')")
+    write_app(root, "future", "Future", "future", "Future", fw="9.0")
+    (root / "future" / "__init__.py").write_text("raise AssertionError('imported')")
     (root / "loose_module.py").write_text("raise AssertionError('modules are not apps')")
 
     monkeypatch.syspath_prepend(str(tmp_path))
@@ -60,11 +80,29 @@ def test_discovery_registers_apps_sorted_and_skips_private(fake_apps: str) -> No
     assert [a.meta.name for a in apps] == ["Alpha", "Beta"]
 
 
-def test_broken_package_is_recorded_not_raised(fake_apps: str) -> None:
+def test_bad_packages_are_recorded_not_raised(fake_apps: str) -> None:
     registry_module.discover_apps(fake_apps)
-    failures = registry_module.registry.failures
-    assert len(failures) == 1
-    assert failures[0].package.endswith(".broken") and "boom" in failures[0].error
+    failures = {f.package.rsplit(".", 1)[1]: f.error for f in registry_module.registry.failures}
+    assert set(failures) == {"broken", "no_manifest", "invalid", "future"}
+    assert "boom" in failures["broken"]
+    assert "no app.toml" in failures["no_manifest"]
+    assert "'name' must be a non-empty string" in failures["invalid"]
+    assert "needs framework 9.0" in failures["future"]
+
+
+def test_discovered_app_gets_meta_from_manifest(fake_apps: str) -> None:
+    registry_module.discover_apps(fake_apps)
+    beta = registry_module.registry.get("beta")
+    assert beta is not None
+    assert beta.meta.author == "Tester" and beta.meta.accent == (1, 2, 3)
+
+
+def test_discovery_is_idempotent(fake_apps: str) -> None:
+    registry_module.discover_apps(fake_apps)
+    count = len(registry_module.registry.failures)
+    registry_module.discover_apps(fake_apps)
+    assert len(registry_module.registry) == 2
+    assert len(registry_module.registry.failures) == count  # failures retried, not duplicated
 
 
 def test_private_packages_can_be_included(fake_apps: str) -> None:

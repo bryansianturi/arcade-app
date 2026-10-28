@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import sys
 from collections.abc import Iterator
 
 import pygame
@@ -106,3 +107,11 @@ def test_app_draws_at_native_resolution(
     app.draw(surface)
     app_cls.draw_icon(surface, pygame.Rect(0, 0, 48, 48), app_context.theme)
     app.on_exit()
+
+
+@pytest.mark.parametrize("app_cls", ALL_APPS, ids=lambda a: a.meta.id)
+def test_code_accent_matches_manifest(app_cls: type[BaseApp]) -> None:
+    """Apps may keep an ``ACCENT`` constant for drawing; it must match ``app.toml``."""
+    module = sys.modules[app_cls.__module__]
+    accent = getattr(module, "ACCENT", None)
+    assert accent is None or tuple(accent) == app_cls.meta.accent

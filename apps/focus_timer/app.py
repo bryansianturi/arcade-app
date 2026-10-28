@@ -10,7 +10,7 @@ import pygame
 
 from apps.focus_timer.logic import PHASE_LABELS, PHASES, Phase, Pomodoro, Stopwatch
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -41,14 +41,6 @@ def clock_text(seconds: float, hundredths: bool = False) -> str:
 @register_app
 class FocusTimerApp(BaseApp):
     """A Pomodoro timer and a stopwatch. Keeps running while you use other apps."""
-
-    meta = AppMeta(
-        id="focus_timer",
-        name="Focus Timer",
-        description="Pomodoro sessions and a lap stopwatch.",
-        category="tool",
-        accent=ACCENT,
-    )
 
     #: Injectable wall clock (tests replace it).
     now: Callable[[], float] = staticmethod(time.time)

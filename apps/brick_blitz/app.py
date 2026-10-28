@@ -23,7 +23,7 @@ from apps.brick_blitz.logic import (
     Event,
 )
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -60,15 +60,6 @@ class Particle:
 @register_app
 class BrickBlitzApp(BaseApp):
     """Keep the ball in play and clear every brick."""
-
-    meta = AppMeta(
-        id="brick_blitz",
-        name="Brick Blitz",
-        description="Angle your shots and smash through every brick.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

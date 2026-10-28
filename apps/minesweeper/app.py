@@ -9,7 +9,7 @@ import pygame
 
 from apps.minesweeper.logic import DIFFICULTIES, Cell, Difficulty, Minefield
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp, format_score
+from core.base_app import BaseApp, format_score
 from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -45,18 +45,6 @@ MOVE_KEYS = {
 @register_app
 class MinesweeperApp(BaseApp):
     """Clear the field without hitting a mine. The first click is always safe."""
-
-    meta = AppMeta(
-        id="minesweeper",
-        name="Minesweeper",
-        description="Clear the field, flag the mines. First click is always safe.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        score_order="lower",
-        score_format="time",
-        variants=DIFFICULTIES,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

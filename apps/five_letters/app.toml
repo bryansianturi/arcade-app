@@ -1,0 +1,13 @@
+id = "five_letters"
+name = "Five Letters"
+description = "Guess the hidden word in six tries."
+category = "game"
+accent = "#14B8A6"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+variants = ["streak"]

@@ -19,7 +19,7 @@ from apps.four_in_a_row.logic import (
     choose_move,
 )
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -64,14 +64,6 @@ class _CpuWorker:
 @register_app
 class FourInARowApp(BaseApp):
     """Drop discs into a 7×6 grid and line up four before the computer does."""
-
-    meta = AppMeta(
-        id="four_in_a_row",
-        name="Four in a Row",
-        description="Drop discs and line up four before the computer does.",
-        category="game",
-        accent=ACCENT,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

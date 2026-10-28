@@ -9,7 +9,7 @@ import pygame
 
 from apps.unit_converter.logic import CATEGORIES, Category, convert, format_value, parse_number
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -25,14 +25,6 @@ ROW_H = 54
 @register_app
 class UnitConverterApp(BaseApp):
     """Convert between common units, showing every unit in the category at once."""
-
-    meta = AppMeta(
-        id="unit_converter",
-        name="Unit Converter",
-        description="Length, mass, temperature, data and more.",
-        category="tool",
-        accent=ACCENT,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

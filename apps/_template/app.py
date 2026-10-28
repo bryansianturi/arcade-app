@@ -6,7 +6,7 @@ import pygame
 
 from apps._template.logic import ClickCounter
 from core import draw
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.widgets import Button
@@ -15,15 +15,6 @@ from core.widgets import Button
 @register_app
 class TemplateApp(BaseApp):
     """A minimal working app: one button, a score, and a saved high score."""
-
-    meta = AppMeta(
-        id="template",  # unique and stable: it is the storage key
-        name="Template",
-        description="A minimal example app to copy.",
-        category="tool",  # "game" or "tool"
-        accent=(120, 200, 255),
-        tracks_scores=True,  # list this app on the High Scores screen
-    )
 
     def on_enter(self) -> None:
         # Called on launch and after Restart: (re)build all state here.

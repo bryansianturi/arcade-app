@@ -9,7 +9,7 @@ import pygame
 
 from apps.sudoku.logic import DIFFICULTIES, PEERS, Difficulty, SudokuGame
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp, format_score
+from core.base_app import BaseApp, format_score
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -53,18 +53,6 @@ def cell_at(pos: tuple[int, int]) -> int | None:
 @register_app
 class SudokuApp(BaseApp):
     """Classic 9×9 Sudoku with three difficulties and best times per difficulty."""
-
-    meta = AppMeta(
-        id="sudoku",
-        name="Sudoku",
-        description="Logic puzzles with notes, checks and best times.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        score_order="lower",
-        score_format="time",
-        variants=DIFFICULTIES,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

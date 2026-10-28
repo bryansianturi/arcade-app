@@ -1,0 +1,12 @@
+id = "stackfall"
+name = "Stackfall"
+description = "Rotate, drop and clear lines. Hold a piece for later."
+category = "game"
+accent = "#C026D3"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

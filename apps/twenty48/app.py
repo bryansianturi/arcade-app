@@ -10,7 +10,7 @@ import pygame
 
 from apps.twenty48.logic import GOAL, SIZE, Direction, Game2048, MoveResult
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color, readable_on
@@ -71,15 +71,6 @@ def cell_rect(pos: tuple[float, float]) -> pygame.Rect:
 @register_app
 class Twenty48App(BaseApp):
     """Slide tiles to merge equal numbers and reach 2048."""
-
-    meta = AppMeta(
-        id="2048",
-        name="2048",
-        description="Slide and merge tiles to reach 2048.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

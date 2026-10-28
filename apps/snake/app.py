@@ -10,7 +10,7 @@ import pygame
 
 from apps.snake.logic import DOWN, LEFT, RIGHT, UP, Direction, SnakeGame
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -40,16 +40,6 @@ MODES = ("walls", "wrap")
 @register_app
 class SnakeApp(BaseApp):
     """Classic snake with walls or wrap-around edges."""
-
-    meta = AppMeta(
-        id="snake",
-        name="Snake",
-        description="Eat, grow and go faster. Don't bite yourself.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        variants=("wrap", "walls"),
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

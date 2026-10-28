@@ -1,0 +1,8 @@
+id = "calculator"
+name = "Calculator"
+description = "Precise arithmetic with parentheses and powers."
+category = "tool"
+accent = "#FF9F43"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"

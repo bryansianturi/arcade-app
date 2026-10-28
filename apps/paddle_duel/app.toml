@@ -1,0 +1,13 @@
+id = "paddle_duel"
+name = "Paddle Duel"
+description = "Two players on one keyboard, or take on the CPU."
+category = "game"
+accent = "#65A30D"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+variants = ["rally"]

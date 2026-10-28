@@ -9,7 +9,7 @@ import pygame
 
 from apps.tictactoe.logic import Level, Mark, TicTacToe, winning_line
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -73,14 +73,6 @@ def draw_o(surface: Canvas, rect: pygame.Rect, progress: float, width: int) -> N
 @register_app
 class TicTacToeApp(BaseApp):
     """Three in a row against a computer that is either easy or unbeatable."""
-
-    meta = AppMeta(
-        id="tictactoe",
-        name="Tic-tac-toe",
-        description="Three in a row against an easy or an unbeatable computer.",
-        category="game",
-        accent=ACCENT,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

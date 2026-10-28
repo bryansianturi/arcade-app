@@ -1,0 +1,8 @@
+id = "unit_converter"
+name = "Unit Converter"
+description = "Length, mass, temperature, data and more."
+category = "tool"
+accent = "#059669"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"

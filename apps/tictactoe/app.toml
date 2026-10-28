@@ -1,0 +1,8 @@
+id = "tictactoe"
+name = "Tic-tac-toe"
+description = "Three in a row against an easy or an unbeatable computer."
+category = "game"
+accent = "#475569"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"

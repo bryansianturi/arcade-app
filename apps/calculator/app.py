@@ -6,7 +6,7 @@ import pygame
 
 from apps.calculator.logic import Calculator
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Theme, lerp_color
@@ -39,14 +39,6 @@ HISTORY_WIDTH = 340
 @register_app
 class CalculatorApp(BaseApp):
     """Standard calculator with mouse and keyboard input."""
-
-    meta = AppMeta(
-        id="calculator",
-        name="Calculator",
-        description="Precise arithmetic with parentheses and powers.",
-        category="tool",
-        accent=ACCENT,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

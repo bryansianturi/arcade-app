@@ -1,0 +1,12 @@
+id = "brick_blitz"
+name = "Brick Blitz"
+description = "Angle your shots and smash through every brick."
+category = "game"
+accent = "#2563EB"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"

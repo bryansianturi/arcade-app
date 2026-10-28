@@ -1,0 +1,13 @@
+id = "memory_match"
+name = "Memory Match"
+description = "Flip cards and find every matching pair."
+category = "game"
+accent = "#EA580C"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "time"
+variants = ["easy", "medium", "hard"]

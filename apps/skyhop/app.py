@@ -9,7 +9,7 @@ import pygame
 
 from apps.skyhop.logic import FIELD_H, FIELD_W, GATE_W, PLAYER_R, PLAYER_X, Skyhop
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -26,15 +26,6 @@ HOP_KEYS = (pygame.K_SPACE, pygame.K_UP, pygame.K_w)
 @register_app
 class SkyhopApp(BaseApp):
     """Hop through the gaps. One button, many retries."""
-
-    meta = AppMeta(
-        id="skyhop",
-        name="Skyhop",
-        description="One button. Hop through the neon gates.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

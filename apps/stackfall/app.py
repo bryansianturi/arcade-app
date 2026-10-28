@@ -17,7 +17,7 @@ from apps.stackfall.logic import (
     rotated_cells,
 )
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp
+from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -77,15 +77,6 @@ def draw_mini(
 @register_app
 class StackfallApp(BaseApp):
     """Rotate and drop falling pieces to complete and clear lines."""
-
-    meta = AppMeta(
-        id="stackfall",
-        name="Stackfall",
-        description="Rotate, drop and clear lines. Hold a piece for later.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

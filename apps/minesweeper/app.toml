@@ -1,0 +1,13 @@
+id = "minesweeper"
+name = "Minesweeper"
+description = "Clear the field, flag the mines. First click is always safe."
+category = "game"
+accent = "#CA8A04"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "time"
+variants = ["easy", "medium", "hard"]

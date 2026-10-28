@@ -9,7 +9,7 @@ import pygame
 
 from apps.memory_match.logic import LAYOUTS, SIZES, MemoryGame, Size
 from core import draw, gfx
-from core.base_app import AppMeta, BaseApp, format_score
+from core.base_app import BaseApp, format_score
 from core.canvas import Canvas, mouse_pos
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
@@ -125,18 +125,6 @@ def draw_symbol(
 @register_app
 class MemoryMatchApp(BaseApp):
     """Flip two cards at a time and find every pair."""
-
-    meta = AppMeta(
-        id="memory_match",
-        name="Memory Match",
-        description="Flip cards and find every matching pair.",
-        category="game",
-        accent=ACCENT,
-        tracks_scores=True,
-        score_order="lower",
-        score_format="time",
-        variants=SIZES,
-    )
 
     @classmethod
     def draw_icon(cls, surface: Canvas, rect: pygame.Rect, theme: Theme) -> None:

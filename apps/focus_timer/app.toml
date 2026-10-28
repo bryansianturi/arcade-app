@@ -1,0 +1,8 @@
+id = "focus_timer"
+name = "Focus Timer"
+description = "Pomodoro sessions and a lap stopwatch."
+category = "tool"
+accent = "#F43F5E"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
