@@ -25,9 +25,9 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-29 apps (26 games and 3 tools), each one a self-contained package in `apps/`.
+30 apps (27 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
-Crate Keeper, Echo Pads, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
+Crate Keeper, Echo Pads, Updraft, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
 
@@ -56,8 +56,9 @@ Crate Keeper, Echo Pads, Four in a Row, Five Letters) are original takes on clas
 | **Star Siege** | Fixed-screen shooter: formations speed up as they thin out, eroding shields, lives, waves |
 | **Sudoku** | Unique-solution generator (Easy/Medium/Hard), pencil notes, conflict highlighting, check, undo, resume |
 | **Switchboard** | Lights puzzle on 4×4, 5×5 or 6×6 boards: always-solvable shuffles, a GF(2) solver for par and hints, undo and restart |
-| **Typing Test** | 15, 30 or 60 second tests from a bundled list of common words: live WPM and accuracy, mistakes and extra letters shown in place, backspace into mistyped words, results card with raw WPM and a speed chart, best per length |
 | **Tic-tac-toe** | Unbeatable minimax (exhaustively tested) or an easy mode; win/draw/loss record |
+| **Typing Test** | 15, 30 or 60 second tests from a bundled list of common words: live WPM and accuracy, mistakes and extra letters shown in place, backspace into mistyped words, results card with raw WPM and a speed chart, best per length |
+| **Updraft** | Endless vertical climber: auto-bounce and steer, wrap-around sides, solid, moving, crumbling and spring platforms; gaps always within jump height (a bot test climbs every seed); dusk-to-night sky |
 | **Void Drift** | Wrap-around space shooter: thrust and inertia, rocks that split in three sizes, weaving drones that shoot back, warp escape, waves and extra lives |
 
 **Tools**
@@ -120,8 +121,9 @@ python main.py
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) · **R** watch your best run |
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
 | Switchboard | Click a light, or **arrows** + **Space** · **H** hint · **U** undo · **N** new puzzle |
-| Typing Test | Type · **Space** next word · **Backspace** (with **Ctrl/Alt/⌘**: whole word) · **Tab** restart |
 | Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
+| Typing Test | Type · **Space** next word · **Backspace** (with **Ctrl/Alt/⌘**: whole word) · **Tab** restart |
+| Updraft    | **←/→** or **A/D** steer · **Space** start |
 | Void Drift | **←/→** turn · **↑** thrust · **Space** fire (hold to auto-fire) · **↓** warp |
 | Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 
@@ -229,7 +231,7 @@ apps/
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/  four_in_a_row/  hangman/  memory_match/      games
   minesweeper/  nonogram/  paddle_duel/  reaction_test/  skyhop/  sliding_tiles/  snake/  solitaire/
   stackfall/  switchboard/
-  star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  void_drift/
+  star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  updraft/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
 tests/                  pytest suite (headless)
 ```

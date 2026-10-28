@@ -1,0 +1,32 @@
+id = "updraft"
+name = "Updraft"
+description = "Bounce up an endless tower of platforms. Don't look down."
+category = "game"
+accent = "#FB923C"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+
+[[achievements]]
+id = "height_100"
+name = "Off the ground"
+description = "Climb to a height of 100."
+
+[[achievements]]
+id = "height_500"
+name = "Cloud level"
+description = "Climb to a height of 500."
+
+[[achievements]]
+id = "height_1000"
+name = "Stratosphere"
+description = "Climb to a height of 1,000."
+
+[[achievements]]
+id = "springs_10"
+name = "Spring loaded"
+description = "Use 10 springs in one climb."
