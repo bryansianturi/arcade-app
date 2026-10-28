@@ -25,9 +25,9 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-21 apps (18 games and 3 tools), each one a self-contained package in `apps/`.
+22 apps (19 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
-Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
+Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
 
@@ -37,6 +37,7 @@ Four in a Row, Five Letters) are original takes on classic genres, with their ow
 | **Brick Blitz** | Four hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
 | **Checkers** | English draughts: compulsory captures, multi-jumps chosen hop by hop, crowning, 40-move draw; animated jumps; alpha-beta computer in 3 levels; resumes your game |
 | **Chess** | Full rules (castling, en passant, promotion, checkmate, stalemate, fifty-move, threefold repetition, insufficient material), verified with perft; legal-move highlights, drag or click, notation history, undo, flip; alpha-beta engine in 3 levels on a background thread; resumes your game |
+| **Crate Keeper** | Crate-pushing puzzles: 15 original levels loaded from JSON files (each proven solvable by a solver in the tests), unlock as you go, undo, restart, best moves per level |
 | **Firefly** | Maze chase in a night garden: four shades with their own hunting styles (stalker, ambusher, flanker, wanderer), scatter/chase phases, lanterns that turn the tables, levels that speed up |
 | **Five Letters** | Word guessing: 800 hand-picked answers, 8.5k valid guesses, duplicate-aware scoring, hard mode, stats and best streak |
 | **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
@@ -92,6 +93,7 @@ python main.py
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
 | Checkers   | Click a piece, then each landing square · **arrows** + **Space** · **U** undo |
 | Chess      | Click or drag a piece, then a highlighted square · **arrows** + **Space** · **U** undo · **F** flip board |
+| Crate Keeper | **Arrows/WASD** walk and push · **U**/**Backspace** undo · **R** restart · **Esc** level list |
 | Firefly    | **Arrows/WASD** steer (turns are remembered until the next junction) |
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
@@ -210,7 +212,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
-  brick_blitz/  checkers/  chess/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
+  brick_blitz/  checkers/  chess/  crate_keeper/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
   minesweeper/  paddle_duel/  skyhop/  snake/  solitaire/  stackfall/
   star_siege/  sudoku/  tictactoe/  twenty48/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)

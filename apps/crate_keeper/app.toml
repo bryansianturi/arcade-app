@@ -1,0 +1,23 @@
+id = "crate_keeper"
+name = "Crate Keeper"
+description = "Push every crate onto a target. Crates can't be pulled, so plan ahead."
+category = "game"
+accent = "#D97706"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[[achievements]]
+id = "solve_1"
+name = "On the job"
+description = "Solve your first level."
+
+[[achievements]]
+id = "solve_5"
+name = "Shift supervisor"
+description = "Solve five levels."
+
+[[achievements]]
+id = "solve_all"
+name = "Warehouse master"
+description = "Solve every level."
