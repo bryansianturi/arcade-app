@@ -24,6 +24,7 @@ as simple as dropping a folder into `apps/`.
 | **Sudoku**     | Game | Generator with Easy/Medium/Hard and a guaranteed unique solution, pencil notes, conflict highlighting, check, undo, timer, best time per difficulty, resume an unfinished game |
 | **Calculator** | Tool | Hand-written recursive-descent parser (no `eval`), correct precedence, parentheses, powers, exact decimal arithmetic, history |
 | **Snake**      | Game | Queued turns for responsive controls, speeds up as you eat, walls or wrap-around, smooth interpolated movement, high score per mode |
+| **Minesweeper** | Game | 3 board sizes, first click always safe (and opens an area), flags, chording, keyboard play, best time per difficulty |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -56,6 +57,7 @@ python main.py
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
 | Snake      | **Arrows/WASD** steer · **P** pause |
+| Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
@@ -148,15 +150,15 @@ To create your own:
 3. **Describe your app** by editing `meta`:
    ```python
    meta = AppMeta(
-       id="my_game",               # unique and stable; it's the save-file key
+       id="my_game",  # unique and stable; it's the save-file key
        name="My Game",
        description="One line for the launcher card.",
-       category="game",            # or "tool"
+       category="game",  # or "tool"
        accent=(255, 120, 80),
-       tracks_scores=True,         # show on the High Scores screen
-       score_order="higher",       # "lower" for times
-       score_format="points",      # or "time"
-       variants=(),                # e.g. ("easy", "hard") for per-difficulty bests
+       tracks_scores=True,  # show on the High Scores screen
+       score_order="higher",  # "lower" for times
+       score_format="points",  # or "time"
+       variants=(),  # e.g. ("easy", "hard") for per-difficulty bests
    )
    ```
 4. **Write the rules** in `logic.py` without importing pygame, so you can test them.
