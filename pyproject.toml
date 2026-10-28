@@ -44,6 +44,7 @@ files = ["main.py", "core", "screens", "apps", "tests"]
 module = "tests.*"
 disallow_untyped_defs = false
 warn_unreachable = false  # tests mutate state through calls, which mypy can't follow
+strict_equality = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
