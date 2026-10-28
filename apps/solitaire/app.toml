@@ -1,0 +1,28 @@
+id = "solitaire"
+name = "Solitaire"
+description = "Klondike: build every suit from ace to king. Draw 1 or 3."
+category = "game"
+accent = "#BE123C"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "time"
+variants = ["draw1", "draw3"]
+
+[[achievements]]
+id = "win"
+name = "Patience pays"
+description = "Win a game."
+
+[[achievements]]
+id = "win_draw3"
+name = "Three's company"
+description = "Win a game drawing three cards at a time."
+
+[[achievements]]
+id = "fast"
+name = "Card shark"
+description = "Win in under four minutes."
