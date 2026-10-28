@@ -36,6 +36,8 @@ async def custom_site():
     appdir.mkdir()
 
 
+    platform.window.arcadeStage("Unpacking the arcade...", 80)  # arcade: loading card step
+
     # unpack filesystem from compressed archive into work dir
     if platform.window.location.host.find('.itch.zone')>0:
         import zipfile
@@ -87,6 +89,7 @@ async def custom_site():
 
     def ui_callback(pkg):
         platform.window.infobox.innerText = f"installing {pkg}"
+        platform.window.arcadeStage(f"Installing {pkg}...", 84)  # arcade: loading card step
 
     await shell.source(main, callback=ui_callback)
 
@@ -94,7 +97,7 @@ async def custom_site():
     # your main.py has an infinite sync loop somewhere !
 
     platform.window.infobox.style.display = "none"
-    platform.window.arcadeLoaded()  # arcade: fade out the loading card
+    # arcade: main.py fades out the loading card once its first frame is drawn
     platform.window.config.gui_divider = 1
     platform.window.window_resize()
     print("default.tmpl: done")
@@ -298,7 +301,15 @@ function show_infobox() {
             display: flex; justify-content: space-between; margin-top: 10px;
             font-size: 13px; color: #9198aa; font-variant-numeric: tabular-nums;
         }
-        #arcade-loader .note { margin: 18px 0 0; font-size: 12px; color: #6b7285; }
+        #arcade-loader .note { margin: 18px 0 0; font-size: 12px; color: #6b7285; line-height: 1.5; }
+        /* While Python starts up there are no bytes to count: a moving sheen shows it's working. */
+        #arcade-loader.starting .fill {
+            background: linear-gradient(90deg, #6384ff 0%, #9db1ff 50%, #6384ff 100%);
+            background-size: 200% 100%; animation: arcade-sheen 1.2s linear infinite;
+        }
+        @keyframes arcade-sheen { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+        #arcade-loader.failed .fill { background: #ef4444; animation: none; }
+        #arcade-loader.failed .status { color: #f87171; }
     </style>
 
     <script>
@@ -330,43 +341,58 @@ function show_infobox() {
     (() => {
         // pygbag fetches these one after another as Python starts up. Asking for all of
         // them now downloads them in parallel; its later requests hit the browser cache.
-        // XHR (not fetch) so progress counts compressed bytes against Content-Length.
         const cdn = "{{cookiecutter.cdn}}";
         const py = "cp" + "{{cookiecutter.PYBUILD}}".replace(".", "");
         const archive = location.host.includes(".itch.zone")
             ? "{{cookiecutter.archive}}.apk" : "{{cookiecutter.archive}}.tar.gz";
-        // Rough compressed sizes (MB), used until each download reports its real size.
+        // url -> [decompressed bytes, bytes over the network], looked up by
+        // tools/build_web.py. Browsers report progress in decompressed bytes, so
+        // that is what each download is measured against.
+        const sizes = __ARCADE_SIZES__;
+        // [url, fallback size in bytes] for anything the build couldn't measure.
         const files = [
-            [cdn + "cpython" + py.slice(2) + "/main.wasm", 4.6],
-            [cdn + "cpython" + py.slice(2) + "/main.data", 4.5],
-            [archive, 0.6],
-            [cdn + "cpythonrc.py", 0.01],
+            [cdn + "cpython" + py.slice(2) + "/main.wasm", 13.4e6],
+            [cdn + "cpython" + py.slice(2) + "/main.data", 6.7e6],
+            [archive, 0.6e6],
+            [cdn + "cpythonrc.py", 0.05e6],
         ];
-        const loaded = new Map(), total = new Map();
+        const loaded = new Map(), reported = new Map(), done = new Set();
+        let wheelKnown = false;
         const fill = document.getElementById("arcade-fill");
         const mb = document.getElementById("arcade-mb");
         const pct = document.getElementById("arcade-pct");
         const status = document.getElementById("arcade-status");
-        let starting = false;
+        const note = document.querySelector("#arcade-loader .note");
+        const loader = document.getElementById("arcade-loader");
+        let starting = false, finished = false, shownPct = 0, lastChange = Date.now();
+
+        function setBar(p) {  // never moves backwards
+            shownPct = Math.max(shownPct, Math.min(100, p));
+            fill.style.width = Math.max(2, shownPct) + "%";
+            pct.textContent = Math.round(shownPct) + "%";
+        }
+
+        function startPhase(text, p) {
+            starting = true;
+            loader.classList.add("starting");
+            status.textContent = text.replace("...", "\u2026");
+            setBar(p);
+            lastChange = Date.now();
+        }
 
         function render() {
             let got = 0, all = 0;
-            for (const [url, guess] of files) {
-                const t = total.get(url) || guess * 1e6;
-                got += Math.min(loaded.get(url) || 0, t);
-                all += t;
+            for (const [url, fallback] of files) {
+                const [full, wire] = sizes[url] || [reported.get(url) || fallback, reported.get(url) || fallback];
+                const frac = done.has(url) ? 1 : Math.min(1, (loaded.get(url) || 0) / full);
+                got += frac * wire;
+                all += wire;
             }
-            const frac = all ? got / all : 0;
-            // Downloads fill 90% of the bar; Python starting up fills the rest.
-            const shown = starting ? 0.95 : 0.9 * frac;
-            fill.style.width = Math.max(2, shown * 100) + "%";
-            pct.textContent = Math.round(shown * 100) + "%";
             mb.textContent = (got / 1e6).toFixed(1) + " / " + (all / 1e6).toFixed(1) + " MB";
-            if (!starting && frac >= 0.999) {
-                starting = true;
-                status.textContent = "Starting Python…";
-                render();
-            }
+            if (starting) return;
+            // Downloads fill 75% of the bar; the start-up steps (arcadeStage) fill the rest.
+            setBar(all ? 75 * got / all : 0);
+            if (wheelKnown && done.size === files.length) startPhase("Starting Python...", 75);
         }
 
         function preload(url) {
@@ -375,16 +401,10 @@ function show_infobox() {
             xhr.responseType = "arraybuffer";
             xhr.onprogress = (e) => {
                 loaded.set(url, e.loaded);
-                if (e.lengthComputable) total.set(url, e.total);
+                if (e.lengthComputable) reported.set(url, e.total);
                 render();
             };
-            xhr.onload = () => {
-                const size = xhr.response ? xhr.response.byteLength : 0;
-                if (!total.has(url)) total.set(url, loaded.get(url) || size);
-                loaded.set(url, total.get(url));
-                render();
-            };
-            xhr.onerror = () => { loaded.set(url, total.get(url) || 0); render(); };
+            xhr.onloadend = () => { done.add(url); render(); };  // success or not, stop waiting
             xhr.send();
         }
 
@@ -396,18 +416,40 @@ function show_infobox() {
             .then((index) => {
                 if (!index.pygame) return;
                 const wheel = root + index.pygame.replace("<abi>-<abi>-<api>", py + "-" + py + "-wasm32_bi_emscripten");
-                files.push([wheel, 1.5]);
+                files.push([wheel, 1.5e6]);
                 preload(wheel);
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => { wheelKnown = true; render(); });
+
+        // Start-up steps, called from Python (the template above and core/web.py).
+        window.arcadeStage = (text, p) => { if (!finished) startPhase(text, p); };
 
         window.arcadeLoaded = () => {
-            starting = true;
-            fill.style.width = "100%";
-            pct.textContent = "100%";
-            document.getElementById("arcade-loader").classList.add("done");
-            setTimeout(() => document.getElementById("arcade-loader").remove(), 600);
+            if (finished) return;
+            finished = true;
+            setBar(100);
+            loader.classList.remove("starting");
+            loader.classList.add("done");
+            setTimeout(() => loader.remove(), 600);
         };
+
+        window.arcadeFailed = (message) => {
+            if (finished) return;  // once the arcade runs, errors are its own business
+            finished = true;
+            loader.classList.remove("starting");
+            loader.classList.add("failed");
+            status.textContent = "The arcade couldn't start";
+            note.textContent = message + " \u2014 reload the page to try again.";
+        };
+
+        // Slow devices can spend a long time on one step; say so rather than look frozen.
+        setInterval(() => {
+            if (starting && !finished && Date.now() - lastChange > 20000) {
+                note.textContent = "Still working\u2026 on slower devices this can take up to a "
+                    + "minute. If nothing changes, reload the page.";
+            }
+        }, 1000);
         render();
     })();
     </script>

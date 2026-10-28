@@ -13,6 +13,7 @@ from core.canvas import Canvas
 from core.input import is_action
 from core.scene_manager import Scene
 from core.settings import WINDOW_PRESETS
+from core.storage import BrowserStorage
 from core.web import IS_BROWSER
 from core.widgets import Button, SegmentedControl, Toggle, Widget, draw_panel
 from screens.common import MARGIN_X, SubpageHeader, is_back
@@ -203,9 +204,15 @@ class SettingsScreen(Scene):
             row.control.draw(surface)
 
         caption = t.font(t.size.caption)
-        where = (
-            "Saved in this browser" if IS_BROWSER else f"Data folder: {self.services.storage.root}"
-        )
+        storage = self.services.storage
+        if isinstance(storage, BrowserStorage):
+            where = (
+                "Saved in this browser"
+                if storage.persistent
+                else "Not saved: this browser is blocking site storage"
+            )
+        else:
+            where = f"Data folder: {storage.root}"
         data_dir = draw.fit_text(where, caption, 800)
         draw.text(
             surface,

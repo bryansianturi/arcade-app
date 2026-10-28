@@ -112,8 +112,10 @@ load from the browser cache in a second or two. To keep that first wait short, t
 the fonts to the characters the arcade uses, and its page (`tools/web/arcade.tmpl`) starts every
 download at once and shows a progress card.
 
-In the browser, saves go to the browser's local storage, window size and fullscreen are left
-to the browser, and computer opponents think for at most 1.5 seconds a move.
+In the browser, saves go to the browser's local storage (if the browser blocks it, saves last
+for that visit and a toast says so), window size and fullscreen are left to the browser, and
+computer opponents think for at most 1.5 seconds a move. If start-up fails, the loading card
+shows the error instead of waiting forever.
 See `core/web.py` for the details.
 
 ### Controls

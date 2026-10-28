@@ -149,6 +149,10 @@ class BrowserStorage(Storage):
     ``local_storage`` is the page's ``window.localStorage`` (see
     :func:`core.web.local_storage`), or anything with ``getItem``/``setItem``.
     ``root`` is only used for files that never need to survive a reload (logs).
+
+    Some browsers block site storage (privacy settings, full quota). Then
+    :attr:`persistent` turns ``False`` and saves only last for this visit, rather
+    than the arcade failing to start.
     """
 
     PREFIX = "arcade/"
@@ -156,13 +160,32 @@ class BrowserStorage(Storage):
     def __init__(self, local_storage: Any, root: Path = Path("/tmp/arcade")) -> None:
         super().__init__(root)
         self._local = local_storage
+        self._memory: dict[str, str] = {}  # this visit's saves; newest wins
+        self.persistent = True
 
     def _read_text(self, name: str) -> str | None:
-        value = self._local.getItem(self.PREFIX + name)
+        if name in self._memory:
+            return self._memory[name]
+        if not self.persistent:
+            return None
+        try:
+            value = self._local.getItem(self.PREFIX + name)
+        except Exception as exc:  # the browser's SecurityError arrives as a plain Exception
+            self._unavailable(exc)
+            return None
         return None if value is None else str(value)
 
     def _write_text(self, name: str, text: str) -> None:
-        self._local.setItem(self.PREFIX + name, text)
+        self._memory[name] = text
+        if self.persistent:
+            try:
+                self._local.setItem(self.PREFIX + name, text)
+            except Exception as exc:
+                self._unavailable(exc)
+
+    def _unavailable(self, exc: Exception) -> None:
+        log.warning("Browser storage is unavailable (%s); saves will last for this visit only", exc)
+        self.persistent = False
 
 
 class AppData(MutableMapping[str, Any]):

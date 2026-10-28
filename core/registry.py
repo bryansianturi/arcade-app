@@ -20,6 +20,7 @@ import logging
 import os
 import pkgutil
 import sys
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TypeVar
@@ -87,11 +88,22 @@ class AppRegistry:
         Problems are logged and recorded in :attr:`failures`; they never stop the
         other apps (or the launcher) from loading.
         """
+        for _ in self.discover_steps(package, include_private):
+            pass
+
+    def discover_steps(
+        self, package: str = "apps", include_private: bool | None = None
+    ) -> Iterator[tuple[int, int]]:
+        """:meth:`discover`, one package at a time: yields ``(loaded, total)`` after each.
+
+        The browser build uses this to update its loading card between imports.
+        """
         if include_private is None:
             include_private = bool(os.environ.get(SHOW_PRIVATE_ENV))
         root = importlib.import_module(package)
         # Failed packages are retried, so forget their earlier failures.
         self.failures = [f for f in self.failures if not f.package.startswith(package + ".")]
+        todo: list[tuple[str, Path]] = []
         for info in sorted(pkgutil.iter_modules(root.__path__), key=lambda m: m.name):
             if not info.ispkg or (info.name.startswith("_") and not include_private):
                 continue
@@ -99,7 +111,10 @@ class AppRegistry:
             if name in self._packages:
                 continue
             folder = Path(getattr(info.module_finder, "path", "")) / info.name
-            self._load_package(name, folder / MANIFEST_NAME)
+            todo.append((name, folder / MANIFEST_NAME))
+        for i, (name, manifest) in enumerate(todo):
+            self._load_package(name, manifest)
+            yield i + 1, len(todo)
 
     def _load_package(self, name: str, manifest_path: Path) -> type[BaseApp] | None:
         try:

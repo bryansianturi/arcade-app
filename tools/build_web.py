@@ -20,10 +20,13 @@ of one after another.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
 import sys
+import urllib.request
+from importlib.metadata import version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -100,8 +103,51 @@ def subset_fonts(fonts: Path) -> None:
         print(f"{path.name}: {before // 1024} KB -> {path.stat().st_size // 1024} KB")
 
 
+def cdn_sizes() -> dict[str, list[int]]:
+    """``url -> [decompressed bytes, bytes over the network]`` for pygbag's runtime files.
+
+    The loading card measures progress against these (browsers count decompressed
+    bytes). Only HEAD requests, so nothing is downloaded. Offline, returns what it
+    can; the page then falls back to the sizes servers report.
+    """
+    cdn = f"https://pygame-web.github.io/cdn/{version('pygbag')}/"
+    urls = [cdn + "cpython312/main.wasm", cdn + "cpython312/main.data", cdn + "cpythonrc.py"]
+    try:
+        index_url = f"https://pygame-web.github.io/cdn/index-{version('pygbag')}-cp312.json"
+        with urllib.request.urlopen(index_url, timeout=10) as response:
+            wheel = json.load(response)["pygame"]
+        urls.append(
+            "https://pygame-web.github.io/cdn/"
+            + wheel.replace("<abi>-<abi>-<api>", "cp312-cp312-wasm32_bi_emscripten")
+        )
+    except (OSError, KeyError, ValueError) as exc:
+        print(f"Could not read the CDN package index ({exc}); skipping the pygame size")
+
+    def head(url: str, encoding: str) -> int:
+        request = urllib.request.Request(url, method="HEAD", headers={"Accept-Encoding": encoding})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return int(response.headers["Content-Length"])
+
+    sizes: dict[str, list[int]] = {}
+    for url in urls:
+        try:
+            sizes[url] = [head(url, "identity"), head(url, "gzip")]
+        except (OSError, KeyError, ValueError) as exc:
+            print(f"Could not size {url} ({exc}); the loading card will estimate it")
+    return sizes
+
+
+def write_template() -> Path:
+    """The page template with the runtime's file sizes filled in."""
+    page = (VENDOR / "arcade.tmpl").read_text(encoding="utf-8")
+    page = page.replace("__ARCADE_SIZES__", json.dumps(cdn_sizes()))
+    path = STAGING.parent / "arcade.tmpl"
+    path.write_text(page, encoding="utf-8")
+    return path
+
+
 def pygbag(*args: str) -> None:
-    template = VENDOR / "arcade.tmpl"
+    template = write_template()
     cmd = [
         sys.executable,
         "-m",

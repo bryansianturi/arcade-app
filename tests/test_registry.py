@@ -80,6 +80,17 @@ def test_discovery_registers_apps_sorted_and_skips_private(fake_apps: str) -> No
     assert [a.meta.name for a in apps] == ["Alpha", "Beta"]
 
 
+def test_discover_steps_reports_progress_one_package_at_a_time(fake_apps: str) -> None:
+    reg = registry_module.registry
+    steps = []
+    for loaded, total in reg.discover_steps(fake_apps):
+        steps.append((loaded, total, len(reg)))
+    total = steps[0][1]
+    assert [s[:2] for s in steps] == [(i, total) for i in range(1, total + 1)]
+    assert steps[0][2] <= 1 and len(reg) == 2  # apps register as their step runs
+    assert [a.meta.name for a in reg.all()] == ["Alpha", "Beta"]
+
+
 def test_bad_packages_are_recorded_not_raised(fake_apps: str) -> None:
     registry_module.discover_apps(fake_apps)
     failures = {f.package.rsplit(".", 1)[1]: f.error for f in registry_module.registry.failures}

@@ -46,6 +46,39 @@ def test_browser_storage_survives_corrupt_values() -> None:
     assert storage.load_json("scores.json") == {}
 
 
+class BlockedLocalStorage:
+    """A browser that blocks site storage: every call throws, as Safari's private mode can."""
+
+    def getItem(self, key: str) -> str | None:  # noqa: N802
+        raise Exception("The operation is insecure.")  # how pygbag surfaces a SecurityError
+
+    def setItem(self, key: str, value: str) -> None:  # noqa: N802
+        raise Exception("The operation is insecure.")
+
+
+def test_blocked_browser_storage_keeps_saves_for_the_visit() -> None:
+    storage = BrowserStorage(BlockedLocalStorage())
+    assert storage.load_json("settings.json") == {}  # no crash
+    assert not storage.persistent
+    assert storage.record_score("snake", 12)
+    assert storage.best_score("snake") is not None  # still works until the page closes
+
+
+def test_storage_that_fails_on_write_keeps_what_it_read() -> None:
+    local = FakeLocalStorage()
+    local.items["arcade/scores.json"] = '{"snake": {"default": {"score": 30, "date": "x"}}}'
+    storage = BrowserStorage(local)
+
+    def full(key: str, value: str) -> None:
+        raise Exception("QuotaExceededError")
+
+    local.setItem = full  # type: ignore[method-assign]
+    assert storage.record_score("snake", 40)
+    assert not storage.persistent
+    best = storage.best_score("snake")
+    assert best is not None and best.score == 40
+
+
 @pytest.fixture
 def no_threads(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(background, "USE_THREADS", False)
@@ -83,3 +116,9 @@ def test_think_limit_only_caps_in_the_browser(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(web, "IS_BROWSER", True)
     assert web.think_limit(4.0) == web.BROWSER_THINK_LIMIT
     assert web.think_limit(0.5) == 0.5
+
+
+def test_loading_card_calls_are_no_ops_on_the_desktop() -> None:
+    web.loading_progress("Loading games…", 0.5)
+    web.loading_failed("boom")
+    web.loading_done()

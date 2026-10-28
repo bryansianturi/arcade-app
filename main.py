@@ -17,7 +17,7 @@ from core.canvas import Canvas
 from core.display import LOGICAL_SIZE, configure_sdl, create_display
 from core.logging_setup import setup_logging
 from core.paths import user_data_dir
-from core.registry import discover_apps, registry
+from core.registry import registry
 from core.scene_manager import SceneManager
 from core.screenshots import save_screenshot
 from core.services import Services
@@ -62,7 +62,10 @@ async def run() -> None:
     display = create_display(settings)
     scenes = SceneManager(LOGICAL_SIZE, animations=settings.transitions)
 
-    apps = discover_apps()
+    for loaded, total in registry.discover_steps():
+        web.loading_progress(f"Loading games {loaded}/{total}", loaded / total)
+        await asyncio.sleep(0)  # in the browser, lets the loading card repaint
+    apps = registry.all()
     log.info("Loaded %d app(s): %s", len(apps), ", ".join(a.meta.id for a in apps))
     services = Services(theme, storage, settings, scenes, apps, registry.failures)
 
@@ -72,10 +75,13 @@ async def run() -> None:
         display.apply(s)
 
     settings.subscribe(on_settings_changed)
+    if isinstance(storage, BrowserStorage) and not storage.persistent:
+        services.toasts.show("Progress won't be saved", "This browser is blocking site storage")
     scenes.push(LauncherScreen(services), transition="none")
 
     clock = pygame.time.Clock()
     running = True
+    first_frame = True
     want_screenshot = False
     while running:
         dt = min(clock.tick(FPS) / 1000.0, MAX_DT)
@@ -109,6 +115,9 @@ async def run() -> None:
         if settings.developer_mode:
             devtools.draw_overlay(canvas, services, clock.get_fps(), clock.get_time())
         display.end_frame()
+        if first_frame:
+            first_frame = False
+            web.loading_done()
         background.run_pending()  # browser only: work that would have run on a thread
         await asyncio.sleep(0)
 
