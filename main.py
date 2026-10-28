@@ -6,7 +6,7 @@ import logging
 
 import pygame
 
-from core import draw
+from core import devtools, draw
 from core.canvas import Canvas
 from core.display import LOGICAL_SIZE, Display, configure_sdl
 from core.logging_setup import setup_logging
@@ -60,6 +60,12 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif (
+                event.type == pygame.KEYDOWN
+                and event.key == devtools.RELOAD_KEY
+                and settings.developer_mode
+            ):
+                devtools.hot_reload(services)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F12:
                 want_screenshot = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
@@ -78,8 +84,8 @@ def main() -> None:
             want_screenshot = False
             _take_screenshot(canvas, services)
         services.toasts.draw(canvas, theme)
-        if settings.show_fps:
-            _draw_fps(canvas, theme, clock.get_fps())
+        if settings.developer_mode:
+            devtools.draw_overlay(canvas, services, clock.get_fps(), clock.get_time())
         display.end_frame()
 
     scenes.shutdown()
@@ -95,15 +101,6 @@ def _take_screenshot(canvas: Canvas, services: Services) -> None:
         return
     log.info("Saved screenshot %s", path)
     services.toasts.show("Screenshot saved", path.name, icon=draw.camera_icon)
-
-
-def _draw_fps(surface: Canvas, theme: Theme, fps: float) -> None:
-    font = theme.font(theme.size.caption, "semibold")
-    label = f"{fps:4.0f} FPS"
-    rect = pygame.Rect(0, 0, font.size(label)[0] + 16, 24)
-    rect.bottomright = (surface.get_width() - 8, surface.get_height() - 8)
-    draw.rounded_rect(surface, rect, theme.palette.overlay, theme.radius.sm)
-    draw.text(surface, label, font, theme.palette.success, rect.center, "center")
 
 
 if __name__ == "__main__":

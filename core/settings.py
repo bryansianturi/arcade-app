@@ -28,7 +28,7 @@ class Settings:
     theme: ThemeMode = "dark"
     window_size: tuple[int, int] = (1280, 720)
     fullscreen: bool = False
-    show_fps: bool = False
+    developer_mode: bool = False  # debug overlay + F5 hot reload
     transitions: bool = True
     _listeners: list[Callable[[Settings], None]] = field(
         default_factory=list, repr=False, compare=False
@@ -58,9 +58,11 @@ class Settings:
         size = data.get("window_size")
         if isinstance(size, list | tuple) and tuple(size) in WINDOW_PRESETS:
             self.window_size = (int(size[0]), int(size[1]))
-        for name in ("fullscreen", "show_fps", "transitions"):
+        for name in ("fullscreen", "developer_mode", "transitions"):
             if isinstance(data.get(name), bool):
                 setattr(self, name, data[name])
+        if data.get("show_fps") is True and "developer_mode" not in data:
+            self.developer_mode = True  # the old "Show FPS" toggle became developer mode
 
     def subscribe(self, listener: Callable[[Settings], None]) -> None:
         """Call ``listener`` whenever :meth:`notify` is called (after a change)."""

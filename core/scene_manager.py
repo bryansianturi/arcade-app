@@ -88,6 +88,11 @@ class SceneManager:
         return self._stack[-1] if self._stack else None
 
     @property
+    def stack(self) -> tuple[Scene, ...]:
+        """The scenes from bottom (launcher) to top (current)."""
+        return tuple(self._stack)
+
+    @property
     def depth(self) -> int:
         return len(self._stack)
 

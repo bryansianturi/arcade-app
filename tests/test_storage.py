@@ -76,10 +76,14 @@ def test_app_data_roundtrip(storage: Storage) -> None:
 
 
 def test_settings_roundtrip_and_validation(storage: Storage) -> None:
-    s = Settings(theme="light", window_size=WINDOW_PRESETS[0], show_fps=True)
+    s = Settings(theme="light", window_size=WINDOW_PRESETS[0], developer_mode=True)
     s.save(storage)
     loaded = Settings.load(storage)
-    assert (loaded.theme, loaded.window_size, loaded.show_fps) == ("light", WINDOW_PRESETS[0], True)
+    assert (loaded.theme, loaded.window_size, loaded.developer_mode) == (
+        "light",
+        WINDOW_PRESETS[0],
+        True,
+    )
 
     storage.save_json(
         "settings.json", {"theme": "neon", "window_size": [1, 2], "fullscreen": "yes"}

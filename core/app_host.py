@@ -77,6 +77,10 @@ class AppHost(Scene):
 
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
+        self.services.stats.start_session(self.app_cls.meta.id)
+        self._start_app()
+
+    def _start_app(self) -> None:
         ctx = AppContext(
             theme=self.services.theme,
             storage=self.services.storage,
@@ -93,8 +97,23 @@ class AppHost(Scene):
             self.app = self.app_cls(ctx)
             self.app.on_enter()
 
-        self.services.stats.start_session(self.app_cls.meta.id)
+        self.state = HostState.RUNNING
+        self._menu = None
+        self.error = ""
         self._guard("startup", start)
+
+    def swap_app(self, app_cls: type[BaseApp]) -> None:
+        """Replace the running app with ``app_cls`` (developer hot reload).
+
+        The old instance gets ``on_exit`` so it can save; the new one starts fresh
+        and reads that saved state, like reopening the app.
+        """
+        if self.app is not None:
+            app = self.app
+            self._guard("on_exit", app.on_exit)
+            self.app = None
+        self.app_cls = app_cls
+        self._start_app()
 
     def on_exit(self) -> None:
         if self.app is not None:

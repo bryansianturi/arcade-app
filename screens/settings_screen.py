@@ -1,4 +1,4 @@
-"""Settings screen: theme, window size, fullscreen, FPS counter, animations, controls, data."""
+"""Settings screen: theme, window size, fullscreen, developer mode, animations, controls, data."""
 
 from __future__ import annotations
 
@@ -69,7 +69,11 @@ class SettingsScreen(Scene):
                 "Also toggled any time with F11",
                 toggle(s.fullscreen, self._set_fullscreen),
             ),
-            _Row("Show FPS", "Frame-rate counter in the corner", toggle(s.show_fps, self._set_fps)),
+            _Row(
+                "Developer mode",
+                "FPS/debug overlay · F5 reloads the current app",
+                toggle(s.developer_mode, self._set_developer),
+            ),
             _Row("Animations", "Screen transitions", toggle(s.transitions, self._set_transitions)),
             _Row(
                 "Controls",
@@ -107,8 +111,8 @@ class SettingsScreen(Scene):
         self.services.settings.fullscreen = value
         self._apply()
 
-    def _set_fps(self, value: bool) -> None:
-        self.services.settings.show_fps = value
+    def _set_developer(self, value: bool) -> None:
+        self.services.settings.developer_mode = value
         self._apply()
 
     def _set_transitions(self, value: bool) -> None:

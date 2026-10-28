@@ -129,6 +129,41 @@ class AppRegistry:
         self._packages[name] = meta.id
         return found[0]
 
+    def reload(self, app_id: str) -> type[BaseApp]:
+        """Re-import an app's package from disk and return the new class (hot reload).
+
+        The manifest is read again too. On failure the old class and modules are
+        restored and :class:`RegistrationError` is raised with the reason.
+        """
+        old = self._apps.get(app_id)
+        if old is None:
+            raise RegistrationError(f"No app {app_id!r} is registered")
+        name = next((pkg for pkg, i in self._packages.items() if i == app_id), None)
+        if name is None:
+            raise RegistrationError(f"{app_id!r} was not discovered from a package")
+        package = sys.modules.get(name)
+        file = getattr(package, "__file__", None)
+        if file is None:
+            raise RegistrationError(f"Package {name} is not loaded")
+        saved = {m: mod for m, mod in sys.modules.items() if m == name or m.startswith(name + ".")}
+        for module_name in saved:
+            del sys.modules[module_name]
+        del self._apps[app_id]
+        del self._packages[name]
+        failures_before = len(self.failures)
+        importlib.invalidate_caches()
+        new = self._load_package(name, Path(file).parent / MANIFEST_NAME)
+        if new is None:
+            reason = self.failures[-1].error if len(self.failures) > failures_before else "?"
+            del self.failures[failures_before:]
+            for cls in [c for c in self._apps.values() if c.__module__.startswith(name)]:
+                del self._apps[cls.meta.id]
+            sys.modules.update(saved)
+            self._apps[app_id] = old
+            self._packages[name] = app_id
+            raise RegistrationError(reason)
+        return new
+
     def get(self, app_id: str) -> type[BaseApp] | None:
         return self._apps.get(app_id)
 
