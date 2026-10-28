@@ -195,7 +195,7 @@ class SnakeApp(BaseApp):
             "P pause · Esc menu",
             t.font(t.size.caption),
             p.text_muted,
-            (BOARD.centerx, BOARD.bottom + 14),
+            (BOARD.centerx, BOARD.bottom + 10),
             "midtop",
         )
 
