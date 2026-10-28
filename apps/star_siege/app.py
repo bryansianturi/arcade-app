@@ -68,6 +68,25 @@ class StarSiegeApp(BaseApp):
         tracks_scores=True,
     )
 
+    @classmethod
+    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+        draw.rounded_rect(surface, rect, SPACE, theme.radius.md)
+        draw.rounded_rect(surface, rect, ACCENT, theme.radius.md, 2)
+        u = rect.width / 8
+        cx = rect.centerx
+        for i, color in enumerate(ENEMY_COLORS):
+            x = rect.x + (2 + i * 2) * u
+            pygame.draw.circle(surface, color, (x, rect.y + 2.2 * u), u * 0.6)
+        pygame.draw.line(
+            surface, (220, 245, 255), (cx, rect.y + 3.6 * u), (cx, rect.y + 4.6 * u), 2
+        )
+        body = [
+            (cx, rect.y + 5 * u),
+            (cx + 1.6 * u, rect.y + 6.6 * u),
+            (cx - 1.6 * u, rect.y + 6.6 * u),
+        ]
+        pygame.draw.polygon(surface, PLAYER_COLOR, body)
+
     def on_enter(self) -> None:
         self.rng = random.Random()
         self.game = SiegeGame(self.rng)

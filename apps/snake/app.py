@@ -50,6 +50,19 @@ class SnakeApp(BaseApp):
         variants=("wrap", "walls"),
     )
 
+    @classmethod
+    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+        draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
+        u = rect.width / 6
+        path = [(1, 4.2), (1, 2.5), (3, 2.5), (3, 4.2), (5, 4.2), (5, 1.6)]
+        pts = [(rect.x + x * u, rect.y + y * u) for x, y in path]
+        dark = (16, 70, 42)
+        pygame.draw.lines(surface, dark, False, pts, max(3, round(u * 0.9)))
+        for p in pts:
+            pygame.draw.circle(surface, dark, p, u * 0.45)
+        pygame.draw.circle(surface, FOOD, (rect.x + 1.4 * u, rect.y + 1.2 * u), u * 0.55)
+        pygame.draw.circle(surface, (255, 255, 255), (pts[-1][0], pts[-1][1] + u * 0.1), u * 0.18)
+
     def on_enter(self) -> None:
         self.wrap = bool(self.data.get("wrap", False))
         self.mode_picker = SegmentedControl(

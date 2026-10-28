@@ -22,7 +22,7 @@ CATEGORIES: tuple[tuple[str, str | None], ...] = (
     ("Tools", "tool"),
 )
 CARD_MIN_WIDTH = 260
-CARD_HEIGHT = 196
+CARD_HEIGHT = 208
 GRID_TOP = 196
 
 

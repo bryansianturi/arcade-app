@@ -71,7 +71,7 @@ class Card(Widget):
             draw.rounded_rect(surface, rect, ring, t.radius.lg, 2)
 
         pad = t.space.lg
-        icon_rect = pygame.Rect(rect.x + pad, rect.y + pad, 48, 48)
+        icon_rect = pygame.Rect(rect.x + pad, rect.y + pad, 44, 44)
         if self.icon is not None:
             self.icon(surface, icon_rect, t)
         else:
@@ -90,7 +90,7 @@ class Card(Widget):
 
         width = rect.width - pad * 2
         title_font = t.font(t.size.title, "semibold")
-        title_y = icon_rect.bottom + t.space.md
+        title_y = icon_rect.bottom + 12
         draw.text(
             surface,
             draw.fit_text(self.title, title_font, width),

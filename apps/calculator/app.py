@@ -47,6 +47,18 @@ class CalculatorApp(BaseApp):
         accent=ACCENT,
     )
 
+    @classmethod
+    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+        draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
+        key = rect.width // 4
+        gap = rect.width // 10
+        x0 = rect.centerx - key - gap // 2
+        y0 = rect.centery - key - gap // 2
+        for i in range(4):
+            r = pygame.Rect(x0 + (i % 2) * (key + gap), y0 + (i // 2) * (key + gap), key, key)
+            color = (255, 255, 255) if i != 3 else (120, 60, 10)
+            pygame.draw.rect(surface, color, r, border_radius=3)
+
     def on_enter(self) -> None:
         self.calc = Calculator()
         screen = self.ctx.screen_rect

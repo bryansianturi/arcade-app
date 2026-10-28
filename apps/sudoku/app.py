@@ -65,6 +65,21 @@ class SudokuApp(BaseApp):
         variants=DIFFICULTIES,
     )
 
+    @classmethod
+    def draw_icon(cls, surface: pygame.Surface, rect: pygame.Rect, theme: Theme) -> None:
+        draw.rounded_rect(surface, rect, ACCENT, theme.radius.md)
+        inner = rect.inflate(-rect.width // 3, -rect.height // 3)
+        step = inner.width / 3
+        for k in (1, 2):
+            x = round(inner.x + k * step)
+            y = round(inner.y + k * step)
+            pygame.draw.line(surface, (255, 255, 255), (x, inner.y), (x, inner.bottom), 2)
+            pygame.draw.line(surface, (255, 255, 255), (inner.x, y), (inner.right, y), 2)
+        font = theme.font(max(8, round(step * 0.8)), "bold")
+        for (c, r), digit in (((0, 0), "5"), ((2, 1), "3"), ((1, 2), "9")):
+            pos = (round(inner.x + (c + 0.5) * step), round(inner.y + (r + 0.5) * step))
+            draw.text(surface, digit, font, (255, 255, 255), pos, "center")
+
     # ------------------------------------------------------------------ lifecycle
     def on_enter(self) -> None:
         self.game: SudokuGame | None = None
