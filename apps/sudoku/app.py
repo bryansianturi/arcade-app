@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import date
 from typing import Any, Literal
 
 import pygame
@@ -23,6 +24,7 @@ SIDE_X = BOARD.right + 56
 SIDE_W = 1280 - SIDE_X - 80
 CHECK_SECONDS = 2.5
 SAVE_KEY = "saved_game"
+DAILY_DIFFICULTY: Difficulty = "medium"
 
 DIGIT_KEYS = {getattr(pygame, f"K_{d}"): d for d in range(1, 10)} | {
     getattr(pygame, f"K_KP{d}"): d for d in range(1, 10)
@@ -68,31 +70,42 @@ class SudokuApp(BaseApp):
         self.check_timer = 0.0
         self.toast = ""
         self.new_best = False
+        self.daily_date: str | None = None  # ISO date when playing a daily challenge
         self._build_side_panel()
         self.dialog: ButtonMenu | None = self._chooser()
 
     def on_exit(self) -> None:
         if self.game is not None and self.mode == "playing":
-            self.data[SAVE_KEY] = _serialize(self.game)
+            self.data[SAVE_KEY] = _serialize(self.game, self.daily_date)
         else:
             self.data.pop(SAVE_KEY, None)
         self.data.save()
 
     def restart(self) -> None:
-        """Restart = a fresh puzzle at the same difficulty."""
+        """Restart = a fresh puzzle at the same difficulty (or today's daily again)."""
         difficulty = self.game.difficulty if self.game else "easy"
         self.data.pop(SAVE_KEY, None)
         self.data.save()
-        self._start(difficulty)
+        if self.daily_date is not None:
+            self._start_daily()
+        else:
+            self._start(difficulty)
 
     def _start(self, difficulty: Difficulty) -> None:
         self._begin(SudokuGame.new(difficulty))
 
-    def _continue(self, saved: dict[str, Any]) -> None:
-        self._begin(_deserialize(saved))
+    def _start_daily(self) -> None:
+        """Today's puzzle: generated from the date seed, so it's the same for everyone."""
+        daily = self.daily
+        self._begin(SudokuGame.new(DAILY_DIFFICULTY, daily.rng()), daily.today.isoformat())
 
-    def _begin(self, game: SudokuGame) -> None:
+    def _continue(self, saved: dict[str, Any]) -> None:
+        day = saved.get("daily")
+        self._begin(_deserialize(saved), day if isinstance(day, str) else None)
+
+    def _begin(self, game: SudokuGame, daily_date: str | None = None) -> None:
         self.game = game
+        self.daily_date = daily_date
         self.mode = "playing"
         self.dialog = None
         self.check_cells.clear()
@@ -103,10 +116,16 @@ class SudokuApp(BaseApp):
         items: list[tuple[str, Callable[[], None]]] = []
         saved = self.data.get(SAVE_KEY)
         if isinstance(saved, dict) and _valid_save(saved):
-            label = (
-                f"Continue · {saved['difficulty'].title()} {format_score(saved['elapsed'], 'time')}"
-            )
+            kind = "Daily" if saved.get("daily") else saved["difficulty"].title()
+            label = f"Continue · {kind} {format_score(saved['elapsed'], 'time')}"
             items.append((label, lambda: self._continue(saved)))
+        done = self.daily.result()
+        daily_label = (
+            f"Daily · solved in {format_score(done, 'time')}"
+            if done is not None
+            else f"Daily · {self.daily.today.strftime('%b %d')}"
+        )
+        items.append((daily_label, self._start_daily))
         for d in DIFFICULTIES:
             best = self.best_score(d)
             suffix = f"   · best {format_score(best.score, 'time')}" if best else ""
@@ -116,7 +135,7 @@ class SudokuApp(BaseApp):
     def _open_chooser(self) -> None:
         if self.game is not None and self.mode == "playing":
             # Keep the current game so "Continue" is offered.
-            self.data[SAVE_KEY] = _serialize(self.game)
+            self.data[SAVE_KEY] = _serialize(self.game, self.daily_date)
         self.mode = "choose"
         self.dialog = self._chooser()
 
@@ -174,7 +193,12 @@ class SudokuApp(BaseApp):
         assert self.game is not None
         self.mode = "solved"
         seconds = round(self.game.elapsed)
-        self.new_best = self.submit_score(seconds, self.game.difficulty)
+        if self.daily_date is not None:
+            # Daily times are kept per day, not mixed into the difficulty bests.
+            self.new_best = self.daily.record(seconds, "lower", date.fromisoformat(self.daily_date))
+            self.unlock("daily")
+        else:
+            self.new_best = self.submit_score(seconds, self.game.difficulty)
         self.unlock("solve")
         if self.game.difficulty == "hard":
             self.unlock("solve_hard")
@@ -326,7 +350,7 @@ class SudokuApp(BaseApp):
         game = self.game
         draw.text(surface, "Sudoku", t.font(t.size.heading, "bold"), p.text, (SIDE_X, 50))
         if game is not None:
-            chip = game.difficulty.title()
+            chip = f"Daily · {self.daily_date}" if self.daily_date else game.difficulty.title()
             font = t.font(t.size.caption, "semibold")
             rect = pygame.Rect(0, 0, font.size(chip)[0] + 20, 26)
             rect.topright = (SIDE_X + SIDE_W, 56)
@@ -339,8 +363,14 @@ class SudokuApp(BaseApp):
                 ACCENT,
                 (SIDE_X, 96),
             )
-            best = self.best_score(game.difficulty)
-            best_text = f"Best {format_score(best.score, 'time')}" if best else "No best time yet"
+            if self.daily_date is not None:
+                streak = self.daily.streak()
+                best_text = f"Daily streak: {streak} day{'s' if streak != 1 else ''}"
+            else:
+                best = self.best_score(game.difficulty)
+                best_text = (
+                    f"Best {format_score(best.score, 'time')}" if best else "No best time yet"
+                )
             draw.text(surface, best_text, t.font(t.size.label), p.text_muted, (SIDE_X, 154))
             if self.toast:
                 color = p.success if not self.check_cells else p.danger
@@ -404,7 +434,12 @@ class SudokuApp(BaseApp):
                 (panel.centerx, panel.y + 76),
                 "midtop",
             )
-            sub = "New best time!" if self.new_best else f"{self.game.difficulty.title()} puzzle"
+            if self.daily_date is not None:
+                sub = "Daily challenge complete!"
+            else:
+                sub = (
+                    "New best time!" if self.new_best else f"{self.game.difficulty.title()} puzzle"
+                )
             draw.text(
                 surface,
                 sub,
@@ -437,8 +472,9 @@ class SudokuApp(BaseApp):
 
 
 # ---------------------------------------------------------------------- persistence
-def _serialize(game: SudokuGame) -> dict[str, Any]:
+def _serialize(game: SudokuGame, daily_date: str | None = None) -> dict[str, Any]:
     return {
+        "daily": daily_date,
         "puzzle": game.puzzle,
         "solution": game.solution,
         "values": game.values,

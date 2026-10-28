@@ -34,6 +34,7 @@ import pygame
 from core import draw
 from core.achievements import Achievement, AchievementService
 from core.canvas import Canvas
+from core.daily import DailyChallenge
 from core.input import InputMap
 from core.settings import Settings
 from core.storage import DEFAULT_VARIANT, AppData, ScoreEntry, ScoreOrder, Storage
@@ -195,6 +196,11 @@ class BaseApp(ABC):
         if self._data is None:
             self._data = self.ctx.storage.app_data(self.meta.id)
         return self._data
+
+    @property
+    def daily(self) -> DailyChallenge:
+        """Today's date-seeded challenge (same for everyone) and its saved results."""
+        return DailyChallenge(self.meta.id, self.data)
 
     def submit_score(self, score: float, variant: str = DEFAULT_VARIANT) -> bool:
         """Record ``score`` and return ``True`` if it is a new personal best."""

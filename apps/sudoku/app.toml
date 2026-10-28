@@ -21,3 +21,8 @@ description = "Solve a puzzle."
 id = "solve_hard"
 name = "Logician"
 description = "Solve a Hard puzzle."
+
+[[achievements]]
+id = "daily"
+name = "Daily habit"
+description = "Solve the daily challenge."
