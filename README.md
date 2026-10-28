@@ -30,6 +30,7 @@ as simple as dropping a folder into `apps/`.
 | **Four in a Row** | Game | Original take on the drop-four genre: negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
 | **Stackfall**  | Game | Original falling-block puzzle: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview, custom key repeat |
 | **Brick Blitz** | Game | Original brick breaker: 4 hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
+| **Paddle Duel** | Game | Original paddle game: 2 players on one keyboard or vs a CPU that predicts bounces (3 levels, simulation-tested), spin, longest-rally record |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -68,6 +69,7 @@ python main.py
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
 | Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
+| Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
