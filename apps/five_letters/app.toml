@@ -11,3 +11,23 @@ min_framework = "1.0"
 order = "higher"
 format = "points"
 variants = ["streak"]
+
+[[achievements]]
+id = "win"
+name = "Wordsmith"
+description = "Guess a hidden word."
+
+[[achievements]]
+id = "two_guesses"
+name = "Sharpshooter"
+description = "Guess the word in two tries or fewer."
+
+[[achievements]]
+id = "streak_5"
+name = "On a roll"
+description = "Win 5 games in a row."
+
+[[achievements]]
+id = "hard_win"
+name = "No shortcuts"
+description = "Win in hard mode."

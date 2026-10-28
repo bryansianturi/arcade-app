@@ -11,3 +11,18 @@ min_framework = "1.0"
 order = "higher"
 format = "points"
 variants = ["rally"]
+
+[[achievements]]
+id = "beat_cpu"
+name = "Paddle up"
+description = "Win a match against the CPU."
+
+[[achievements]]
+id = "beat_hard"
+name = "Unflappable"
+description = "Win a match against the Hard CPU."
+
+[[achievements]]
+id = "rally_15"
+name = "Long rally"
+description = "Reach a rally of 15."

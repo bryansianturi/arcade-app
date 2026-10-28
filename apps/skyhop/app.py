@@ -65,7 +65,11 @@ class SkyhopApp(BaseApp):
         ):
             self._hop()
 
+    def _check_achievements(self) -> None:
+        self.unlock_milestones(self.game.score, {"gate_1": 1, "gate_10": 10, "gate_30": 30})
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.pulse = max(0.0, self.pulse - dt)
         if self.menu is not None:
             self.menu.update(dt)

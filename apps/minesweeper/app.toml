@@ -11,3 +11,18 @@ min_framework = "1.0"
 order = "lower"
 format = "time"
 variants = ["easy", "medium", "hard"]
+
+[[achievements]]
+id = "win_easy"
+name = "Mine-free"
+description = "Clear an Easy field."
+
+[[achievements]]
+id = "win_hard"
+name = "Bomb squad"
+description = "Clear a Hard field."
+
+[[achievements]]
+id = "fast_easy"
+name = "Quick sweep"
+description = "Clear an Easy field in under 30 seconds."

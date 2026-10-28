@@ -11,3 +11,13 @@ min_framework = "1.0"
 order = "lower"
 format = "time"
 variants = ["easy", "medium", "hard"]
+
+[[achievements]]
+id = "solve"
+name = "Solved"
+description = "Solve a puzzle."
+
+[[achievements]]
+id = "solve_hard"
+name = "Logician"
+description = "Solve a Hard puzzle."

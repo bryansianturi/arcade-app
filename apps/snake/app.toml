@@ -11,3 +11,23 @@ min_framework = "1.0"
 order = "higher"
 format = "points"
 variants = ["wrap", "walls"]
+
+[[achievements]]
+id = "first_bite"
+name = "First bite"
+description = "Eat your first piece of food."
+
+[[achievements]]
+id = "score_25"
+name = "Noodle"
+description = "Score 25 in one game."
+
+[[achievements]]
+id = "score_50"
+name = "Anaconda"
+description = "Score 50 in one game."
+
+[[achievements]]
+id = "walls_20"
+name = "Tight corners"
+description = "Score 20 with walls on."

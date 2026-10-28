@@ -170,6 +170,12 @@ class FiveLettersApp(BaseApp):
         self.data.save()
         if won:
             self.submit_score(self.stats.best_streak, "streak")
+            self.unlock("win")
+            if len(self.game.history) <= 2:
+                self.unlock("two_guesses")
+            if self.game.hard:
+                self.unlock("hard_win")
+            self.unlock_milestones(self.stats.streak, {"streak_5": 5})
             praise = ("Genius!", "Brilliant!", "Great!", "Nice!", "Good!", "Phew!")
             self._show_toast(praise[len(self.game.history) - 1], 3)
         else:

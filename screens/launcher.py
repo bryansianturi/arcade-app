@@ -50,20 +50,19 @@ class LauncherScreen(Scene):
             CARD_HEIGHT,
             gap=t.space.lg,
         )
-        self.settings_btn = Button(
-            t,
-            (w - MARGIN_X - 120, HEADER_Y + 4, 120, 40),
-            "Settings",
-            self._open_settings,
-            icon=draw.gear_icon,
-        )
-        self.scores_btn = Button(
-            t,
-            (w - MARGIN_X - 120 - 12 - 150, HEADER_Y + 4, 150, 40),
-            "High Scores",
-            self._open_scores,
-            icon="★",
-        )
+        # Header buttons, laid out right to left.
+        x = w - MARGIN_X
+        self.header_buttons: list[Button] = []
+        for label, width, action, icon in (
+            ("Settings", 120, self._open_settings, draw.gear_icon),
+            ("High Scores", 150, self._open_scores, draw.star_icon),
+            ("Achievements", 166, self._open_achievements, draw.trophy_icon),
+        ):
+            x -= width
+            self.header_buttons.insert(
+                0, Button(t, (x, HEADER_Y + 4, width, 40), label, action, icon=icon)
+            )
+            x -= 12
         self.tabs = SegmentedControl(
             t,
             (MARGIN_X, 128, 330, 40),
@@ -146,6 +145,11 @@ class LauncherScreen(Scene):
 
         self.manager.push(HighScoresScreen(self.services))
 
+    def _open_achievements(self) -> None:
+        from screens.achievements import AchievementsScreen
+
+        self.manager.push(AchievementsScreen(self.services))
+
     def _sync_focus(self) -> None:
         for i, card in enumerate(self.cards):
             card.focused = self.keyboard_nav and i == self.selected
@@ -164,7 +168,7 @@ class LauncherScreen(Scene):
 
     # ------------------------------------------------------------------ events
     def handle_event(self, event: pygame.event.Event) -> None:
-        for widget in (self.search, self.tabs, self.settings_btn, self.scores_btn):
+        for widget in (self.search, self.tabs, *self.header_buttons):
             if widget.handle_event(event):
                 return
 
@@ -210,7 +214,7 @@ class LauncherScreen(Scene):
     # ------------------------------------------------------------------ frame
     def update(self, dt: float) -> None:
         self.scroll = approach(self.scroll, self.scroll_target, dt, 16)
-        for widget in (self.search, self.tabs, self.settings_btn, self.scores_btn):
+        for widget in (self.search, self.tabs, *self.header_buttons):
             widget.update(dt)
         for i, card in enumerate(self.cards):
             card.rect = self.grid.cell(i, round(self.scroll))
@@ -230,8 +234,8 @@ class LauncherScreen(Scene):
         count = len(self.services.apps)
         subtitle = f"{count} app{'s' if count != 1 else ''} · pick one to play"
         draw.text(surface, subtitle, t.font(t.size.label), p.text_muted, (MARGIN_X, HEADER_Y + 50))
-        self.scores_btn.draw(surface)
-        self.settings_btn.draw(surface)
+        for button in self.header_buttons:
+            button.draw(surface)
         self.tabs.draw(surface)
         self.search.draw(surface)
 

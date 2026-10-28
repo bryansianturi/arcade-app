@@ -10,3 +10,18 @@ min_framework = "1.0"
 [scores]
 order = "higher"
 format = "points"
+
+[[achievements]]
+id = "level_2"
+name = "Breakthrough"
+description = "Clear the first level."
+
+[[achievements]]
+id = "level_5"
+name = "Brick by brick"
+description = "Clear all four levels."
+
+[[achievements]]
+id = "score_3000"
+name = "Demolition crew"
+description = "Score 3,000 points in one game."

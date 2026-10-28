@@ -6,3 +6,13 @@ accent = "#6366F1"
 version = "1.0.0"
 author = "Arcade contributors"
 min_framework = "1.0"
+
+[[achievements]]
+id = "win"
+name = "Connected"
+description = "Beat the computer."
+
+[[achievements]]
+id = "win_hard"
+name = "Grandmaster"
+description = "Beat the computer on Hard."

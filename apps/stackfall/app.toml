@@ -10,3 +10,18 @@ min_framework = "1.0"
 [scores]
 order = "higher"
 format = "points"
+
+[[achievements]]
+id = "clear_4"
+name = "Four at once"
+description = "Clear four lines with one piece."
+
+[[achievements]]
+id = "lines_40"
+name = "Forty lines"
+description = "Clear 40 lines in one game."
+
+[[achievements]]
+id = "level_5"
+name = "Picking up speed"
+description = "Reach level 5."

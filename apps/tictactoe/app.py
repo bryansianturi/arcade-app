@@ -186,7 +186,15 @@ class TicTacToeApp(BaseApp):
             elif event.key == pygame.K_n:
                 self._new_round()
 
+    def _check_achievements(self) -> None:
+        g = self.game
+        if g.result == g.human:
+            self.unlock("win")
+        elif g.result == "draw" and g.level == "unbeatable":
+            self.unlock("draw_unbeatable")
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.time += dt
         for widget in (self.level_picker, self.first_picker, self.new_btn):
             widget.update(dt)

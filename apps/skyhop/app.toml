@@ -10,3 +10,18 @@ min_framework = "1.0"
 [scores]
 order = "higher"
 format = "points"
+
+[[achievements]]
+id = "gate_1"
+name = "Liftoff"
+description = "Fly through your first gate."
+
+[[achievements]]
+id = "gate_10"
+name = "Frequent flyer"
+description = "Pass 10 gates in one flight."
+
+[[achievements]]
+id = "gate_30"
+name = "Night owl"
+description = "Pass 30 gates in one flight."

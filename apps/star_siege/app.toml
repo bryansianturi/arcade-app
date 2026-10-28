@@ -10,3 +10,18 @@ min_framework = "1.0"
 [scores]
 order = "higher"
 format = "points"
+
+[[achievements]]
+id = "wave_2"
+name = "Wave breaker"
+description = "Clear the first wave."
+
+[[achievements]]
+id = "wave_5"
+name = "Siege survivor"
+description = "Reach wave 5."
+
+[[achievements]]
+id = "score_5000"
+name = "Ace pilot"
+description = "Score 5,000 points in one game."

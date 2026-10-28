@@ -45,6 +45,8 @@ class TemplateApp(BaseApp):
 
     def update(self, dt: float) -> None:
         self.button.update(dt)
+        # Achievements are declared in app.toml; unlocking twice is harmless.
+        self.unlock_milestones(self.counter.score, {"ten_clicks": 10})
 
     def draw(self, surface: Canvas) -> None:
         t = self.theme
@@ -59,7 +61,8 @@ class TemplateApp(BaseApp):
             "center",
         )
         best = self.best_score()
-        hint = f"Best: {int(best.score)}" if best else "Press Esc for the pause menu"
+        pause_key = self.input.label("pause")
+        hint = f"Best: {int(best.score)}" if best else f"Press {pause_key} for the pause menu"
         draw.text(
             surface, hint, t.font(t.size.label), t.palette.text_muted, (cx, cy + 90), "center"
         )

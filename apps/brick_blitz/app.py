@@ -112,7 +112,13 @@ class BrickBlitzApp(BaseApp):
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             g.launch()
 
+    def _check_achievements(self) -> None:
+        # ``level`` counts levels cleared so far (0-based index of the current one).
+        self.unlock_milestones(self.game.level, {"level_2": 1, "level_5": 4})
+        self.unlock_milestones(self.game.score, {"score_3000": 3000})
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.time += dt
         self.banner = max(0.0, self.banner - dt)
         self._update_particles(dt)

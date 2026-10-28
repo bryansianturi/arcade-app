@@ -10,3 +10,18 @@ min_framework = "1.0"
 [scores]
 order = "higher"
 format = "points"
+
+[[achievements]]
+id = "tile_512"
+name = "Halfway there"
+description = "Make a 512 tile."
+
+[[achievements]]
+id = "tile_1024"
+name = "So close"
+description = "Make a 1024 tile."
+
+[[achievements]]
+id = "tile_2048"
+name = "2048!"
+description = "Make the 2048 tile."

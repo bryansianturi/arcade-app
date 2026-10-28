@@ -171,7 +171,13 @@ class Twenty48App(BaseApp):
                 else:
                     self._move("down" if dy > 0 else "up")
 
+    def _check_achievements(self) -> None:
+        self.unlock_milestones(
+            self.game.max_tile(), {"tile_512": 512, "tile_1024": 1024, "tile_2048": 2048}
+        )
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.anim += dt
         self.new_btn.update(dt)
         if self.menu is not None:

@@ -210,6 +210,11 @@ class MemoryMatchApp(BaseApp):
         if self.game.won and not self.recorded:
             self.recorded = True
             self.new_best = self.submit_score(max(1, round(self.game.elapsed)), self.size)
+            self.unlock("win")
+            if self.game.moves <= 1.5 * len(self.game.cards) / 2:
+                self.unlock("perfect")
+            if self.size == "hard":
+                self.unlock("win_hard")
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.picker.handle_event(event) or self.new_btn.handle_event(event):

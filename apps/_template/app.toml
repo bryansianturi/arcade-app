@@ -1,12 +1,21 @@
-id = "template"
+# App manifest: read by the launcher before any of the app's code runs.
+id = "template"                  # unique and stable: it's the save-file key
 name = "Template"
 description = "A minimal example app to copy."
-category = "tool"
+category = "tool"                # "game" or "tool"
 accent = "#78C8FF"
 version = "1.0.0"
 author = "Arcade contributors"
-min_framework = "1.0"
+min_framework = "1.0"            # oldest framework version this app works with
 
+# Optional: show the app on the High Scores screen.
 [scores]
-order = "higher"
-format = "points"
+order = "higher"                 # "lower" for times
+format = "points"                # or "time"
+# variants = ["easy", "hard"]    # optional per-variant bests
+
+# Optional, repeatable: unlock with self.unlock("ten_clicks").
+[[achievements]]
+id = "ten_clicks"
+name = "Clicker"
+description = "Click the button 10 times."

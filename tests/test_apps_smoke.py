@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import inspect
 import random
+import re
 import sys
 from collections.abc import Iterator
+from pathlib import Path
 
 import pygame
 import pytest
@@ -116,3 +119,21 @@ def test_code_accent_matches_manifest(app_cls: type[BaseApp]) -> None:
     module = sys.modules[app_cls.__module__]
     accent = getattr(module, "ACCENT", None)
     assert accent is None or tuple(accent) == app_cls.meta.accent
+
+
+UNLOCK_CALL = re.compile(r'\.unlock\(\s*"(\w+)"')
+MILESTONES = re.compile(r"\.unlock_milestones\([^{]*\{([^}]*)\}", re.S)
+
+
+@pytest.mark.parametrize("app_cls", ALL_APPS, ids=lambda a: a.meta.id)
+def test_unlocked_achievements_are_declared(app_cls: type[BaseApp]) -> None:
+    """Every achievement id used in code exists in app.toml, and games have 2-4."""
+    source = Path(inspect.getfile(app_cls)).read_text()
+    used = set(UNLOCK_CALL.findall(source))
+    for block in MILESTONES.findall(source):
+        used.update(re.findall(r'"(\w+)"\s*:', block))
+    declared = {a.id for a in app_cls.meta.achievements}
+    assert used <= declared, f"undeclared: {used - declared}"
+    if app_cls.meta.category == "game" and not app_cls.meta.id.startswith("template"):
+        assert 2 <= len(declared) <= 4
+        assert used == declared, f"never unlocked: {declared - used}"

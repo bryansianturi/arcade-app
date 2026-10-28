@@ -6,3 +6,13 @@ accent = "#475569"
 version = "1.0.0"
 author = "Arcade contributors"
 min_framework = "1.0"
+
+[[achievements]]
+id = "win"
+name = "Three in a row"
+description = "Win a game."
+
+[[achievements]]
+id = "draw_unbeatable"
+name = "Stalemate"
+description = "Draw against the Unbeatable computer."

@@ -187,6 +187,8 @@ class StackfallApp(BaseApp):
             self.side_dir = 0
 
     def _after_step(self, result: StepResult) -> None:
+        if len(result.cleared) >= 4:
+            self.unlock("clear_4")
         for row in result.cleared:
             if row >= 0:
                 self.flashes.append((row, FLASH_SECONDS))
@@ -201,7 +203,12 @@ class StackfallApp(BaseApp):
                 accent=ACCENT,
             )
 
+    def _check_achievements(self) -> None:
+        self.unlock_milestones(self.game.lines, {"lines_40": 40})
+        self.unlock_milestones(self.game.level, {"level_5": 5})
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.flashes = [(r, t - dt) for r, t in self.flashes if t - dt > 0]
         if self.menu is not None:
             self.menu.update(dt)

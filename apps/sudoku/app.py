@@ -175,6 +175,9 @@ class SudokuApp(BaseApp):
         self.mode = "solved"
         seconds = round(self.game.elapsed)
         self.new_best = self.submit_score(seconds, self.game.difficulty)
+        self.unlock("solve")
+        if self.game.difficulty == "hard":
+            self.unlock("solve_hard")
         self.data.pop(SAVE_KEY, None)
         self.data.save()
         self.dialog = ButtonMenu(

@@ -200,7 +200,15 @@ class FourInARowApp(BaseApp):
             elif event.key == pygame.K_n:
                 self._new_round()
 
+    def _check_achievements(self) -> None:
+        g = self.game
+        if g.winner is not None and g.winner == g.human:
+            self.unlock("win")
+            if g.level == "hard":
+                self.unlock("win_hard")
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.time += dt
         for widget in (self.level_picker, self.first_picker, self.new_btn):
             widget.update(dt)

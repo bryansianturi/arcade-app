@@ -134,7 +134,16 @@ class PaddleDuelApp(BaseApp):
         elif event.type == pygame.KEYUP:
             self.held.discard(event.key)
 
+    def _check_achievements(self) -> None:
+        g = self.game
+        self.unlock_milestones(g.best_rally, {"rally_15": 15})
+        if g.winner == "left" and self.cpu is not None:
+            self.unlock("beat_cpu")
+            if self._level == "hard":
+                self.unlock("beat_hard")
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         for side in self.flash:
             self.flash[side] = max(0.0, self.flash[side] - dt)
         if self.menu is not None:

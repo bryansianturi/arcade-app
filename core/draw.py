@@ -228,6 +228,47 @@ def camera_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int 
     gfx.circle(surface, color, body.center, size * 0.17, 2)
 
 
+def lock_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """A padlock."""
+    cx, cy = center
+    body = pygame.FRect(0, 0, size * 0.7, size * 0.5)
+    body.midtop = (cx, cy - size * 0.05)
+    shackle = pygame.FRect(0, 0, size * 0.44, size * 0.6)
+    shackle.midbottom = (cx, body.top + size * 0.18)
+    gfx.rect(surface, color, shackle, max(1.5, size * 0.1), border_radius=size * 0.22)
+    gfx.rect(surface, color, body, border_radius=size * 0.1)
+
+
+def trophy_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """A trophy cup on a base."""
+    cx, cy = center
+    cup = pygame.FRect(0, 0, size * 0.56, size * 0.5)
+    cup.midtop = (cx, cy - size * 0.45)
+    gfx.rect(surface, color, cup, border_radius=size * 0.2)
+    for side in (-1, 1):  # handles
+        handle = pygame.FRect(0, 0, size * 0.26, size * 0.26)
+        handle.center = (cx + side * size * 0.3, cup.top + size * 0.15)
+        gfx.rect(surface, color, handle, max(1.5, size * 0.08), border_radius=size * 0.13)
+    gfx.rect(surface, color, (cx - size * 0.05, cup.bottom - 1, size * 0.1, size * 0.18))
+    gfx.rect(
+        surface,
+        color,
+        (cx - size * 0.24, cup.bottom + size * 0.16, size * 0.48, size * 0.12),
+        border_radius=size * 0.04,
+    )
+
+
+def chart_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """Three bars of a bar chart."""
+    cx, cy = center
+    w = size * 0.2
+    for i, h in enumerate((0.45, 0.85, 0.65)):
+        x = cx - size * 0.4 + i * size * 0.3
+        gfx.rect(
+            surface, color, (x, cy + size * 0.42 - size * h, w, size * h), border_radius=w * 0.3
+        )
+
+
 def icon_width(icon: Icon, font: Font) -> int:
     """Horizontal space an icon occupies when drawn next to text in ``font``."""
     return font.size(icon)[0] if isinstance(icon, str) else font.get_height()

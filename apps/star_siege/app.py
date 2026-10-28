@@ -111,7 +111,12 @@ class StarSiegeApp(BaseApp):
         elif any(is_action(event, a, repeat=False) for a in FIRE_ACTIONS):
             self.game.fire()
 
+    def _check_achievements(self) -> None:
+        self.unlock_milestones(self.game.wave, {"wave_2": 2, "wave_5": 5})
+        self.unlock_milestones(self.game.score, {"score_5000": 5000})
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.time += dt
         self.flash = max(0.0, self.flash - dt)
         self._update_particles(dt)

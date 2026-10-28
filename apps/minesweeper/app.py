@@ -109,6 +109,12 @@ class MinesweeperApp(BaseApp):
         if self.field.status == "won":
             seconds = max(1, round(self.field.elapsed))
             self.new_best = self.submit_score(seconds, self.difficulty)
+            if self.difficulty == "easy":
+                self.unlock("win_easy")
+                if self.field.elapsed < 30:
+                    self.unlock("fast_easy")
+            elif self.difficulty == "hard":
+                self.unlock("win_hard")
 
     # ------------------------------------------------------------------ events
     def handle_event(self, event: pygame.event.Event) -> None:

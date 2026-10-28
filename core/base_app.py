@@ -25,7 +25,7 @@ any window size and on high-DPI screens.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import ClassVar, Literal
 
@@ -210,6 +210,15 @@ class BaseApp(ABC):
         Returns ``True`` the first time; later calls are cheap no-ops.
         """
         return self.ctx.achievements.unlock(self.meta.id, achievement_id)
+
+    def unlock_milestones(self, value: float, milestones: Mapping[str, float]) -> None:
+        """Unlock every achievement whose threshold ``value`` has reached.
+
+        ``self.unlock_milestones(score, {"score_25": 25, "score_50": 50})``
+        """
+        for achievement_id, needed in milestones.items():
+            if value >= needed:
+                self.unlock(achievement_id)
 
     def exit_to_launcher(self) -> None:
         """Leave the app and return to the launcher."""

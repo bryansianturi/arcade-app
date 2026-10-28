@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from core import draw
 from core.achievements import Achievement, AchievementService
 from core.base_app import BaseApp
 from core.input import InputMap
@@ -47,11 +48,10 @@ class Services:
     def _announce_achievement(self, app_id: str, achievement: Achievement) -> None:
         app = self.app(app_id)
         self.toasts.show(
-            f"Achievement unlocked: {achievement.name}",
-            achievement.description
-            if app is None
-            else f"{app.meta.name} · {achievement.description}",
+            achievement.name,
+            "Achievement unlocked" + ("" if app is None else f" · {app.meta.name}"),
             accent=None if app is None else app.meta.accent,
+            icon=draw.trophy_icon,
         )
 
     def save_input(self) -> None:

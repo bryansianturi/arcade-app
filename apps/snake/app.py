@@ -129,7 +129,14 @@ class SnakeApp(BaseApp):
         elif self.state == "playing" and (direction := direction_of(event)) is not None:
             self.game.turn(direction)
 
+    def _check_achievements(self) -> None:
+        score = self.game.score
+        self.unlock_milestones(score, {"first_bite": 1, "score_25": 25, "score_50": 50})
+        if score >= 20 and not self.game.wrap:
+            self.unlock("walls_20")
+
     def update(self, dt: float) -> None:
+        self._check_achievements()
         self.time += dt
         self.shake = max(0.0, self.shake - dt)
         if self.state == "playing":

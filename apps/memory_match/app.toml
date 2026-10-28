@@ -11,3 +11,18 @@ min_framework = "1.0"
 order = "lower"
 format = "time"
 variants = ["easy", "medium", "hard"]
+
+[[achievements]]
+id = "win"
+name = "Matchmaker"
+description = "Clear a board."
+
+[[achievements]]
+id = "perfect"
+name = "Total recall"
+description = "Clear a board using at most 1.5 moves per pair."
+
+[[achievements]]
+id = "win_hard"
+name = "Big memory"
+description = "Clear the Hard board."
