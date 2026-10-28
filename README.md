@@ -35,6 +35,7 @@ as simple as dropping a folder into `apps/`.
 | **Five Letters** | Game | Word-guessing with 800 hand-picked answers, 8.5k valid guesses, correct duplicate-letter scoring, hard mode, flip animations, stats and best streak |
 | **Memory Match** | Game | 3 board sizes, 12 vector symbols, flip animations, moves counter, keyboard play, best time per size |
 | **Focus Timer** | Tool | Pomodoro cycles (adjustable lengths, long break every 4) and a lap stopwatch; wall-clock based so it keeps running while you play, with a visual alert instead of sound |
+| **Unit Converter** | Tool | 8 categories, exact `Decimal` factors (round-trip tested), every unit shown at once, click a result to convert from it |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -78,6 +79,7 @@ python main.py
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
+| Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
