@@ -176,3 +176,25 @@ def draw_icon(
     size = font.get_height()
     icon(surface, (midleft[0] + size // 2, midleft[1]), color, round(size * 0.8))
     return midleft[0] + size
+
+
+def thick_line(
+    surface: pygame.Surface,
+    color: RGB,
+    start: tuple[float, float] | pygame.Vector2,
+    end: tuple[float, float] | pygame.Vector2,
+    width: float,
+) -> None:
+    """A line of constant ``width`` at any angle, with round caps.
+
+    ``pygame.draw.line`` makes diagonal thick lines thinner than straight ones;
+    this draws the body as a polygon instead.
+    """
+    a = pygame.Vector2(start)
+    b = pygame.Vector2(end)
+    radius = width / 2
+    if (b - a).length_squared() > 0:
+        normal = (b - a).normalize().rotate(90) * radius
+        pygame.draw.polygon(surface, color, [a + normal, b + normal, b - normal, a - normal])
+    pygame.draw.circle(surface, color, a, radius)
+    pygame.draw.circle(surface, color, b, radius)
