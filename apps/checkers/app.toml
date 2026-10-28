@@ -1,0 +1,23 @@
+id = "checkers"
+name = "Checkers"
+description = "Jump, capture and crown kings. Captures are compulsory."
+category = "game"
+accent = "#6D28D9"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[[achievements]]
+id = "win"
+name = "King me"
+description = "Beat the computer."
+
+[[achievements]]
+id = "win_hard"
+name = "Draughtsman"
+description = "Beat the computer on Hard."
+
+[[achievements]]
+id = "triple"
+name = "Triple jump"
+description = "Capture three pieces in one move."
