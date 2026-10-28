@@ -12,6 +12,7 @@ from apps.snake.logic import DOWN, LEFT, RIGHT, UP, Direction, SnakeGame
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import Action, action_of, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, SegmentedControl, draw_panel
@@ -22,16 +23,13 @@ COLS, ROWS, CELL = 30, 20, 30
 BOARD = pygame.Rect((1280 - COLS * CELL) // 2, 82, COLS * CELL, ROWS * CELL)
 SHAKE_SECONDS = 0.35
 
-KEYS: dict[int, Direction] = {
-    pygame.K_UP: UP,
-    pygame.K_w: UP,
-    pygame.K_DOWN: DOWN,
-    pygame.K_s: DOWN,
-    pygame.K_LEFT: LEFT,
-    pygame.K_a: LEFT,
-    pygame.K_RIGHT: RIGHT,
-    pygame.K_d: RIGHT,
-}
+DIRECTIONS: dict[Action, Direction] = {"up": UP, "down": DOWN, "left": LEFT, "right": RIGHT}
+
+
+def direction_of(event: pygame.event.Event) -> Direction | None:
+    action = action_of(event)
+    return None if action is None else DIRECTIONS.get(action)
+
 
 Mode = Literal["ready", "playing", "paused", "over"]
 MODES = ("walls", "wrap")
@@ -118,18 +116,18 @@ class SnakeApp(BaseApp):
         if self.state == "ready":
             if self.mode_picker.handle_event(event):
                 return
-            if event.type == pygame.KEYDOWN and event.key in (pygame.K_SPACE, pygame.K_RETURN):
+            if is_action(event, "action", repeat=False):
                 self._start()
-            elif event.type == pygame.KEYDOWN and event.key in KEYS:
+            elif (direction := direction_of(event)) is not None:
                 self._start()
-                self.game.turn(KEYS[event.key])
+                self.game.turn(direction)
             return
-        if event.type != pygame.KEYDOWN:
-            return
-        if event.key == pygame.K_p or (self.state == "paused" and event.key == pygame.K_SPACE):
-            self.state = "paused" if self.state == "playing" else "playing"
-        elif self.state == "playing" and event.key in KEYS:
-            self.game.turn(KEYS[event.key])
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_p and self.state == "playing":
+            self.pause()  # P is a shortcut for the pause menu
+        elif self.state == "paused" and is_action(event, "action", repeat=False):
+            self.state = "playing"
+        elif self.state == "playing" and (direction := direction_of(event)) is not None:
+            self.game.turn(direction)
 
     def update(self, dt: float) -> None:
         self.time += dt
@@ -159,10 +157,17 @@ class SnakeApp(BaseApp):
         self._draw_snake(surface, board)
 
         if self.state == "ready":
-            self._draw_card(surface, t, "Snake", "Space to start · ← → to switch mode", 140)
+            self._draw_card(
+                surface,
+                t,
+                "Snake",
+                f"{self.input.label('action')} to start · "
+                f"{self.input.labels('left', 'right')} switch mode",
+                140,
+            )
             self.mode_picker.draw(surface)
         elif self.state == "paused":
-            self._draw_card(surface, t, "Paused", "P or Space to continue", 0)
+            self._draw_card(surface, t, "Paused", f"{self.input.label('action')} to continue", 0)
         elif self.state == "over" and self.menu is not None:
             title = "Board cleared!" if self.game.won else "Game over"
             sub = "New high score!" if self.new_best else f"Score {self.game.score}"
@@ -196,7 +201,7 @@ class SnakeApp(BaseApp):
         )
         draw.text(
             surface,
-            "P pause · Esc menu",
+            f"P or {self.input.label('pause')} pause",
             t.font(t.size.caption),
             p.text_muted,
             (BOARD.centerx, BOARD.bottom + 10),

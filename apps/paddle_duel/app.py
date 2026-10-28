@@ -37,6 +37,13 @@ FIELD = pygame.Rect((1280 - FIELD_W) // 2, 84, FIELD_W, FIELD_H)
 State = Literal["choose", "playing", "over"]
 
 
+#: (up, down) keys per side in 2-player mode.
+TWO_PLAYER_KEYS: dict[Side, tuple[int, int]] = {
+    "left": (pygame.K_w, pygame.K_s),
+    "right": (pygame.K_UP, pygame.K_DOWN),
+}
+
+
 @register_app
 class PaddleDuelApp(BaseApp):
     """Keep the ball out of your goal. Two players or against the computer."""
@@ -106,13 +113,17 @@ class PaddleDuelApp(BaseApp):
             self.submit_score(self.game.best_rally, "rally")
 
     # ------------------------------------------------------------------ input
-    def _keys_for(self, side: Side) -> tuple[tuple[int, ...], tuple[int, ...]]:
-        """(up keys, down keys). In 1-player mode the left paddle accepts both key sets."""
-        if side == "left":
-            if self.cpu is not None:
-                return (pygame.K_w, pygame.K_UP), (pygame.K_s, pygame.K_DOWN)
-            return (pygame.K_w,), (pygame.K_s,)
-        return (pygame.K_UP,), (pygame.K_DOWN,)
+    def _direction(self, side: Side) -> float:
+        """-1 (up), 0 or 1 (down) for a human-controlled paddle.
+
+        Against the CPU the player uses the shared up/down controls (keyboard or
+        gamepad). Two players on one keyboard need separate keys, so 2-player mode
+        uses fixed keys: W/S on the left and ↑/↓ on the right.
+        """
+        if self.cpu is not None:
+            return float(self.input.held("down")) - float(self.input.held("up"))
+        up, down = TWO_PLAYER_KEYS[side]
+        return float(down in self.held) - float(up in self.held)
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.menu is not None:
@@ -134,10 +145,7 @@ class PaddleDuelApp(BaseApp):
         for paddle in (g.left, g.right):
             if paddle is g.right and self.cpu is not None:
                 continue
-            up, down = self._keys_for(paddle.side)
-            paddle.move = float(any(k in self.held for k in down)) - float(
-                any(k in self.held for k in up)
-            )
+            paddle.move = self._direction(paddle.side)
         if self.cpu is not None:
             self.cpu.update(g, dt)
         for event in g.update(dt):
@@ -236,7 +244,7 @@ class PaddleDuelApp(BaseApp):
         p = t.palette
         g = self.game
         y = FIELD.y - 30
-        left_keys = "W/S or ↑/↓" if self.cpu is not None else "W / S"
+        left_keys = self.input.labels("up", "down") if self.cpu is not None else "W / S"
         right_label = "CPU" if self.cpu is not None else "↑ / ↓"
         draw.text(
             surface,

@@ -10,9 +10,10 @@ import pygame
 from core import draw, gfx
 from core.base_app import BaseApp, format_score
 from core.canvas import Canvas
+from core.input import is_action
 from core.scene_manager import Scene
 from core.widgets import approach, draw_panel
-from screens.common import MARGIN_X, SubpageHeader, is_back_key
+from screens.common import MARGIN_X, SubpageHeader, is_back
 
 if TYPE_CHECKING:
     from core.services import Services
@@ -75,12 +76,13 @@ class HighScoresScreen(Scene):
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.header.handle_event(event):
             return
-        if is_back_key(event):
+        if is_back(event):
             self.manager.pop()
         elif event.type == pygame.MOUSEWHEEL:
             self.scroll_target -= event.y * 60
-        elif event.type == pygame.KEYDOWN and event.key in (pygame.K_UP, pygame.K_DOWN):
-            self.scroll_target += (ROW_HEIGHT + ROW_GAP) * (1 if event.key == pygame.K_DOWN else -1)
+        elif is_action(event, "up") or is_action(event, "down"):
+            step = 1 if event.action == "down" else -1
+            self.scroll_target += (ROW_HEIGHT + ROW_GAP) * step
         self.scroll_target = max(0.0, min(self._max_scroll(), self.scroll_target))
 
     def update(self, dt: float) -> None:

@@ -8,6 +8,7 @@ from apps._template.logic import ClickCounter
 from core import draw
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import is_action
 from core.registry import register_app
 from core.widgets import Button
 
@@ -38,7 +39,8 @@ class TemplateApp(BaseApp):
 
     def handle_event(self, event: pygame.event.Event) -> None:
         self.button.handle_event(event)
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        # React to the shared, remappable controls rather than to specific keys.
+        if is_action(event, "action", repeat=False):
             self.counter.hit()
 
     def update(self, dt: float) -> None:

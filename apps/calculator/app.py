@@ -91,6 +91,9 @@ class CalculatorApp(BaseApp):
         if button is not None:
             button.flash()
 
+    def uses_text_input(self) -> bool:
+        return True
+
     def handle_event(self, event: pygame.event.Event) -> None:
         for button in self.buttons.values():
             if button.handle_event(event):

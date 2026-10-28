@@ -3,7 +3,8 @@
 Responsibilities:
 
 * Creating the app with its :class:`~core.base_app.AppContext`.
-* The Esc pause menu (Resume / Restart / Back to menu), and auto-pausing games
+* The pause menu (Resume / Restart / Back to menu) on the ``pause`` action (Esc,
+  P or a gamepad's Start button by default), and auto-pausing games
   when the window loses focus.
 * Crash isolation: any exception raised by the app is logged and replaced by a
   friendly dialog instead of taking the whole arcade down.
@@ -21,6 +22,7 @@ import pygame
 from core import draw
 from core.base_app import AppContext, BaseApp
 from core.canvas import Canvas
+from core.input import is_action
 from core.scene_manager import Scene
 from core.widgets import ButtonMenu, draw_panel
 
@@ -81,6 +83,9 @@ class AppHost(Scene):
             screen_rect=pygame.Rect((0, 0), self.manager.size),
             request_exit=self._exit,
             request_pause=self.pause,
+            input=self.services.input,
+            achievements=self.services.achievements,
+            toasts=self.services.toasts,
         )
 
         def start() -> None:
@@ -139,21 +144,41 @@ class AppHost(Scene):
             if event.type == pygame.WINDOWFOCUSLOST and app.meta.category == "game":
                 self.pause()
                 return
-            is_esc = event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
-            if is_esc and not app.captures_escape():
-                self.pause()
-                return
+            if not app.captures_pause():
+                if is_action(event, "pause", repeat=False):
+                    self.pause()
+                    return
+                if self._is_pause_key(event):
+                    return  # the matching ACTIONDOWN follows; don't also deliver the key
             self._guard("handle_event", lambda: app.handle_event(event))
             return
 
         if self._menu is not None:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if is_action(event, "pause", repeat=False):
                 if self.state is HostState.PAUSED:
                     self.resume()
                 else:
                     self._exit()
                 return
             self._menu.handle_event(event)
+
+    def _is_pause_key(self, event: pygame.event.Event) -> bool:
+        if event.type != pygame.KEYDOWN:
+            return False
+        typed = getattr(event, "unicode", "")
+        if self.wants_text() and typed and typed.isprintable():
+            return False
+        return self.services.input.action_for_key(event.key) == "pause"
+
+    def wants_text(self) -> bool:
+        app = self.app
+        if app is None or self.state is not HostState.RUNNING:
+            return False
+        try:
+            return app.uses_text_input()
+        except Exception:
+            log.exception("uses_text_input failed")
+            return False
 
     def update(self, dt: float) -> None:
         if self.state is HostState.RUNNING and self.app is not None:

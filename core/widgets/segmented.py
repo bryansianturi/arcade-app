@@ -8,6 +8,7 @@ import pygame
 
 from core import draw
 from core.canvas import Canvas, mouse_pos
+from core.input import is_action
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets.base import Widget, approach
 
@@ -49,11 +50,11 @@ class SegmentedControl(Widget):
                 if self._segment(i).collidepoint(event.pos):
                     self.select(i)
             return True
-        if self.focused and event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
+        if self.focused:
+            if is_action(event, "left"):
                 self.select(self.index - 1)
                 return True
-            if event.key == pygame.K_RIGHT:
+            if is_action(event, "right"):
                 self.select(self.index + 1)
                 return True
         return False

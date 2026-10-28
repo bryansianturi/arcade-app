@@ -62,10 +62,15 @@ def main() -> None:
                 settings.fullscreen = not settings.fullscreen
                 services.save_settings()
             else:
-                scenes.handle_event(display.to_logical(event))
+                event = display.to_logical(event)
+                scenes.handle_event(event)
+                for action in services.input.translate(event, text_mode=scenes.wants_text()):
+                    scenes.handle_event(action)
         scenes.update(dt)
+        services.toasts.update(dt)
         canvas = display.begin_frame()
         scenes.draw(canvas)
+        services.toasts.draw(canvas, theme)
         if settings.show_fps:
             _draw_fps(canvas, theme, clock.get_fps())
         display.end_frame()

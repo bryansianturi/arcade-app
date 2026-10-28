@@ -127,14 +127,14 @@ def test_app_records_stats_and_streak(app_context: AppContext) -> None:
     import pygame
 
     from apps.five_letters.app import FiveLettersApp
-    from tests.conftest import key
+    from tests.conftest import tap
 
     app = FiveLettersApp(app_context)
     app.on_enter()
     app.game = FiveLetters("crane")
     for ch in "crane":
-        app.handle_event(key(getattr(pygame, f"K_{ch}"), ch))
-    app.handle_event(key(pygame.K_RETURN))
+        tap(app, getattr(pygame, f"K_{ch}"), ch)
+    tap(app, pygame.K_RETURN)
     for _ in range(120):
         app.update(1 / 30)  # let the reveal animation finish
     assert app.recorded and app.stats.wins == 1

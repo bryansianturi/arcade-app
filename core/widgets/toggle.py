@@ -8,6 +8,7 @@ import pygame
 
 from core import draw, gfx
 from core.canvas import Canvas
+from core.input import is_action
 from core.theme import Theme, lerp_color
 from core.widgets.base import Widget, approach
 
@@ -39,10 +40,10 @@ class Toggle(Widget):
         if self._is_click(event):
             self.toggle()
             return True
-        if (
-            self.focused
-            and event.type == pygame.KEYDOWN
-            and event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_LEFT, pygame.K_RIGHT)
+        if self.focused and (
+            is_action(event, "action", repeat=False)
+            or is_action(event, "left", repeat=False)
+            or is_action(event, "right", repeat=False)
         ):
             self.toggle()
             return True

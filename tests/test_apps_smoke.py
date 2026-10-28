@@ -12,6 +12,7 @@ import pytest
 from core.base_app import AppContext, BaseApp
 from core.canvas import Canvas, Viewport, set_viewport
 from core.registry import registry
+from tests.conftest import feed
 
 # Importing an app package registers it in the global registry.
 registry.discover("apps", include_private=True)
@@ -72,7 +73,7 @@ def test_app_runs_headless(app_cls: type[BaseApp], app_context: AppContext) -> N
     app.on_enter()
     rng = random.Random(1234)
     for event in _random_events(rng, 120):
-        app.handle_event(event)
+        feed(app, event)
         app.update(1 / 60)
     for _ in range(120):
         app.update(1 / 60)
@@ -102,7 +103,7 @@ def test_app_draws_at_native_resolution(
     app = app_cls(app_context)
     app.on_enter()
     for event in _random_events(random.Random(99), 40):
-        app.handle_event(event)
+        feed(app, event)
         app.update(1 / 60)
     app.draw(surface)
     app_cls.draw_icon(surface, pygame.Rect(0, 0, 48, 48), app_context.theme)

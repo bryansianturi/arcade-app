@@ -11,6 +11,7 @@ from apps.memory_match.logic import LAYOUTS, SIZES, MemoryGame, Size
 from core import draw, gfx
 from core.base_app import BaseApp, format_score
 from core.canvas import Canvas, mouse_pos
+from core.input import direction, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -220,28 +221,17 @@ class MemoryMatchApp(BaseApp):
             for i, rect in enumerate(self.rects):
                 if rect.collidepoint(event.pos):
                     self._flip(i)
-        elif event.type == pygame.KEYDOWN:
-            moves = {
-                pygame.K_LEFT: -1,
-                pygame.K_RIGHT: 1,
-                pygame.K_UP: -cols,
-                pygame.K_DOWN: cols,
-                pygame.K_a: -1,
-                pygame.K_d: 1,
-                pygame.K_w: -cols,
-                pygame.K_s: cols,
-            }
-            if event.key in moves:
-                if self.keyboard_nav:
-                    target = self.cursor + moves[event.key]
-                    if 0 <= target < len(self.rects):
-                        self.cursor = target
-                self.keyboard_nav = True
-            elif event.key in (pygame.K_SPACE, pygame.K_RETURN):
-                self.keyboard_nav = True
-                self._flip(self.cursor)
-            elif event.key == pygame.K_n:
-                self._new_game()
+        elif (step := direction(event)) is not None:
+            if self.keyboard_nav:
+                target = self.cursor + step[0] + step[1] * cols
+                if 0 <= target < len(self.rects):
+                    self.cursor = target
+            self.keyboard_nav = True
+        elif is_action(event, "action", repeat=False):
+            self.keyboard_nav = True
+            self._flip(self.cursor)
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+            self._new_game()
 
     def update(self, dt: float) -> None:
         self.time += dt

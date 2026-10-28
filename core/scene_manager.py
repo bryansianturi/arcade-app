@@ -42,8 +42,12 @@ class Scene:
     def on_reveal(self) -> None:
         """Called when the scene above this one is popped and this one is visible again."""
 
+    def wants_text(self) -> bool:
+        """Whether printable keys are typed text here rather than controls (see core.input)."""
+        return False
+
     def handle_event(self, event: pygame.event.Event) -> None:
-        """React to an input event."""
+        """React to an input event (raw pygame events plus core.input action events)."""
 
     def update(self, dt: float) -> None:
         """Advance animations/state by ``dt`` seconds."""
@@ -127,6 +131,9 @@ class SceneManager:
     @property
     def transitioning(self) -> bool:
         return self._transition is not None
+
+    def wants_text(self) -> bool:
+        return self.current is not None and self.current.wants_text()
 
     def handle_event(self, event: pygame.event.Event) -> None:
         # Input is ignored mid-transition so a double click can't hit two screens.

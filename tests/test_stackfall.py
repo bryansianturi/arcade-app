@@ -187,12 +187,12 @@ def test_app_ignores_os_key_repeat(app_context: AppContext) -> None:
     import pygame
 
     from apps.stackfall.app import StackfallApp
-    from tests.conftest import key
+    from tests.conftest import hold
 
     app = StackfallApp(app_context)
     app.on_enter()
     app._start()
     x = app.game.piece.x
-    app.handle_event(key(pygame.K_LEFT))
-    app.handle_event(key(pygame.K_LEFT))  # an OS repeat while held: ignored
+    hold(app, pygame.K_LEFT)
+    hold(app, pygame.K_LEFT)  # an OS repeat while held: ignored
     assert app.game.piece.x == x - 1

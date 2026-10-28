@@ -14,7 +14,7 @@ A minimal app looks like this::
         def update(self, dt): ...
         def draw(self, surface): ...
 
-The framework (see :mod:`core.app_host`) owns the Esc pause menu, restarting,
+The framework (see :mod:`core.app_host`) owns the pause menu, restarting,
 returning to the launcher and crash recovery, so apps only deal with their own
 gameplay. Apps draw onto a :class:`~core.canvas.Canvas` of ``ctx.screen_rect``
 size (1280×720 logical pixels) using ``core.gfx`` instead of ``pygame.draw``;
@@ -32,11 +32,13 @@ from typing import ClassVar, Literal
 import pygame
 
 from core import draw
-from core.achievements import Achievement
+from core.achievements import Achievement, AchievementService
 from core.canvas import Canvas
+from core.input import InputMap
 from core.settings import Settings
 from core.storage import DEFAULT_VARIANT, AppData, ScoreEntry, ScoreOrder, Storage
 from core.theme import Color, Theme, readable_on
+from core.toasts import ToastService
 
 Category = Literal["game", "tool"]
 ScoreFormat = Literal["points", "time"]
@@ -95,6 +97,9 @@ class AppContext:
     screen_rect: pygame.Rect
     request_exit: Callable[[], None]
     request_pause: Callable[[], None]
+    input: InputMap
+    achievements: AchievementService
+    toasts: ToastService
 
 
 class BaseApp(ABC):
@@ -129,7 +134,12 @@ class BaseApp(ABC):
 
     @abstractmethod
     def handle_event(self, event: pygame.event.Event) -> None:
-        """React to one pygame event (mouse positions are already in canvas space)."""
+        """React to one pygame event (mouse positions are already in canvas space).
+
+        Besides raw pygame events this receives ``core.input.ACTIONDOWN`` /
+        ``ACTIONUP`` for the shared, remappable controls; use
+        ``core.input.is_action(event, "left")`` rather than checking arrow keys.
+        """
 
     @abstractmethod
     def update(self, dt: float) -> None:
@@ -140,10 +150,20 @@ class BaseApp(ABC):
         """Render the current frame onto ``surface``."""
 
     # ------------------------------------------------------------------ hooks
-    def captures_escape(self) -> bool:
-        """Return ``True`` to receive Esc yourself (e.g. to close an in-app dialog).
+    def captures_pause(self) -> bool:
+        """Return ``True`` to receive the ``pause`` action yourself (e.g. to close an
+        in-app dialog). By default it opens the framework's pause menu.
+        """
+        return False
 
-        By default Esc opens the framework's pause menu.
+    def wants_text(self) -> bool:
+        """Same as :meth:`uses_text_input` (mirrors ``Scene.wants_text``)."""
+        return self.uses_text_input()
+
+    def uses_text_input(self) -> bool:
+        """Return ``True`` if the app takes typed text.
+
+        Printable keys then produce no actions (typing "w" must not also mean "up").
         """
         return False
 
@@ -165,6 +185,11 @@ class BaseApp(ABC):
         return self.ctx.theme
 
     @property
+    def input(self) -> InputMap:
+        """Shared controls: ``self.input.held("left")`` for continuous movement."""
+        return self.ctx.input
+
+    @property
     def data(self) -> AppData:
         """Persistent, app-private key/value storage. Call ``self.data.save()``."""
         if self._data is None:
@@ -178,6 +203,13 @@ class BaseApp(ABC):
     def best_score(self, variant: str = DEFAULT_VARIANT) -> ScoreEntry | None:
         """Return the stored best score for ``variant``, if any."""
         return self.ctx.storage.best_score(self.meta.id, variant)
+
+    def unlock(self, achievement_id: str) -> bool:
+        """Unlock one of this app's achievements (declared in ``app.toml``).
+
+        Returns ``True`` the first time; later calls are cheap no-ops.
+        """
+        return self.ctx.achievements.unlock(self.meta.id, achievement_id)
 
     def exit_to_launcher(self) -> None:
         """Leave the app and return to the launcher."""

@@ -21,6 +21,7 @@ from apps.four_in_a_row.logic import (
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -183,19 +184,19 @@ class FourInARowApp(BaseApp):
                     self._new_round()
                 else:
                     self._human_drop((event.pos[0] - BOARD.x) // CELL)
+        elif is_action(event, "left"):
+            self.hover_col = max(0, self.hover_col - 1)
+        elif is_action(event, "right"):
+            self.hover_col = min(COLS - 1, self.hover_col + 1)
+        elif is_action(event, "action", repeat=False) or is_action(event, "down", repeat=False):
+            if self.game.over:
+                self._new_round()
+            else:
+                self._human_drop(self.hover_col)
         elif event.type == pygame.KEYDOWN:
             if event.key in COLUMN_KEYS:
                 self.hover_col = COLUMN_KEYS[event.key]
                 self._human_drop(self.hover_col)
-            elif event.key in (pygame.K_LEFT, pygame.K_a):
-                self.hover_col = max(0, self.hover_col - 1)
-            elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                self.hover_col = min(COLS - 1, self.hover_col + 1)
-            elif event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_DOWN, pygame.K_s):
-                if self.game.over:
-                    self._new_round()
-                else:
-                    self._human_drop(self.hover_col)
             elif event.key == pygame.K_n:
                 self._new_round()
 

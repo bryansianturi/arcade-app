@@ -11,6 +11,7 @@ from apps.skyhop.logic import FIELD_H, FIELD_W, GATE_W, PLAYER_R, PLAYER_X, Skyh
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import Action, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -20,7 +21,7 @@ GATE: Color = (45, 212, 191)
 SKY_TOP: Color = (15, 23, 42)
 SKY_BOTTOM: Color = (49, 46, 129)
 FIELD = pygame.Rect((1280 - FIELD_W) // 2, 62, FIELD_W, FIELD_H)
-HOP_KEYS = (pygame.K_SPACE, pygame.K_UP, pygame.K_w)
+HOP_ACTIONS: tuple[Action, ...] = ("action", "up")
 
 
 @register_app
@@ -59,7 +60,7 @@ class SkyhopApp(BaseApp):
         if self.menu is not None:
             self.menu.handle_event(event)
             return
-        if (event.type == pygame.KEYDOWN and event.key in HOP_KEYS) or (
+        if any(is_action(event, a, repeat=False) for a in HOP_ACTIONS) or (
             event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
         ):
             self._hop()
@@ -111,7 +112,7 @@ class SkyhopApp(BaseApp):
         if g.state == "ready":
             draw.text(
                 surface,
-                "Space, ↑ or click to hop",
+                f"{self.input.label('action')}, {self.input.label('up')} or click to hop",
                 t.font(t.size.title, "semibold"),
                 (255, 255, 255),
                 (FIELD.centerx, FIELD.y + round(FIELD_H * 0.62)),

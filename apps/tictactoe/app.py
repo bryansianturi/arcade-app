@@ -11,6 +11,7 @@ from apps.tictactoe.logic import Level, Mark, TicTacToe, winning_line
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas, mouse_pos
+from core.input import direction, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -25,16 +26,6 @@ CPU_DELAY = 0.45
 DRAW_SECONDS = 0.22
 LEVELS: tuple[Level, ...] = ("easy", "unbeatable")
 
-MOVE_KEYS = {
-    pygame.K_UP: (0, -1),
-    pygame.K_w: (0, -1),
-    pygame.K_DOWN: (0, 1),
-    pygame.K_s: (0, 1),
-    pygame.K_LEFT: (-1, 0),
-    pygame.K_a: (-1, 0),
-    pygame.K_RIGHT: (1, 0),
-    pygame.K_d: (1, 0),
-}
 NUMBER_KEYS = {getattr(pygame, f"K_{n}"): n - 1 for n in range(1, 10)} | {
     getattr(pygame, f"K_KP{n}"): n - 1 for n in range(1, 10)
 }
@@ -177,21 +168,21 @@ class TicTacToeApp(BaseApp):
             for i in range(9):
                 if cell_rect(i).collidepoint(event.pos):
                     self._play(i)
+        elif (step := direction(event)) is not None:
+            if self.keyboard_nav:
+                dx, dy = step
+                x, y = self.cursor % 3, self.cursor // 3
+                self.cursor = max(0, min(2, y + dy)) * 3 + max(0, min(2, x + dx))
+            self.keyboard_nav = True
+        elif is_action(event, "action", repeat=False):
+            if self.game.result is not None:
+                self._new_round()
+            else:
+                self.keyboard_nav = True
+                self._play(self.cursor)
         elif event.type == pygame.KEYDOWN:
             if event.key in NUMBER_KEYS:
                 self._play(NUMBER_KEYS[event.key])
-            elif event.key in MOVE_KEYS:
-                if self.keyboard_nav:
-                    dx, dy = MOVE_KEYS[event.key]
-                    x, y = self.cursor % 3, self.cursor // 3
-                    self.cursor = max(0, min(2, y + dy)) * 3 + max(0, min(2, x + dx))
-                self.keyboard_nav = True
-            elif event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_KP_ENTER):
-                if self.game.result is not None:
-                    self._new_round()
-                else:
-                    self.keyboard_nav = True
-                    self._play(self.cursor)
             elif event.key == pygame.K_n:
                 self._new_round()
 

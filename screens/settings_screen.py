@@ -1,4 +1,4 @@
-"""Settings screen: theme, window size, fullscreen, FPS counter, animations, data."""
+"""Settings screen: theme, window size, fullscreen, FPS counter, animations, controls, data."""
 
 from __future__ import annotations
 
@@ -10,10 +10,11 @@ import pygame
 
 from core import draw, gfx
 from core.canvas import Canvas
+from core.input import is_action
 from core.scene_manager import Scene
 from core.settings import WINDOW_PRESETS
 from core.widgets import Button, SegmentedControl, Toggle, Widget, draw_panel
-from screens.common import MARGIN_X, SubpageHeader, is_back_key
+from screens.common import MARGIN_X, SubpageHeader, is_back
 
 if TYPE_CHECKING:
     from core.services import Services
@@ -70,6 +71,11 @@ class SettingsScreen(Scene):
             ),
             _Row("Show FPS", "Frame-rate counter in the corner", toggle(s.show_fps, self._set_fps)),
             _Row("Animations", "Screen transitions", toggle(s.transitions, self._set_transitions)),
+            _Row(
+                "Controls",
+                "Rebind keys · gamepads work automatically",
+                Button(t, (right - 190, 0, 190, 40), "Customize", self._open_controls),
+            ),
             _Row("High scores", "Permanently delete every saved score", self.reset_btn),
         ]
         self.panel.height = len(self.rows) * ROW_HEIGHT + t.space.md * 2
@@ -109,6 +115,11 @@ class SettingsScreen(Scene):
         self.services.settings.transitions = value
         self._apply()
 
+    def _open_controls(self) -> None:
+        from screens.controls import ControlsScreen
+
+        self.manager.push(ControlsScreen(self.services))
+
     def _reset_scores(self) -> None:
         if not self._confirm_reset:
             self._confirm_reset = True
@@ -134,11 +145,12 @@ class SettingsScreen(Scene):
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.header.handle_event(event):
             return
-        if is_back_key(event):
+        if is_back(event):
             self.manager.pop()
             return
-        if event.type == pygame.KEYDOWN and event.key in (pygame.K_UP, pygame.K_DOWN, pygame.K_TAB):
-            step = -1 if event.key == pygame.K_UP else 1
+        is_tab = event.type == pygame.KEYDOWN and event.key == pygame.K_TAB
+        if is_action(event, "up") or is_action(event, "down") or is_tab:
+            step = -1 if is_action(event, "up") else 1
             self._set_focus(0 if self.focus < 0 else self.focus + step)
             return
         if event.type == pygame.MOUSEBUTTONDOWN:

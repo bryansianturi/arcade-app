@@ -9,6 +9,7 @@ import pygame
 
 from core import draw
 from core.canvas import Canvas
+from core.input import is_action
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets.base import Widget, approach
 
@@ -60,11 +61,7 @@ class Button(Widget):
             if self.rect.collidepoint(event.pos):
                 self.activate()
             return True
-        if (
-            self.focused
-            and event.type == pygame.KEYDOWN
-            and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE)
-        ):
+        if self.focused and is_action(event, "action", repeat=False):
             self._press_t = 1.0
             self.activate()
             return True

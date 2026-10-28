@@ -11,6 +11,7 @@ import pygame
 
 from core import draw
 from core.canvas import Canvas
+from core.input import is_action
 from core.theme import Color, Theme
 from core.widgets.button import Button, Variant
 
@@ -67,15 +68,14 @@ class ButtonMenu:
             button.focused = i == self.index
 
     def handle_event(self, event: pygame.event.Event) -> bool:
-        if event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_UP, pygame.K_w):
-                self.index = (self.index - 1) % len(self.buttons)
-                self._sync_focus()
-                return True
-            if event.key in (pygame.K_DOWN, pygame.K_s, pygame.K_TAB):
-                self.index = (self.index + 1) % len(self.buttons)
-                self._sync_focus()
-                return True
+        if is_action(event, "up"):
+            self.index = (self.index - 1) % len(self.buttons)
+            self._sync_focus()
+            return True
+        if is_action(event, "down") or (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB):
+            self.index = (self.index + 1) % len(self.buttons)
+            self._sync_focus()
+            return True
         if event.type == pygame.MOUSEMOTION:
             for i, button in enumerate(self.buttons):
                 if button.rect.collidepoint(event.pos) and i != self.index:

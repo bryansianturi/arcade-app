@@ -15,6 +15,7 @@ import pytest
 from core.app_host import AppHost
 from core.base_app import AppContext, BaseApp
 from core.display import LOGICAL_SIZE
+from core.input import InputMap
 from core.scene_manager import Scene, SceneManager
 from core.services import Services
 from core.settings import Settings
@@ -57,6 +58,9 @@ def app_context(services: Services) -> AppContext:
         screen_rect=pygame.Rect((0, 0), LOGICAL_SIZE),
         request_exit=lambda: None,
         request_pause=lambda: None,
+        input=services.input,
+        achievements=services.achievements,
+        toasts=services.toasts,
     )
 
 
@@ -70,6 +74,36 @@ def host_app(services: Services, app_cls: type[BaseApp]) -> AppHost:
 
 def key(k: int, unicode: str = "", mod: int = 0) -> pygame.event.Event:
     return pygame.event.Event(pygame.KEYDOWN, key=k, unicode=unicode, mod=mod)
+
+
+def key_up(k: int) -> pygame.event.Event:
+    return pygame.event.Event(pygame.KEYUP, key=k, unicode="", mod=0)
+
+
+Target = BaseApp | Scene | SceneManager
+
+
+def feed(target: Target, *events: pygame.event.Event, input_map: InputMap | None = None) -> None:
+    """Deliver events the way the main loop does: each raw event, then its actions."""
+    if isinstance(target, BaseApp):
+        input_map = input_map or target.input
+    elif isinstance(target, Scene):
+        input_map = input_map or target.services.input
+    assert input_map is not None, "pass input_map= when feeding a SceneManager"
+    for event in events:
+        target.handle_event(event)
+        for action in input_map.translate(event, text_mode=target.wants_text()):
+            target.handle_event(action)
+
+
+def tap(target: Target, k: int, unicode: str = "", *, input_map: InputMap | None = None) -> None:
+    """Press and release a key."""
+    feed(target, key(k, unicode), key_up(k), input_map=input_map)
+
+
+def hold(target: Target, k: int, *, input_map: InputMap | None = None) -> None:
+    """Press a key without releasing it (a second call is an OS key repeat)."""
+    feed(target, key(k), input_map=input_map)
 
 
 def click(pos: tuple[int, int], button: int = 1) -> list[pygame.event.Event]:

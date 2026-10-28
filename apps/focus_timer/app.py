@@ -12,6 +12,7 @@ from apps.focus_timer.logic import PHASE_LABELS, PHASES, Phase, Pomodoro, Stopwa
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl, draw_panel
@@ -140,11 +141,12 @@ class FocusTimerApp(BaseApp):
         for widget in self._widgets():
             if widget.handle_event(event):
                 return
+        if is_action(event, "action", repeat=False):
+            self._toggle()
+            return
         if event.type != pygame.KEYDOWN:
             return
-        if event.key == pygame.K_SPACE:
-            self._toggle()
-        elif event.key == pygame.K_r:
+        if event.key == pygame.K_r:
             self._reset()
         elif event.key == pygame.K_l and self.tab == 1:
             self._lap()

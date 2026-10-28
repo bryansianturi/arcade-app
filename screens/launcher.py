@@ -10,6 +10,7 @@ from core import draw
 from core.app_host import AppHost
 from core.base_app import BaseApp, format_score
 from core.canvas import Canvas, mouse_pos
+from core.input import ACTIONDOWN
 from core.scene_manager import Scene
 from core.widgets import Button, Card, Grid, SegmentedControl, TextInput, approach
 from screens.common import HEADER_Y, MARGIN_X
@@ -183,30 +184,28 @@ class LauncherScreen(Scene):
             # Start typing anywhere to search.
             self.search.focus()
             self.search.set_text(self.search.text + event.text)
-        elif event.type == pygame.KEYDOWN:
-            self._handle_key(event)
+        elif event.type == ACTIONDOWN:
+            self._handle_action(event)
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+            step = -1 if event.mod & pygame.KMOD_SHIFT else 1
+            self.tabs.select((self.tabs.index + step) % len(CATEGORIES))
 
-    def _handle_key(self, event: pygame.event.Event) -> None:
-        moves = {
-            pygame.K_LEFT: (-1, 0),
-            pygame.K_RIGHT: (1, 0),
-            pygame.K_UP: (0, -1),
-            pygame.K_DOWN: (0, 1),
-        }
-        if event.key in moves:
+    def _handle_action(self, event: pygame.event.Event) -> None:
+        moves = {"left": (-1, 0), "right": (1, 0), "up": (0, -1), "down": (0, 1)}
+        if event.action in moves:
             if self.keyboard_nav:
-                dx, dy = moves[event.key]
+                dx, dy = moves[event.action]
                 self.selected = self.grid.move(self.selected, dx, dy, len(self.cards))
             self.keyboard_nav = True
             self._ensure_visible(self.selected)
             self._sync_focus()
-        elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self.cards:
+        elif event.action == "action" and self.cards and not event.repeat:
             self.cards[self.selected].activate()
-        elif event.key == pygame.K_TAB:
-            step = -1 if event.mod & pygame.KMOD_SHIFT else 1
-            self.tabs.select((self.tabs.index + step) % len(CATEGORIES))
-        elif event.key == pygame.K_ESCAPE and self.search.text:
+        elif event.action == "pause" and self.search.text:
             self.search.set_text("")
+
+    def wants_text(self) -> bool:
+        return True  # typing anywhere searches
 
     # ------------------------------------------------------------------ frame
     def update(self, dt: float) -> None:

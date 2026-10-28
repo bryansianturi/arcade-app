@@ -196,6 +196,38 @@ def gear_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 
     gfx.circle(surface, color, center, round(inner), 3)
 
 
+def star_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """A filled five-pointed star."""
+    outer, inner = size * 0.5, size * 0.21
+    c = pygame.Vector2(center)
+    points = [
+        c + pygame.Vector2(0, -(outer if i % 2 == 0 else inner)).rotate(i * 36) for i in range(10)
+    ]
+    gfx.polygon(surface, color, points)
+
+
+def star_outline_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """An outlined five-pointed star (e.g. "not a favorite")."""
+    outer, inner = size * 0.5, size * 0.21
+    c = pygame.Vector2(center)
+    points = [
+        c + pygame.Vector2(0, -(outer if i % 2 == 0 else inner)).rotate(i * 36) for i in range(10)
+    ]
+    gfx.polygon(surface, color, points, 1.5)
+
+
+def camera_icon(surface: Canvas, center: tuple[int, int], color: RGB, size: int = 16) -> None:
+    """A simple camera: body, lens and viewfinder bump."""
+    cx, cy = center
+    body = pygame.FRect(0, 0, size * 0.9, size * 0.62)
+    body.center = (cx, cy + size * 0.06)
+    bump = pygame.FRect(0, 0, size * 0.32, size * 0.16)
+    bump.midbottom = (cx - size * 0.12, body.top + 1)
+    gfx.rect(surface, color, bump, border_radius=size * 0.05)
+    gfx.rect(surface, color, body, 2, border_radius=size * 0.12)
+    gfx.circle(surface, color, body.center, size * 0.17, 2)
+
+
 def icon_width(icon: Icon, font: Font) -> int:
     """Horizontal space an icon occupies when drawn next to text in ``font``."""
     return font.size(icon)[0] if isinstance(icon, str) else font.get_height()

@@ -19,6 +19,7 @@ from apps.stackfall.logic import (
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import ACTIONDOWN, ACTIONUP, Action, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -41,14 +42,13 @@ DAS = 0.16  # delay before sideways auto-repeat
 ARR = 0.045  # auto-repeat interval
 FLASH_SECONDS = 0.25
 
-LEFT_KEYS = (pygame.K_LEFT, pygame.K_a)
-RIGHT_KEYS = (pygame.K_RIGHT, pygame.K_d)
-DOWN_KEYS = (pygame.K_DOWN, pygame.K_s)
-CW_KEYS = (pygame.K_UP, pygame.K_x, pygame.K_w)
+# Movement, soft drop, rotate (up) and hard drop (action) use the shared controls.
+# These extra keys are Stackfall-specific:
+CW_KEYS = (pygame.K_x,)
 CCW_KEYS = (pygame.K_z, pygame.K_LCTRL, pygame.K_RCTRL)
 HOLD_KEYS = (pygame.K_c, pygame.K_LSHIFT, pygame.K_RSHIFT)
 
-State = Literal["ready", "playing", "paused", "over"]
+State = Literal["ready", "playing", "over"]
 
 
 def draw_block(surface: Canvas, rect: pygame.Rect, color: Color) -> None:
@@ -125,7 +125,7 @@ class StackfallApp(BaseApp):
         self.game.soft_dropping = False
 
     def on_exit(self) -> None:
-        if self.state in ("playing", "paused") and self.game.score > 0:
+        if self.state == "playing" and self.game.score > 0:
             self.submit_score(self.game.score)
 
     # ------------------------------------------------------------------ input
@@ -133,44 +133,51 @@ class StackfallApp(BaseApp):
         if self.state == "over" and self.menu is not None:
             self.menu.handle_event(event)
             return
-        if event.type == pygame.KEYUP:
-            self.held.discard(event.key)
-            if event.key in DOWN_KEYS:
-                self.game.soft_dropping = any(k in self.held for k in DOWN_KEYS)
-            if event.key in LEFT_KEYS + RIGHT_KEYS:
+        if event.type == ACTIONUP:
+            if event.action == "down":
+                self.game.soft_dropping = self.input.held("down")
+            elif event.action in ("left", "right"):
                 self._update_side_dir()
             return
-        if event.type != pygame.KEYDOWN or event.key in self.held:
-            return  # ignore OS key-repeat; we do our own auto-repeat
-        self.held.add(event.key)
-        if self.state == "ready":
-            if event.key in (pygame.K_SPACE, pygame.K_RETURN):
-                self._start()
+        if event.type == pygame.KEYUP:
+            self.held.discard(event.key)
             return
-        if event.key == pygame.K_p:
-            self.state = "paused" if self.state == "playing" else "playing"
+        if self.state == "ready":
+            if is_action(event, "action", repeat=False):
+                self._start()
             return
         if self.state != "playing":
             return
+        # OS key-repeat is ignored everywhere: we do our own auto-repeat (DAS/ARR).
+        if event.type == ACTIONDOWN and not event.repeat:
+            self._on_action(event.action)
+        elif event.type == pygame.KEYDOWN and event.key not in self.held:
+            self.held.add(event.key)
+            if event.key == pygame.K_p:
+                self.pause()  # shortcut for the pause menu
+            elif event.key in CW_KEYS:
+                self.game.rotate(1)
+            elif event.key in CCW_KEYS:
+                self.game.rotate(-1)
+            elif event.key in HOLD_KEYS:
+                self.game.hold()
+
+    def _on_action(self, action: Action) -> None:
         g = self.game
-        if event.key in LEFT_KEYS + RIGHT_KEYS:
-            self._update_side_dir(prefer=-1 if event.key in LEFT_KEYS else 1)
+        if action in ("left", "right"):
+            self._update_side_dir(prefer=-1 if action == "left" else 1)
             g.move(self.side_dir)
             self.side_timer = -DAS
-        elif event.key in DOWN_KEYS:
+        elif action == "down":
             g.soft_dropping = True
-        elif event.key in CW_KEYS:
+        elif action == "up":
             g.rotate(1)
-        elif event.key in CCW_KEYS:
-            g.rotate(-1)
-        elif event.key in HOLD_KEYS:
-            g.hold()
-        elif event.key == pygame.K_SPACE:
+        elif action == "action":
             self._after_step(g.hard_drop())
 
     def _update_side_dir(self, prefer: int = 0) -> None:
-        left = any(k in self.held for k in LEFT_KEYS)
-        right = any(k in self.held for k in RIGHT_KEYS)
+        left = self.input.held("left")
+        right = self.input.held("right")
         if prefer:
             self.side_dir = prefer  # the most recently pressed direction wins
         elif left != right:
@@ -243,7 +250,7 @@ class StackfallApp(BaseApp):
             for x, kind in enumerate(row):
                 if kind is not None:
                     draw_block(surface, self._cell_rect(x, y), lerp_color(COLORS[kind], well, dim))
-        if self.state in ("playing", "paused"):
+        if self.state == "playing":
             ghost = g.ghost()
             for x, y in ghost.cells():
                 r = self._cell_rect(x, y).inflate(-4, -4)
@@ -259,9 +266,7 @@ class StackfallApp(BaseApp):
 
         self._draw_side(surface, t)
         if self.state == "ready":
-            self._card(surface, t, "Stackfall", "Press Space to start")
-        elif self.state == "paused":
-            self._card(surface, t, "Paused", "Press P to continue")
+            self._card(surface, t, "Stackfall", f"Press {self.input.label('action')} to start")
         elif self.state == "over" and self.menu is not None:
             sub = "New high score!" if self.new_best else f"Score {g.score:,}"
             self._card(
@@ -320,11 +325,12 @@ class StackfallApp(BaseApp):
             cy = nxt.y + (90 if i == 0 else 150 + (i - 1) * 64)
             draw_mini(surface, kind, (nxt.centerx, cy), size, COLORS[kind])
 
+        inp = self.input
         controls = (
-            "←/→ move   ↓ soft drop",
-            "↑/X rotate   Z rotate back",
-            "Space drop   C hold",
-            "P pause   Esc menu",
+            f"{inp.labels('left', 'right')} move   {inp.label('down')} soft drop",
+            f"{inp.label('up')}/X rotate   Z rotate back",
+            f"{inp.label('action')} drop   C hold",
+            f"P or {inp.label('pause')} pause",
         )
         for i, line in enumerate(controls):
             draw.text(

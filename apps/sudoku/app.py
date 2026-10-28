@@ -11,6 +11,7 @@ from apps.sudoku.logic import DIFFICULTIES, PEERS, Difficulty, SudokuGame
 from core import draw, gfx
 from core.base_app import BaseApp, format_score
 from core.canvas import Canvas
+from core.input import direction, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, ButtonMenu, Grid, draw_panel
@@ -25,16 +26,6 @@ SAVE_KEY = "saved_game"
 
 DIGIT_KEYS = {getattr(pygame, f"K_{d}"): d for d in range(1, 10)} | {
     getattr(pygame, f"K_KP{d}"): d for d in range(1, 10)
-}
-MOVE_KEYS = {
-    pygame.K_UP: (-1, 0),
-    pygame.K_w: (-1, 0),
-    pygame.K_DOWN: (1, 0),
-    pygame.K_s: (1, 0),
-    pygame.K_LEFT: (0, -1),
-    pygame.K_a: (0, -1),
-    pygame.K_RIGHT: (0, 1),
-    pygame.K_d: (0, 1),
 }
 
 Mode = Literal["choose", "playing", "solved"]
@@ -208,14 +199,16 @@ class SudokuApp(BaseApp):
             index = cell_at(event.pos)
             if index is not None:
                 game.select(index)
+        elif (step := direction(event)) is not None:
+            game.move(step[1], step[0])  # (row, col)
+        elif is_action(event, "action", repeat=False):
+            self._toggle_pencil()
         elif event.type == pygame.KEYDOWN:
-            self._handle_key(event, game)
+            self._handle_key(event)
 
-    def _handle_key(self, event: pygame.event.Event, game: SudokuGame) -> None:
+    def _handle_key(self, event: pygame.event.Event) -> None:
         mods = pygame.key.get_mods()
-        if event.key in MOVE_KEYS:
-            game.move(*MOVE_KEYS[event.key])
-        elif event.key in DIGIT_KEYS:
+        if event.key in DIGIT_KEYS:
             self._enter(DIGIT_KEYS[event.key])
             self._flash(self.digit_buttons[DIGIT_KEYS[event.key] - 1])
         elif event.key in (pygame.K_0, pygame.K_KP0, pygame.K_BACKSPACE, pygame.K_DELETE):
@@ -224,7 +217,7 @@ class SudokuApp(BaseApp):
             event.key == pygame.K_z and mods & (pygame.KMOD_CTRL | pygame.KMOD_META)
         ):
             self._undo()
-        elif event.key in (pygame.K_p, pygame.K_SPACE):
+        elif event.key == pygame.K_p:
             self._toggle_pencil()
         elif event.key == pygame.K_c:
             self._check()

@@ -137,6 +137,9 @@ class FiveLettersApp(BaseApp):
                 x += w + KEY_GAP
         return rects
 
+    def uses_text_input(self) -> bool:
+        return True
+
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.new_btn.handle_event(event) or self.hard_toggle.handle_event(event):
             return

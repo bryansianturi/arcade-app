@@ -8,6 +8,7 @@ import pygame
 
 from core import draw
 from core.canvas import Canvas
+from core.input import is_action
 from core.theme import Theme
 from core.widgets import Button
 
@@ -42,6 +43,8 @@ class SubpageHeader:
         )
 
 
-def is_back_key(event: pygame.event.Event) -> bool:
-    """Esc or Backspace returns to the previous screen."""
-    return event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE)
+def is_back(event: pygame.event.Event) -> bool:
+    """The pause/back action (Esc, gamepad B...) or Backspace returns to the previous screen."""
+    return is_action(event, "pause", repeat=False) or (
+        event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE
+    )

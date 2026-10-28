@@ -12,6 +12,7 @@ from apps.twenty48.logic import GOAL, SIZE, Direction, Game2048, MoveResult
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import Action, action_of
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color, readable_on
 from core.widgets import Button, ButtonMenu, draw_panel
@@ -42,16 +43,7 @@ TILE_COLORS: tuple[Color, ...] = (
 )
 DARK_TEXT: Color = (30, 41, 59)
 
-KEYS: dict[int, Direction] = {
-    pygame.K_UP: "up",
-    pygame.K_w: "up",
-    pygame.K_DOWN: "down",
-    pygame.K_s: "down",
-    pygame.K_LEFT: "left",
-    pygame.K_a: "left",
-    pygame.K_RIGHT: "right",
-    pygame.K_d: "right",
-}
+SLIDES: dict[Action, Direction] = {"up": "up", "down": "down", "left": "left", "right": "right"}
 
 Dialog = Literal["none", "won", "over"]
 
@@ -158,11 +150,11 @@ class Twenty48App(BaseApp):
             return
         if self.new_btn.handle_event(event):
             return
-        if event.type == pygame.KEYDOWN:
-            if event.key in KEYS:
-                self._move(KEYS[event.key])
-            elif event.key == pygame.K_n:
-                self._new_game()
+        action = action_of(event)
+        if action in SLIDES:
+            self._move(SLIDES[action])
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+            self._new_game()
         elif (
             event.type == pygame.MOUSEBUTTONDOWN
             and event.button == 1
@@ -275,7 +267,7 @@ class Twenty48App(BaseApp):
             )
         self.new_btn.draw(surface)
         lines = [
-            "Arrows / WASD or drag to slide.",
+            "Arrows / WASD, a gamepad or drag to slide.",
             "Tiles with the same number merge.",
             "N starts a new game.",
         ]

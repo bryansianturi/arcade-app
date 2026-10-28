@@ -24,6 +24,7 @@ from apps.star_siege.logic import (
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import Action, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -37,9 +38,7 @@ SPACE: Color = (10, 12, 22)
 
 FIELD = pygame.Rect((1280 - FIELD_W) // 2, 76, FIELD_W, FIELD_H)
 
-LEFT_KEYS = (pygame.K_LEFT, pygame.K_a)
-RIGHT_KEYS = (pygame.K_RIGHT, pygame.K_d)
-FIRE_KEYS = (pygame.K_SPACE, pygame.K_UP, pygame.K_w)
+FIRE_ACTIONS: tuple[Action, ...] = ("action", "up")
 
 State = Literal["ready", "playing", "over"]
 
@@ -81,8 +80,6 @@ class StarSiegeApp(BaseApp):
         self.rng = random.Random()
         self.game = SiegeGame(self.rng)
         self.state: State = "ready"
-        self.held: set[int] = set()
-        self.fire_held = False
         self.particles: list[Particle] = []
         self.flash = 0.0
         self.time = 0.0
@@ -104,28 +101,15 @@ class StarSiegeApp(BaseApp):
         self.menu = None
         self.particles.clear()
 
-    def on_pause(self) -> None:
-        # Keys released while the pause menu is open would otherwise stay "held".
-        self.held.clear()
-        self.fire_held = False
-
     # ------------------------------------------------------------------ input
     def handle_event(self, event: pygame.event.Event) -> None:
         if self.state == "over" and self.menu is not None:
             self.menu.handle_event(event)
             return
-        if event.type == pygame.KEYDOWN:
-            if self.state == "ready" and event.key in (pygame.K_SPACE, pygame.K_RETURN):
-                self._start()
-                return
-            self.held.add(event.key)
-            if event.key in FIRE_KEYS:
-                self.fire_held = True
-                self.game.fire()
-        elif event.type == pygame.KEYUP:
-            self.held.discard(event.key)
-            if event.key in FIRE_KEYS:
-                self.fire_held = any(k in self.held for k in FIRE_KEYS)
+        if self.state == "ready" and is_action(event, "action", repeat=False):
+            self._start()
+        elif any(is_action(event, a, repeat=False) for a in FIRE_ACTIONS):
+            self.game.fire()
 
     def update(self, dt: float) -> None:
         self.time += dt
@@ -136,10 +120,10 @@ class StarSiegeApp(BaseApp):
         if self.state != "playing":
             return
         game = self.game
-        left = any(k in self.held for k in LEFT_KEYS)
-        right = any(k in self.held for k in RIGHT_KEYS)
+        left = self.input.held("left")
+        right = self.input.held("right")
         game.move = int(right) - int(left)
-        if self.fire_held:
+        if any(self.input.held(a) for a in FIRE_ACTIONS):
             game.fire()  # holding fire auto-repeats at the cooldown rate
         for event in game.update(dt):
             self._on_event(event)
@@ -220,7 +204,12 @@ class StarSiegeApp(BaseApp):
 
         game = self.game
         if self.state == "ready":
-            self._draw_card(surface, t, "Star Siege", "← → move · Space fire · Space to launch")
+            self._draw_card(
+                surface,
+                t,
+                "Star Siege",
+                f"{self.input.labels('left', 'right')} move · {self.input.label('action')} fire",
+            )
         elif self.state == "playing" and game.wave_intro > 0:
             alpha = min(1.0, game.wave_intro / 0.4)
             font = t.font(t.size.display, "bold")

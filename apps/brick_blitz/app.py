@@ -25,6 +25,7 @@ from apps.brick_blitz.logic import (
 from core import draw, gfx
 from core.base_app import BaseApp
 from core.canvas import Canvas
+from core.input import is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
@@ -41,8 +42,6 @@ ROW_COLORS: tuple[Color, ...] = (
 )
 STEEL: Color = (100, 116, 139)
 FIELD = pygame.Rect((1280 - FIELD_W) // 2, 62, FIELD_W, FIELD_H)
-LEFT_KEYS = (pygame.K_LEFT, pygame.K_a)
-RIGHT_KEYS = (pygame.K_RIGHT, pygame.K_d)
 
 State = Literal["playing", "over"]
 
@@ -78,7 +77,6 @@ class BrickBlitzApp(BaseApp):
         self.rng = random.Random()
         self.game = BrickBlitz(self.rng)
         self.state: State = "playing"
-        self.held: set[int] = set()
         self.particles: list[Particle] = []
         self.trail: deque[tuple[float, float]] = deque(maxlen=10)
         self.banner = 0.0
@@ -88,9 +86,6 @@ class BrickBlitzApp(BaseApp):
 
     def restart(self) -> None:
         self.on_enter()
-
-    def on_pause(self) -> None:
-        self.held.clear()
 
     def _game_over(self) -> None:
         self.state = "over"
@@ -108,14 +103,10 @@ class BrickBlitzApp(BaseApp):
             self.menu.handle_event(event)
             return
         g = self.game
-        if event.type == pygame.KEYDOWN:
-            self.held.add(event.key)
-            if event.key in (pygame.K_SPACE, pygame.K_UP, pygame.K_w):
-                g.launch()
-            if event.key in LEFT_KEYS + RIGHT_KEYS:
-                g.target_x = None  # keyboard takes over from the mouse
-        elif event.type == pygame.KEYUP:
-            self.held.discard(event.key)
+        if is_action(event, "action", repeat=False) or is_action(event, "up", repeat=False):
+            g.launch()
+        elif is_action(event, "left") or is_action(event, "right"):
+            g.target_x = None  # keyboard/gamepad takes over from the mouse
         elif event.type == pygame.MOUSEMOTION and event.rel != (0, 0):
             g.target_x = event.pos[0] - FIELD.x
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -130,9 +121,7 @@ class BrickBlitzApp(BaseApp):
         if self.state != "playing":
             return
         g = self.game
-        g.move = int(any(k in self.held for k in RIGHT_KEYS)) - int(
-            any(k in self.held for k in LEFT_KEYS)
-        )
+        g.move = int(self.input.held("right")) - int(self.input.held("left"))
         for event in g.update(dt):
             self._on_event(event)
         if not g.attached:
@@ -218,7 +207,11 @@ class BrickBlitzApp(BaseApp):
         surface.blit(field, FIELD.topleft)
 
         if self.state == "playing" and g.attached:
-            text = f"Level {g.level + 1}" if self.banner > 0 else "Space or click to launch"
+            text = (
+                f"Level {g.level + 1}"
+                if self.banner > 0
+                else f"{self.input.label('action')} or click to launch"
+            )
             font = t.font(t.size.display if self.banner > 0 else t.size.title, "bold")
             draw.text(
                 surface,
@@ -252,7 +245,8 @@ class BrickBlitzApp(BaseApp):
             gfx.circle(surface, ACCENT, (FIELD.right - 10 - i * 26, y), 8)
         draw.text(
             surface,
-            "←/→ or mouse to move · Space / click to launch",
+            f"{self.input.labels('left', 'right')} or mouse to move · "
+            f"{self.input.label('action')} / click to launch",
             t.font(t.size.caption),
             p.text_muted,
             (FIELD.centerx, FIELD.bottom + 8),

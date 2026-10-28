@@ -11,6 +11,7 @@ from apps.minesweeper.logic import DIFFICULTIES, Cell, Difficulty, Minefield
 from core import draw, gfx
 from core.base_app import BaseApp, format_score
 from core.canvas import Canvas, mouse_pos
+from core.input import direction, is_action
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
@@ -29,17 +30,6 @@ NUMBER_COLORS: tuple[Color, ...] = (
 BOARD_AREA = pygame.Rect(48, 96, 1184, 584)
 MAX_CELL = 56
 HINT = "Left click reveal · Right click flag · Click a number to chord · Arrows, Space and F keys"
-
-MOVE_KEYS = {
-    pygame.K_UP: (0, -1),
-    pygame.K_w: (0, -1),
-    pygame.K_DOWN: (0, 1),
-    pygame.K_s: (0, 1),
-    pygame.K_LEFT: (-1, 0),
-    pygame.K_a: (-1, 0),
-    pygame.K_RIGHT: (1, 0),
-    pygame.K_d: (1, 0),
-}
 
 
 @register_app
@@ -144,20 +134,22 @@ class MinesweeperApp(BaseApp):
                 self._after_move()
             if event.button == 1:
                 self.pressed = None
-        elif event.type == pygame.KEYDOWN:
+        else:
             self._handle_key(event)
 
     def _handle_key(self, event: pygame.event.Event) -> None:
         f = self.field
-        if event.key in MOVE_KEYS:
-            dx, dy = MOVE_KEYS[event.key]
+        if (step := direction(event)) is not None:
+            dx, dy = step
             if self.keyboard_nav:
                 x, y = self.cursor
                 self.cursor = (max(0, min(f.width - 1, x + dx)), max(0, min(f.height - 1, y + dy)))
             self.keyboard_nav = True
-        elif event.key in (pygame.K_SPACE, pygame.K_RETURN, pygame.K_KP_ENTER):
+        elif is_action(event, "action", repeat=False):
             self.keyboard_nav = True
             self._open(self.cursor)
+        elif event.type != pygame.KEYDOWN:
+            return
         elif event.key == pygame.K_f:
             self.keyboard_nav = True
             f.toggle_flag(self.cursor)

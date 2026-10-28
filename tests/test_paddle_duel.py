@@ -128,17 +128,18 @@ def test_app_two_players_and_rally_record(app_context: AppContext) -> None:
     import pygame
 
     from apps.paddle_duel.app import PaddleDuelApp
-    from tests.conftest import key
+    from tests.conftest import hold
 
     app = PaddleDuelApp(app_context)
     app.on_enter()
     assert app.state == "choose" and app.menu is not None
     app.menu.buttons[-1].activate()  # 2 Players
     assert app.cpu is None and app.state == "playing"
-    app.handle_event(key(pygame.K_UP))
+    hold(app, pygame.K_UP)
     y = app.game.right.y
     app.update(0.1)
     assert app.game.right.y < y  # arrows drive the right paddle in 2-player mode
+    assert app.game.left.move == 0
     app.game.best_rally = 12
     app.game.scores["left"] = WIN_SCORE
     app.game.winner = "left"
@@ -146,3 +147,23 @@ def test_app_two_players_and_rally_record(app_context: AppContext) -> None:
     assert app.state == "over" and app.new_best
     best = app.best_score("rally")
     assert best is not None and best.score == 12 and SERVE_SPEED > 0
+
+
+def test_app_vs_cpu_uses_shared_controls(app_context: AppContext) -> None:
+    import pygame
+
+    from apps.paddle_duel.app import PaddleDuelApp
+    from tests.conftest import feed, hold, key_up
+
+    app = PaddleDuelApp(app_context)
+    app.on_enter()
+    assert app.menu is not None
+    app.menu.buttons[0].activate()  # vs CPU
+    hold(app, pygame.K_s)
+    app.update(0.05)
+    assert app.game.left.move == 1
+    feed(app, key_up(pygame.K_s))
+    app.input.bind("up", 0, pygame.K_i)  # remapped
+    hold(app, pygame.K_i)
+    app.update(0.05)
+    assert app.game.left.move == -1

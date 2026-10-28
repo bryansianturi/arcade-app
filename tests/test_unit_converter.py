@@ -76,7 +76,7 @@ def test_app_converts_and_remembers(app_context: AppContext) -> None:
     app.on_enter()
     app._set_category(2)  # Temperature
     app._set_unit("°C")
-    app.input.set_text("37")
+    app.value_input.set_text("37")
     assert app.value() == D(37)
     app.on_exit()
     again = UnitConverterApp(app_context)
@@ -84,5 +84,5 @@ def test_app_converts_and_remembers(app_context: AppContext) -> None:
     assert (
         again.category.name == "Temperature"
         and again.from_symbol == "°C"
-        and again.input.text == "37"
+        and again.value_input.text == "37"
     )
