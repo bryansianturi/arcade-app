@@ -25,6 +25,7 @@ as simple as dropping a folder into `apps/`.
 | **Calculator** | Tool | Hand-written recursive-descent parser (no `eval`), correct precedence, parentheses, powers, exact decimal arithmetic, history |
 | **Snake**      | Game | Queued turns for responsive controls, speeds up as you eat, walls or wrap-around, smooth interpolated movement, high score per mode |
 | **Minesweeper** | Game | 3 board sizes, first click always safe (and opens an area), flags, chording, keyboard play, best time per difficulty |
+| **2048**       | Game | Animated slides, merges and spawns, keyboard or mouse swipe, resume an unfinished game, best score |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -58,6 +59,7 @@ python main.py
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
 | Snake      | **Arrows/WASD** steer · **P** pause |
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
+| 2048       | **Arrows/WASD** or drag with the mouse · **N** new |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
