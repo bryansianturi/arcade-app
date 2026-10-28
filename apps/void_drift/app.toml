@@ -1,0 +1,27 @@
+id = "void_drift"
+name = "Void Drift"
+description = "Drift, thrust and blast splitting rocks. Watch out for drones."
+category = "game"
+accent = "#67E8F9"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+
+[[achievements]]
+id = "wave_3"
+name = "Into the belt"
+description = "Reach wave 3."
+
+[[achievements]]
+id = "drone"
+name = "Drone hunter"
+description = "Shoot down a drone."
+
+[[achievements]]
+id = "score_10000"
+name = "Ten thousand"
+description = "Score 10,000 points in one game."

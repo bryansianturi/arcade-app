@@ -25,8 +25,8 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-16 apps (13 games and 3 tools), each one a self-contained package in `apps/`.
-The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Four in a Row,
+17 apps (14 games and 3 tools), each one a self-contained package in `apps/`.
+The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
@@ -46,6 +46,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | **Star Siege** | Fixed-screen shooter: formations speed up as they thin out, eroding shields, lives, waves |
 | **Sudoku** | Unique-solution generator (Easy/Medium/Hard), pencil notes, conflict highlighting, check, undo, resume |
 | **Tic-tac-toe** | Unbeatable minimax (exhaustively tested) or an easy mode; win/draw/loss record |
+| **Void Drift** | Wrap-around space shooter: thrust and inertia, rocks that split in three sizes, weaving drones that shoot back, warp escape, waves and extra lives |
 
 **Tools**
 
@@ -97,6 +98,7 @@ python main.py
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) · **R** watch your best run |
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
 | Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
+| Void Drift | **←/→** turn · **↑** thrust · **Space** fire (hold to auto-fire) · **↓** warp |
 | Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 
 These are the default keys. Arrows/WASD, Space/Enter and Esc are the shared **actions** (up, down,
@@ -202,7 +204,7 @@ apps/
   calculator/  focus_timer/  unit_converter/                    tools
   brick_blitz/  five_letters/  four_in_a_row/  memory_match/      games
   minesweeper/  paddle_duel/  skyhop/  snake/  stackfall/
-  star_siege/  sudoku/  tictactoe/  twenty48/
+  star_siege/  sudoku/  tictactoe/  twenty48/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
 tests/                  pytest suite (headless)
 ```
