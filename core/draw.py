@@ -198,3 +198,33 @@ def thick_line(
         pygame.draw.polygon(surface, color, [a + normal, b + normal, b - normal, a - normal])
     pygame.draw.circle(surface, color, a, radius)
     pygame.draw.circle(surface, color, b, radius)
+
+
+def ring_arc(
+    surface: pygame.Surface,
+    color: RGB,
+    center: tuple[float, float],
+    radius: float,
+    width: float,
+    fraction: float,
+    start_deg: float = -90,
+) -> None:
+    """A thick, round-capped arc covering ``fraction`` (0..1) of a circle, clockwise.
+
+    Used for progress rings. ``start_deg`` -90 starts at 12 o'clock.
+    """
+    fraction = max(0.0, min(1.0, fraction))
+    if fraction <= 0:
+        return
+    c = pygame.Vector2(center)
+    mid = radius - width / 2
+    steps = max(2, int(120 * fraction))
+    outer, inner = [], []
+    for i in range(steps + 1):
+        angle = start_deg + 360 * fraction * i / steps
+        direction = pygame.Vector2(1, 0).rotate(angle)
+        outer.append(c + direction * radius)
+        inner.append(c + direction * (radius - width))
+    pygame.draw.polygon(surface, color, outer + inner[::-1])
+    for angle in (start_deg, start_deg + 360 * fraction):  # round caps
+        pygame.draw.circle(surface, color, c + pygame.Vector2(mid, 0).rotate(angle), width / 2)
