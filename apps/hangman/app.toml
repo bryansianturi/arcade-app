@@ -1,0 +1,32 @@
+id = "hangman"
+name = "Hangman"
+description = "Guess the word, one letter at a time. Six categories."
+category = "game"
+accent = "#84CC16"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+
+[[achievements]]
+id = "first_win"
+name = "Wordsmith"
+description = "Guess a word."
+
+[[achievements]]
+id = "flawless"
+name = "Clean sheet"
+description = "Guess a word without a single miss or hint."
+
+[[achievements]]
+id = "streak_5"
+name = "On a roll"
+description = "Guess 5 words in a row."
+
+[[achievements]]
+id = "all_categories"
+name = "Well rounded"
+description = "Guess a word from every category."

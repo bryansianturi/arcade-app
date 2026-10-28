@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-28 apps (25 games and 3 tools), each one a self-contained package in `apps/`.
+29 apps (26 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
@@ -42,6 +42,7 @@ Crate Keeper, Echo Pads, Four in a Row, Five Letters) are original takes on clas
 | **Firefly** | Maze chase in a night garden: four shades with their own hunting styles (stalker, ambusher, flanker, wanderer), scatter/chase phases, lanterns that turn the tables, levels that speed up |
 | **Five Letters** | Word guessing: 800 hand-picked answers, 8.5k valid guesses, duplicate-aware scoring, hard mode, stats and best streak |
 | **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
+| **Hangman** | Six bundled categories (phrases too), type or click letters, hints that cost a miss, chalkboard drawing, missed letters revealed on a loss, win streaks |
 | **Memory Match** | 3 board sizes, 12 vector symbols, flip animations, moves counter, best time per size |
 | **Minesweeper** | 3 board sizes, first click always safe (and opens an area), flags, chording, best time per size |
 | **Nonogram** | Picture logic puzzles: 8 bundled pictures (names hidden until solved) and a random generator, all verified uniquely solvable by a line-logic solver; drag to paint, cross out cells, completed clues fade, colour reveal |
@@ -105,6 +106,7 @@ python main.py
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
+| Hangman    | Type or click letters · **?** hint · **Enter** next word |
 | Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
@@ -224,7 +226,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
-  brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
+  brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/  four_in_a_row/  hangman/  memory_match/      games
   minesweeper/  nonogram/  paddle_duel/  reaction_test/  skyhop/  sliding_tiles/  snake/  solitaire/
   stackfall/  switchboard/
   star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  void_drift/
