@@ -13,6 +13,7 @@ dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = ["tools/web"]  # vendored CPython source
 
 [tool.ruff.lint]
 select = [
@@ -38,7 +39,8 @@ known-first-party = ["core", "screens", "apps"]
 python_version = "3.11"
 strict = true
 warn_unreachable = true
-files = ["main.py", "core", "screens", "apps", "tests"]
+files = ["main.py", "core", "screens", "apps", "tests", "tools"]
+exclude = ["^build/", "^dist/", "^tools/web/"]  # build output, vendored CPython source
 
 [[tool.mypy.overrides]]
 module = "tests.*"

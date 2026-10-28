@@ -93,6 +93,25 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### Play in the browser
+
+The same code also runs in a web browser, compiled to WebAssembly with
+[pygbag](https://github.com/pygame-web/pygbag), so people can play without installing anything.
+
+```bash
+pip install -r requirements-web.txt
+python tools/build_web.py            # builds dist/web/ and dist/arcade-web.zip
+python tools/build_web.py --serve    # builds, then serves it at http://localhost:8000
+```
+
+`dist/web/` is a static site: upload it to any static host. `dist/arcade-web.zip` is the
+same files zipped for [itch.io](https://itch.io) (upload as an HTML game, viewport 1280×720).
+The page fetches the Python and pygame runtime from pygbag's CDN, so players need to be online.
+
+In the browser, saves go to the browser's local storage, window size and fullscreen are left
+to the browser, and computer opponents think for at most 1.5 seconds a move.
+See `core/web.py` for the details.
+
 ### Controls
 
 | Where      | Keys |
@@ -223,13 +242,15 @@ core/
   toasts.py             notification toasts
   screenshots.py        F12 screenshots
   devtools.py           developer overlay and hot reload
-  display.py            window, high-DPI letterboxing, fullscreen, mouse mapping
+  web.py, background.py browser support: platform checks, background work without threads
+  display.py            window, high-DPI letterboxing, fullscreen, mouse mapping (or the page canvas)
   canvas.py, gfx.py     resolution-independent Canvas, Font and pygame.draw equivalents
   theme.py, draw.py     design tokens and drawing helpers (shadows, rounded rects, text, icons)
-  storage.py            JSON saves: high scores, settings, per-app data
+  storage.py            JSON saves: high scores, settings, per-app data (localStorage in a browser)
   settings.py           typed user settings
   widgets/              Button, Card, Label, Grid, Toggle, TextInput, SegmentedControl, ButtonMenu...
 screens/                launcher, settings, controls, high scores, achievements, stats
+tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools

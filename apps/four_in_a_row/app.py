@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import math
 import random
-import threading
 
 import pygame
 
@@ -19,6 +18,7 @@ from apps.four_in_a_row.logic import (
     choose_move,
 )
 from core import draw, gfx
+from core.background import run_in_background
 from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.input import is_action
@@ -45,21 +45,17 @@ def slot_center(row: int, col: int) -> tuple[int, int]:
 
 
 class _CpuWorker:
-    """Runs the search on a background thread so the UI keeps animating."""
+    """Runs the search in the background so the UI keeps animating."""
 
     def __init__(self, board: Board, player: Player, level: Level, rng: random.Random) -> None:
         self.result: int | None = None
-        self._thread = threading.Thread(
-            target=self._run, args=(board.copy(), player, level, rng), daemon=True
-        )
-        self._thread.start()
+        self.done = False
+        work = board.copy()
+        run_in_background(lambda: self._run(work, player, level, rng))
 
     def _run(self, board: Board, player: Player, level: Level, rng: random.Random) -> None:
         self.result = choose_move(board, player, level, rng)
-
-    @property
-    def done(self) -> bool:
-        return not self._thread.is_alive()
+        self.done = True
 
 
 @register_app

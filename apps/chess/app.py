@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import random
-import threading
 from collections.abc import Callable
 from typing import Literal
 
@@ -11,11 +10,13 @@ import pygame
 
 from apps.chess.logic import FILES, PROMOTIONS, Move, Position, best_move, color_of
 from core import draw, gfx
+from core.background import run_in_background
 from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.input import DIRECTION_STEPS, action_of
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
+from core.web import think_limit
 from core.widgets import Button, SegmentedControl, draw_panel
 
 ACCENT: Color = (146, 64, 14)
@@ -251,6 +252,7 @@ class ChessApp(BaseApp):
         position = self.pos.copy()
         position._keys = list(self.pos._keys)
         depth, limit, blunder = LEVEL_SETTINGS[self.level]
+        limit = think_limit(limit)
         rng = random.Random()
 
         def run() -> None:
@@ -262,7 +264,7 @@ class ChessApp(BaseApp):
             if generation == self._generation:
                 self._cpu_move = move
 
-        threading.Thread(target=run, daemon=True).start()
+        run_in_background(run)
 
     # ------------------------------------------------------------------ geometry
     def square_rect(self, sq: int) -> pygame.Rect:

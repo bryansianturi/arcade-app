@@ -8,7 +8,8 @@ Everything lives in one folder (see :func:`core.paths.user_data_dir`)::
 
 Writes are atomic (write to a temp file, then rename) so a crash mid-save never
 leaves a corrupt file behind. Corrupt or unreadable files are logged and treated
-as empty rather than crashing the program.
+as empty rather than crashing the program. In the browser, :class:`BrowserStorage`
+keeps the same documents in ``localStorage`` instead.
 """
 
 from __future__ import annotations
@@ -53,28 +54,37 @@ class Storage:
 
     def load_json(self, name: str) -> JSONDict:
         """Load a JSON object, returning ``{}`` if it is missing or unreadable."""
-        path = self.path_for(name)
         try:
-            with path.open(encoding="utf-8") as fh:
-                data = json.load(fh)
-        except FileNotFoundError:
-            return {}
+            text = self._read_text(name)
+            data = json.loads(text) if text is not None else {}
         except (OSError, json.JSONDecodeError) as exc:
-            log.warning("Could not read %s (%s); starting fresh", path, exc)
+            log.warning("Could not read %s (%s); starting fresh", name, exc)
             return {}
         if not isinstance(data, dict):
-            log.warning("Ignoring %s: expected a JSON object", path)
+            log.warning("Ignoring %s: expected a JSON object", name)
             return {}
         return data
 
     def save_json(self, name: str, data: JSONDict) -> None:
-        """Atomically write ``data`` as pretty-printed JSON."""
+        """Write ``data`` as pretty-printed JSON."""
+        self._write_text(name, json.dumps(data, indent=2, sort_keys=True))
+
+    # ------------------------------------------------------------------ backend
+    def _read_text(self, name: str) -> str | None:
+        """A document's text, or ``None`` if it doesn't exist."""
+        try:
+            return self.path_for(name).read_text(encoding="utf-8")
+        except FileNotFoundError:
+            return None
+
+    def _write_text(self, name: str, text: str) -> None:
+        """Write atomically: to a temp file, then rename over the old one."""
         path = self.path_for(name)
         path.parent.mkdir(parents=True, exist_ok=True)
         fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                json.dump(data, fh, indent=2, sort_keys=True)
+                fh.write(text)
             os.replace(tmp_name, path)
         except BaseException:
             Path(tmp_name).unlink(missing_ok=True)
@@ -131,6 +141,28 @@ class Storage:
     def app_data(self, app_id: str) -> AppData:
         """Return a dict-like store private to one app (``apps/<app_id>.json``)."""
         return AppData(self, f"apps/{app_id}.json")
+
+
+class BrowserStorage(Storage):
+    """Keeps every document in the browser's ``localStorage``, under ``arcade/<name>``.
+
+    ``local_storage`` is the page's ``window.localStorage`` (see
+    :func:`core.web.local_storage`), or anything with ``getItem``/``setItem``.
+    ``root`` is only used for files that never need to survive a reload (logs).
+    """
+
+    PREFIX = "arcade/"
+
+    def __init__(self, local_storage: Any, root: Path = Path("/tmp/arcade")) -> None:
+        super().__init__(root)
+        self._local = local_storage
+
+    def _read_text(self, name: str) -> str | None:
+        value = self._local.getItem(self.PREFIX + name)
+        return None if value is None else str(value)
+
+    def _write_text(self, name: str, text: str) -> None:
+        self._local.setItem(self.PREFIX + name, text)
 
 
 class AppData(MutableMapping[str, Any]):

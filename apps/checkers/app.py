@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import random
-import threading
 from typing import Literal
 
 import pygame
@@ -19,11 +18,13 @@ from apps.checkers.logic import (
     side_of,
 )
 from core import draw, gfx
+from core.background import run_in_background
 from core.base_app import BaseApp
 from core.canvas import Canvas
 from core.input import DIRECTION_STEPS, action_of
 from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
+from core.web import think_limit
 from core.widgets import Button, SegmentedControl, draw_panel
 
 ACCENT: Color = (109, 40, 217)
@@ -252,13 +253,14 @@ class CheckersApp(BaseApp):
         generation = self._generation
         game = self.game.copy()
         depth, limit, randomness = LEVEL_SETTINGS[self.level]
+        limit = think_limit(limit)
 
         def run() -> None:
             move = choose_move(game, depth, limit, random.Random(), randomness)
             if generation == self._generation:
                 self._cpu_move = move
 
-        threading.Thread(target=run, daemon=True).start()
+        run_in_background(run)
 
     # ------------------------------------------------------------------ geometry
     def square_rect(self, sq: Square) -> pygame.Rect:

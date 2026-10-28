@@ -13,6 +13,7 @@ from core.canvas import Canvas
 from core.input import is_action
 from core.scene_manager import Scene
 from core.settings import WINDOW_PRESETS
+from core.web import IS_BROWSER
 from core.widgets import Button, SegmentedControl, Toggle, Widget, draw_panel
 from screens.common import MARGIN_X, SubpageHeader, is_back
 
@@ -46,29 +47,29 @@ class SettingsScreen(Scene):
         def seg(width: int, options: list[str], index: int, cb: Callable[[int], None]) -> Widget:
             return SegmentedControl(t, (right - width, 0, width, 40), options, index, cb)
 
-        def toggle(value: bool, cb: Callable[[bool], None]) -> Widget:
+        def toggle(value: bool, cb: Callable[[bool], None]) -> Toggle:
             return Toggle(t, (right - Toggle.WIDTH, 0), value, cb)
 
         size_index = WINDOW_PRESETS.index(s.window_size) if s.window_size in WINDOW_PRESETS else 1
         self.reset_btn = Button(
             t, (right - 190, 0, 190, 40), "Reset high scores", self._reset_scores, "danger"
         )
+        self.fullscreen_toggle = toggle(s.fullscreen, self._set_fullscreen)
+        window_rows = [
+            _Row(
+                "Window size",
+                "Used when not in fullscreen",
+                seg(420, [f"{a}×{b}" for a, b in WINDOW_PRESETS], size_index, self._set_size),
+            ),
+            _Row("Fullscreen", "Also toggled any time with F11", self.fullscreen_toggle),
+        ]
         self.rows = [
             _Row(
                 "Theme",
                 "Dark or light colors everywhere",
                 seg(220, ["Dark", "Light"], 0 if s.theme == "dark" else 1, self._set_theme),
             ),
-            _Row(
-                "Window size",
-                "Used when not in fullscreen",
-                seg(420, [f"{a}×{b}" for a, b in WINDOW_PRESETS], size_index, self._set_size),
-            ),
-            _Row(
-                "Fullscreen",
-                "Also toggled any time with F11",
-                toggle(s.fullscreen, self._set_fullscreen),
-            ),
+            *([] if IS_BROWSER else window_rows),  # the browser owns the window
             _Row(
                 "Developer mode",
                 "FPS/debug overlay · F5 reloads the current app",
@@ -136,9 +137,7 @@ class SettingsScreen(Scene):
 
     def on_reveal(self) -> None:
         # Fullscreen may have been toggled with F11 while we were underneath.
-        control = self.rows[2].control
-        assert isinstance(control, Toggle)
-        control.value = self.services.settings.fullscreen
+        self.fullscreen_toggle.value = self.services.settings.fullscreen
 
     # ------------------------------------------------------------------ loop
     def _set_focus(self, index: int) -> None:
@@ -169,9 +168,7 @@ class SettingsScreen(Scene):
     def update(self, dt: float) -> None:
         self.header.update(dt)
         # Keep the fullscreen toggle in sync when F11 is used on this screen.
-        fs = self.rows[2].control
-        if isinstance(fs, Toggle):
-            fs.value = self.services.settings.fullscreen
+        self.fullscreen_toggle.value = self.services.settings.fullscreen
         for row in self.rows:
             row.control.update(dt)
 
@@ -206,7 +203,10 @@ class SettingsScreen(Scene):
             row.control.draw(surface)
 
         caption = t.font(t.size.caption)
-        data_dir = draw.fit_text(f"Data folder: {self.services.storage.root}", caption, 800)
+        where = (
+            "Saved in this browser" if IS_BROWSER else f"Data folder: {self.services.storage.root}"
+        )
+        data_dir = draw.fit_text(where, caption, 800)
         draw.text(
             surface,
             data_dir,

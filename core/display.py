@@ -15,6 +15,7 @@ import pygame
 
 from core.canvas import Canvas, Viewport, set_viewport, to_logical
 from core.settings import Settings
+from core.web import IS_BROWSER
 
 LOGICAL_SIZE = (1280, 720)
 MIN_WINDOW_SIZE = (640, 360)
@@ -80,3 +81,36 @@ class Display:
             x0, y0 = to_logical((event.pos[0] - event.rel[0], event.pos[1] - event.rel[1]))
             attrs["rel"] = (attrs["pos"][0] - x0, attrs["pos"][1] - y0)
         return pygame.event.Event(event.type, attrs)
+
+
+class BrowserDisplay:
+    """The page's canvas in a web browser (see :mod:`core.web`).
+
+    The canvas is exactly the logical size; the page scales it to fit, so
+    there is no window to resize and mouse positions are already logical.
+    Fullscreen and window-size settings are left to the browser.
+    """
+
+    def __init__(self, settings: Settings) -> None:
+        self.screen = pygame.display.set_mode(LOGICAL_SIZE)
+        pygame.display.set_caption(WINDOW_TITLE)
+        self.fullscreen = False
+
+    def apply(self, settings: Settings) -> None:
+        """Nothing to apply: the browser owns the window."""
+
+    def begin_frame(self) -> Canvas:
+        set_viewport(Viewport(1.0, (0, 0), 1.0))
+        return Canvas(self.screen, 1.0, LOGICAL_SIZE)
+
+    def end_frame(self) -> None:
+        pygame.display.flip()
+
+    @staticmethod
+    def to_logical(event: pygame.event.Event) -> pygame.event.Event:
+        return event
+
+
+def create_display(settings: Settings) -> Display | BrowserDisplay:
+    """The OS window on the desktop, or the page's canvas in a browser."""
+    return BrowserDisplay(settings) if IS_BROWSER else Display(settings)
