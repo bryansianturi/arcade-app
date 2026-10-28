@@ -33,6 +33,7 @@ as simple as dropping a folder into `apps/`.
 | **Paddle Duel** | Game | Original paddle game: 2 players on one keyboard or vs a CPU that predicts bounces (3 levels, simulation-tested), spin, longest-rally record |
 | **Skyhop**     | Game | Original one-button flyer: neon gates, parallax night skyline, capped difficulty ramp (speed up, gaps shrink) |
 | **Five Letters** | Game | Word-guessing with 800 hand-picked answers, 8.5k valid guesses, correct duplicate-letter scoring, hard mode, flip animations, stats and best streak |
+| **Memory Match** | Game | 3 board sizes, 12 vector symbols, flip animations, moves counter, keyboard play, best time per size |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -74,6 +75,7 @@ python main.py
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Skyhop     | **Space**, **↑** or click to hop |
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
+| Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
