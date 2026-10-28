@@ -1,0 +1,23 @@
+id = "nonogram"
+name = "Nonogram"
+description = "Use the number clues to fill in the hidden picture."
+category = "game"
+accent = "#4F46E5"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[[achievements]]
+id = "solve_1"
+name = "First picture"
+description = "Solve a puzzle."
+
+[[achievements]]
+id = "gallery"
+name = "Gallery"
+description = "Solve every bundled puzzle."
+
+[[achievements]]
+id = "big_random"
+name = "Big picture"
+description = "Solve a random 15 × 15 puzzle."

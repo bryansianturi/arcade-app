@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-22 apps (19 games and 3 tools), each one a self-contained package in `apps/`.
+23 apps (20 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
@@ -43,6 +43,7 @@ Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres,
 | **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
 | **Memory Match** | 3 board sizes, 12 vector symbols, flip animations, moves counter, best time per size |
 | **Minesweeper** | 3 board sizes, first click always safe (and opens an area), flags, chording, best time per size |
+| **Nonogram** | Picture logic puzzles: 8 bundled pictures (names hidden until solved) and a random generator, all verified uniquely solvable by a line-logic solver; drag to paint, cross out cells, completed clues fade, colour reveal |
 | **Paddle Duel** | 2 players on one keyboard, or a CPU that predicts bounces (3 levels, simulation-tested); spin; longest-rally record |
 | **Skyhop** | One-button flyer through neon gates, parallax skyline, capped difficulty ramp |
 | **Snake** | Queued turns, speeds up as you eat, walls or wrap-around, smooth interpolated movement |
@@ -100,6 +101,7 @@ python main.py
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
 | Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
+| Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Skyhop     | **Space**, **↑** or click to hop |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
@@ -213,7 +215,7 @@ apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
   brick_blitz/  checkers/  chess/  crate_keeper/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
-  minesweeper/  paddle_duel/  skyhop/  snake/  solitaire/  stackfall/
+  minesweeper/  nonogram/  paddle_duel/  skyhop/  snake/  solitaire/  stackfall/
   star_siege/  sudoku/  tictactoe/  twenty48/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
 tests/                  pytest suite (headless)
