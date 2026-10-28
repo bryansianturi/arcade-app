@@ -154,14 +154,17 @@ def test_hold_swaps_once_per_piece() -> None:
     assert g.piece.kind == "T" and g.hold_kind == current
 
 
+def stack_to_spawn(g: Stackfall) -> None:
+    """Fill every row just below the spawn area, leaving the last column open so none clear."""
+    for y in range(HIDDEN + 1, TOTAL_ROWS):
+        fill_row(g, y, gap=WIDTH - 1)
+
+
 def test_game_over_when_spawn_is_blocked() -> None:
     g = game("O")
-    for y in range(HIDDEN, TOTAL_ROWS):
-        fill_row(g, y, gap=y % WIDTH)  # never complete
-    for x in range(WIDTH):
-        g.grid[HIDDEN][x] = "S"
-    result = g.hard_drop()
-    assert result.game_over and g.over
+    stack_to_spawn(g)
+    result = g.hard_drop()  # the O can't fall, so it locks inside the spawn area...
+    assert result.game_over and g.over  # ...and the next piece has nowhere to appear
     assert g.update(1).game_over
 
 
@@ -170,12 +173,10 @@ def test_app_game_over_records_score(app_context: AppContext) -> None:
 
     app = StackfallApp(app_context)
     app.on_enter()
+    app.rng = random.Random(0)  # deterministic pieces
     app._start()
     app.game.score = 4321
-    for y in range(HIDDEN, TOTAL_ROWS):
-        app.game.grid[y] = ["L" if x != y % WIDTH else None for x in range(WIDTH)]
-    for x in range(WIDTH):
-        app.game.grid[HIDDEN][x] = "S"
+    stack_to_spawn(app.game)
     app._after_step(app.game.hard_drop())
     assert app.state == "over" and app.new_best
     best = app.best_score()
