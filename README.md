@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-23 apps (20 games and 3 tools), each one a self-contained package in `apps/`.
+25 apps (22 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
@@ -46,11 +46,13 @@ Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres,
 | **Nonogram** | Picture logic puzzles: 8 bundled pictures (names hidden until solved) and a random generator, all verified uniquely solvable by a line-logic solver; drag to paint, cross out cells, completed clues fade, colour reveal |
 | **Paddle Duel** | 2 players on one keyboard, or a CPU that predicts bounces (3 levels, simulation-tested); spin; longest-rally record |
 | **Skyhop** | One-button flyer through neon gates, parallax skyline, capped difficulty ramp |
+| **Sliding Tiles** | The 8 and 15 puzzles: shuffles checked with the inversion-parity test, multi-tile slides, gliding animation, best time per size |
 | **Snake** | Queued turns, speeds up as you eat, walls or wrap-around, smooth interpolated movement |
 | **Stackfall** | Falling blocks: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview |
 | **Solitaire** | Klondike with drag and drop, double/right-click to send home, draw 1 or 3, unlimited undo, one-click finish, keyboard play; vector-drawn cards |
 | **Star Siege** | Fixed-screen shooter: formations speed up as they thin out, eroding shields, lives, waves |
 | **Sudoku** | Unique-solution generator (Easy/Medium/Hard), pencil notes, conflict highlighting, check, undo, resume |
+| **Switchboard** | Lights puzzle on 4×4, 5×5 or 6×6 boards: always-solvable shuffles, a GF(2) solver for par and hints, undo and restart |
 | **Tic-tac-toe** | Unbeatable minimax (exhaustively tested) or an easy mode; win/draw/loss record |
 | **Void Drift** | Wrap-around space shooter: thrust and inertia, rocks that split in three sizes, weaving drones that shoot back, warp escape, waves and extra lives |
 
@@ -104,11 +106,13 @@ python main.py
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Skyhop     | **Space**, **↑** or click to hop |
+| Sliding Tiles | Click a tile in the gap's row or column · **arrows** slide a tile into the gap · **U** undo |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
 | Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Solitaire  | Drag cards · double/right-click sends a card home · **D** draw · **U**/**Ctrl+Z** undo · **F** send home · **A** finish · **N** new · keyboard: **arrows** choose, **Space** pick up/put down |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) · **R** watch your best run |
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
+| Switchboard | Click a light, or **arrows** + **Space** · **H** hint · **U** undo · **N** new puzzle |
 | Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
 | Void Drift | **←/→** turn · **↑** thrust · **Space** fire (hold to auto-fire) · **↓** warp |
 | Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
@@ -215,7 +219,8 @@ apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
   brick_blitz/  checkers/  chess/  crate_keeper/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
-  minesweeper/  nonogram/  paddle_duel/  skyhop/  snake/  solitaire/  stackfall/
+  minesweeper/  nonogram/  paddle_duel/  skyhop/  sliding_tiles/  snake/  solitaire/
+  stackfall/  switchboard/
   star_siege/  sudoku/  tictactoe/  twenty48/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
 tests/                  pytest suite (headless)

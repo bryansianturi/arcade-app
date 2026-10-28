@@ -1,0 +1,28 @@
+id = "sliding_tiles"
+name = "Sliding Tiles"
+description = "Slide the numbered tiles back into order. 3 × 3 or 4 × 4."
+category = "game"
+accent = "#FDBA74"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "time"
+variants = ["3x3", "4x4"]
+
+[[achievements]]
+id = "solve_8"
+name = "Warm-up"
+description = "Solve the 3 × 3 puzzle."
+
+[[achievements]]
+id = "solve_15"
+name = "Fifteen"
+description = "Solve the 4 × 4 puzzle."
+
+[[achievements]]
+id = "fast_15"
+name = "Quick slide"
+description = "Solve the 4 × 4 puzzle in under two minutes."
