@@ -106,6 +106,7 @@ def test_snake_run_replays_identically(app_context: AppContext) -> None:
     app.on_enter()
     rng = random.Random(5)
     tap(app, pygame.K_SPACE)
+    app._new_game(seed=2024)  # a fixed game seed, so the run (and this test) is deterministic
     for frame in range(60_000):
         if app.state != "playing":
             break
@@ -150,6 +151,7 @@ def test_star_siege_run_replays_identically(app_context: AppContext) -> None:
     app.on_enter()
     rng = random.Random(11)
     tap(app, pygame.K_SPACE)
+    app._new_game(seed=2024)  # deterministic run
     held: set[int] = set()
     for _ in range(40_000):
         if app.state != "playing":
