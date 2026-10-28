@@ -1,0 +1,23 @@
+id = "switchboard"
+name = "Switchboard"
+description = "Each press flips a light and its neighbours. Switch them all off."
+category = "game"
+accent = "#F0ABFC"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[[achievements]]
+id = "solve_1"
+name = "Lights out"
+description = "Solve a puzzle."
+
+[[achievements]]
+id = "par"
+name = "Efficient electrician"
+description = "Solve a puzzle in the minimum number of presses."
+
+[[achievements]]
+id = "big"
+name = "Big board"
+description = "Solve a 6 × 6 board."
