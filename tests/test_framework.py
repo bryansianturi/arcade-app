@@ -210,6 +210,7 @@ def test_format_score() -> None:
     assert format_score(1234, "points") == "1,234"
     assert format_score(65, "time") == "1:05"
     assert format_score(3725.4, "time") == "1:02:05"
+    assert format_score(231.4, "ms") == "231 ms"
 
 
 def test_launcher_filtering(services: Services) -> None:

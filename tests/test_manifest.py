@@ -90,7 +90,7 @@ def test_scores_and_achievements_are_optional() -> None:
         ({"min_framework": 1}, "'min_framework' must be a non-empty string"),
         ({"colour": "#000000"}, "unknown key 'colour'"),
         ({"scores": {"order": "up"}}, "'scores.order' must be"),
-        ({"scores": {"format": "ms"}}, "'scores.format' must be"),
+        ({"scores": {"format": "seconds"}}, "'scores.format' must be"),
         ({"scores": {"variants": ["a", "a"]}}, "contains duplicates"),
         ({"scores": {"variants": "easy"}}, "must be a list"),
         ({"scores": {"best": 1}}, "unknown key 'scores.best'"),

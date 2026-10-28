@@ -40,7 +40,7 @@ from core.storage import ScoreOrder
 
 #: Version of the app-facing API (BaseApp, AppContext, services, manifest schema).
 #: Bump the minor version for additions and the major version for breaking changes.
-FRAMEWORK_VERSION = "1.0"
+FRAMEWORK_VERSION = "1.1"
 
 MANIFEST_NAME = "app.toml"
 
@@ -166,8 +166,8 @@ def parse_manifest(data: dict[str, Any], path: Path = Path(MANIFEST_NAME)) -> Ap
         if order not in ("higher", "lower"):
             problems.append('\'scores.order\' must be "higher" or "lower"')
         fmt = scores.get("format", "points")
-        if fmt not in ("points", "time"):
-            problems.append('\'scores.format\' must be "points" or "time"')
+        if fmt not in ("points", "time", "ms"):
+            problems.append('\'scores.format\' must be "points", "time" or "ms"')
         raw_variants = scores.get("variants", [])
         if not (
             isinstance(raw_variants, list)

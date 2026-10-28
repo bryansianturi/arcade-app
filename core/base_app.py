@@ -43,7 +43,7 @@ from core.theme import Color, Theme, readable_on
 from core.toasts import ToastService
 
 Category = Literal["game", "tool"]
-ScoreFormat = Literal["points", "time"]
+ScoreFormat = Literal["points", "time", "ms"]
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,8 @@ class AppMeta:
         accent: Brand color for the card and in-app highlights.
         tracks_scores: Whether the app appears on the High Scores screen.
         score_order: ``"higher"`` if bigger is better (points), ``"lower"`` for times.
-        score_format: How scores are displayed: plain ``"points"`` or ``"time"`` (m:ss).
+        score_format: How scores are displayed: plain ``"points"``, ``"time"``
+            (m:ss) or ``"ms"`` (milliseconds, e.g. reaction times).
         variants: Ordered score variants (e.g. difficulties). ``()`` means a single
             ``"default"`` variant.
         version: The app's own version.
@@ -238,10 +239,12 @@ class BaseApp(ABC):
 
 
 def format_score(value: float, fmt: ScoreFormat) -> str:
-    """Format a score for display: ``1234`` → ``"1,234"``; times → ``"m:ss"``."""
+    """Format a score for display: ``1234`` → ``"1,234"``; times → ``"m:ss"``; ``"231 ms"``."""
     if fmt == "time":
         total = round(value)
         hours, rem = divmod(total, 3600)
         minutes, seconds = divmod(rem, 60)
         return f"{hours}:{minutes:02d}:{seconds:02d}" if hours else f"{minutes}:{seconds:02d}"
+    if fmt == "ms":
+        return f"{round(value):,} ms"
     return f"{int(value):,}"
