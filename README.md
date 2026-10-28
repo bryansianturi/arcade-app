@@ -28,6 +28,7 @@ as simple as dropping a folder into `apps/`.
 | **2048**       | Game | Animated slides, merges and spawns, keyboard or mouse swipe, resume an unfinished game, best score |
 | **Tic-tac-toe** | Game | Minimax with alpha-beta (exhaustively tested to never lose) or a beatable easy mode, animated marks, win/draw/loss record |
 | **Four in a Row** | Game | Original take on the drop-four genre: negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
+| **Stackfall**  | Game | Original falling-block puzzle: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview, custom key repeat |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -64,6 +65,7 @@ python main.py
 | 2048       | **Arrows/WASD** or drag with the mouse · **N** new |
 | Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
+| Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
