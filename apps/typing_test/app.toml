@@ -1,0 +1,33 @@
+id = "typing_test"
+name = "Typing Test"
+description = "How fast can you type? 15, 30 or 60 seconds of common words."
+category = "game"
+accent = "#7DD3FC"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+variants = ["15s", "30s", "60s"]
+
+[[achievements]]
+id = "first_test"
+name = "Warm fingers"
+description = "Finish a typing test."
+
+[[achievements]]
+id = "wpm_40"
+name = "Cruising"
+description = "Type at 40 WPM or faster."
+
+[[achievements]]
+id = "wpm_80"
+name = "Blazing keys"
+description = "Type at 80 WPM or faster."
+
+[[achievements]]
+id = "flawless"
+name = "Flawless"
+description = "Finish a 30 or 60 second test with 100% accuracy (at 20 WPM or more)."
