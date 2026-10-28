@@ -1,4 +1,6 @@
-"""Launcher-style cards: an icon, a title, a description and an optional badge."""
+"""Launcher-style cards: an icon, a title, a description, an optional badge and a
+favorite star. ``compact`` cards (icon, title and one line) are used for the
+launcher's Favorites and Recently played rows."""
 
 from __future__ import annotations
 
@@ -28,6 +30,9 @@ class Card(Widget):
         badge: str | None = None,
         tag: str | None = None,
         icon: IconPainter | None = None,
+        favorite: bool | None = None,
+        on_favorite: Callable[[], None] | None = None,
+        compact: bool = False,
     ) -> None:
         super().__init__(theme, rect)
         self.title = title
@@ -37,6 +42,15 @@ class Card(Widget):
         self.badge = badge  # e.g. "Best 1,240"
         self.tag = tag  # e.g. "Game"
         self.icon = icon
+        self.favorite = favorite  # None: no star shown
+        self.on_favorite = on_favorite
+        self.compact = compact
+
+    def star_rect(self) -> pygame.Rect:
+        """Hit area of the favorite star (top-right corner)."""
+        size = 32
+        pad = self.theme.space.md if self.compact else self.theme.space.lg - 6
+        return pygame.Rect(self.rect.right - pad - size + 6, self.rect.y + pad - 6, size, size)
 
     def activate(self) -> None:
         if self.on_click is not None:
@@ -44,7 +58,11 @@ class Card(Widget):
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if self._is_click(event):
-            self.activate()
+            if self.favorite is not None and self.star_rect().collidepoint(event.pos):
+                if self.on_favorite is not None:
+                    self.on_favorite()
+            else:
+                self.activate()
             return True
         return False
 
@@ -71,6 +89,11 @@ class Card(Widget):
             ring = lerp_color(p.surface, self.accent, 1.0 if self.focused else self._hover_t)
             draw.rounded_rect(surface, rect, ring, t.radius.lg, 2)
 
+        self._draw_star(surface, rect)
+        if self.compact:
+            self._draw_compact(surface, rect)
+            return
+
         pad = t.space.lg
         icon_rect = pygame.Rect(rect.x + pad, rect.y + pad, 44, 44)
         if self.icon is not None:
@@ -80,12 +103,13 @@ class Card(Widget):
 
         if self.tag:
             tag_font = t.font(t.size.caption, "medium")
+            right = rect.right - pad - (30 if self.favorite is not None else 0)
             draw.text(
                 surface,
                 self.tag.upper(),
                 tag_font,
                 p.text_muted,
-                (rect.right - pad, rect.y + pad),
+                (right, rect.y + pad),
                 "topright",
             )
 
@@ -121,3 +145,47 @@ class Card(Widget):
                 badge.center,
                 "center",
             )
+
+    def _draw_star(self, surface: Canvas, rect: pygame.Rect) -> None:
+        if self.favorite is None:
+            return
+        p = self.theme.palette
+        star = self.star_rect().move(0, rect.y - self.rect.y)
+        if self.favorite:
+            draw.star_icon(surface, star.center, p.warning, 20)
+        elif self._hover_t > 0.01 or self.focused:
+            color = lerp_color(
+                p.surface, p.text_muted, max(self._hover_t, 1.0 if self.focused else 0)
+            )
+            draw.star_outline_icon(surface, star.center, color, 20)
+
+    def _draw_compact(self, surface: Canvas, rect: pygame.Rect) -> None:
+        t = self.theme
+        p = t.palette
+        pad = t.space.md
+        icon_rect = pygame.Rect(rect.x + pad, 0, 40, 40)
+        icon_rect.centery = rect.centery + 2
+        if self.icon is not None:
+            self.icon(surface, icon_rect, t)
+        else:
+            draw.rounded_rect(surface, icon_rect, self.accent, t.radius.md)
+        x = icon_rect.right + t.space.md
+        width = rect.right - pad - x - (24 if self.favorite is not None else 0)
+        title_font = t.font(t.size.body, "semibold")
+        draw.text(
+            surface,
+            draw.fit_text(self.title, title_font, width),
+            title_font,
+            p.text,
+            (x, icon_rect.centery - 1),
+            "bottomleft",
+        )
+        caption = t.font(t.size.caption)
+        draw.text(
+            surface,
+            draw.fit_text(self.badge or self.description, caption, width),
+            caption,
+            lerp_color(p.text_muted, self.accent, 0.35) if self.badge else p.text_muted,
+            (x, icon_rect.centery + 2),
+            "topleft",
+        )

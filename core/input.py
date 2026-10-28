@@ -66,6 +66,9 @@ FIXED_KEYS: dict[int, Action] = {pygame.K_KP_ENTER: "action"}
 #: Global hotkeys handled by the main loop; they can't be bound.
 RESERVED_KEYS = frozenset({pygame.K_F5, pygame.K_F11, pygame.K_F12})
 
+#: Keys pressed with these modifiers never trigger actions.
+SHORTCUT_MODS = pygame.KMOD_CTRL | pygame.KMOD_META | pygame.KMOD_ALT
+
 INPUT_FILE = "input.json"
 
 ACTIONDOWN = pygame.event.custom_type()
@@ -259,6 +262,8 @@ class InputMap:
         bound = self.action_for_key(key)
         if bound is None:
             return
+        if getattr(event, "mod", 0) & SHORTCUT_MODS:
+            return  # Ctrl/Cmd/Alt + key is a shortcut (e.g. Ctrl+Z), not a control
         typed = getattr(event, "unicode", "")
         if text_mode and typed and typed.isprintable():
             return

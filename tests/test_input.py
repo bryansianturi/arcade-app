@@ -67,6 +67,13 @@ def test_text_mode_suppresses_printable_keys_only() -> None:
     assert [e.action for e in down(m, pygame.K_ESCAPE, "\x1b", text=True)] == ["pause"]
 
 
+def test_modified_keys_are_shortcuts_not_actions() -> None:
+    m = InputMap()
+    assert m.translate(key(pygame.K_d, "\x04", pygame.KMOD_LCTRL)) == []
+    assert m.translate(key(pygame.K_s, "", pygame.KMOD_LMETA)) == []
+    assert [e.action for e in m.translate(key(pygame.K_a, "A", pygame.KMOD_LSHIFT))] == ["left"]
+
+
 def test_focus_loss_releases_everything() -> None:
     m = InputMap()
     down(m, pygame.K_UP)

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from core import draw
 from core.achievements import Achievement, AchievementService
 from core.base_app import BaseApp
+from core.favorites import Favorites
 from core.input import InputMap
 from core.registry import DiscoveryFailure
 from core.scene_manager import SceneManager
@@ -32,6 +33,7 @@ class Services:
     toasts: ToastService = field(init=False)
     achievements: AchievementService = field(init=False)
     stats: StatsService = field(init=False)
+    favorites: Favorites = field(init=False)
 
     def __post_init__(self) -> None:
         self.input = InputMap.load(self.storage)
@@ -39,6 +41,7 @@ class Services:
         self.achievements = AchievementService(self.storage, self._announce_achievement)
         self.define_achievements()
         self.stats = StatsService(self.storage)
+        self.favorites = Favorites(self.storage)
 
     def define_achievements(self) -> None:
         """Register every app's achievements (again after ``apps`` changes)."""
