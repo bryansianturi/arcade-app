@@ -25,7 +25,11 @@ select = [
     "N",        # naming
     "RUF",      # ruff-specific
 ]
-ignore = ["RUF012"]  # ClassVar annotations on mutable class attrs are noise for app metadata
+ignore = [
+    "B027",    # BaseApp's empty lifecycle hooks are optional overrides by design
+    "RUF012",  # ClassVar annotations on mutable class attrs are noise for app metadata
+]
+allowed-confusables = ["×", "–"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["core", "screens", "apps"]
@@ -39,6 +43,7 @@ files = ["main.py", "core", "screens", "apps", "tests"]
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+warn_unreachable = false  # tests mutate state through calls, which mypy can't follow
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
