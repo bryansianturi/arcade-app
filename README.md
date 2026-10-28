@@ -15,28 +15,39 @@ as simple as dropping a folder into `apps/`.
 - **Global High Scores** screen, generated from every app that tracks scores (including per-difficulty bests).
 - **Settings**: dark/light theme, window size presets, fullscreen (F11), FPS counter, animations.
 - **Modern look**: flat design, rounded corners, soft shadows, hover/press states and screen transitions; all graphics are drawn in code.
-- **Quality**: type hints throughout, `mypy --strict`, `ruff`, ~140 pytest tests, GitHub Actions CI.
+- **Quality**: type hints throughout, `mypy --strict`, `ruff`, 300+ pytest tests, GitHub Actions CI.
 
 ### Apps
 
-| App            | Type | Highlights |
-|----------------|------|------------|
-| **Sudoku**     | Game | Generator with Easy/Medium/Hard and a guaranteed unique solution, pencil notes, conflict highlighting, check, undo, timer, best time per difficulty, resume an unfinished game |
-| **Calculator** | Tool | Hand-written recursive-descent parser (no `eval`), correct precedence, parentheses, powers, exact decimal arithmetic, history |
-| **Snake**      | Game | Queued turns for responsive controls, speeds up as you eat, walls or wrap-around, smooth interpolated movement, high score per mode |
-| **Minesweeper** | Game | 3 board sizes, first click always safe (and opens an area), flags, chording, keyboard play, best time per difficulty |
-| **2048**       | Game | Animated slides, merges and spawns, keyboard or mouse swipe, resume an unfinished game, best score |
-| **Tic-tac-toe** | Game | Minimax with alpha-beta (exhaustively tested to never lose) or a beatable easy mode, animated marks, win/draw/loss record |
-| **Four in a Row** | Game | Original take on the drop-four genre: negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
-| **Stackfall**  | Game | Original falling-block puzzle: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview, custom key repeat |
-| **Brick Blitz** | Game | Original brick breaker: 4 hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
-| **Paddle Duel** | Game | Original paddle game: 2 players on one keyboard or vs a CPU that predicts bounces (3 levels, simulation-tested), spin, longest-rally record |
-| **Skyhop**     | Game | Original one-button flyer: neon gates, parallax night skyline, capped difficulty ramp (speed up, gaps shrink) |
-| **Five Letters** | Game | Word-guessing with 800 hand-picked answers, 8.5k valid guesses, correct duplicate-letter scoring, hard mode, flip animations, stats and best streak |
-| **Memory Match** | Game | 3 board sizes, 12 vector symbols, flip animations, moves counter, keyboard play, best time per size |
-| **Focus Timer** | Tool | Pomodoro cycles (adjustable lengths, long break every 4) and a lap stopwatch; wall-clock based so it keeps running while you play, with a visual alert instead of sound |
-| **Unit Converter** | Tool | 8 categories, exact `Decimal` factors (round-trip tested), every unit shown at once, click a result to convert from it |
-| **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
+16 apps (13 games and 3 tools), each one a self-contained package in `apps/`.
+The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Four in a Row,
+Five Letters) are original takes on classic genres, with their own names, art and tuning.
+
+**Games**
+
+| App | Highlights |
+|-----|------------|
+| **2048** | Animated slides, merges and spawns; keyboard or mouse swipe; resume an unfinished game |
+| **Brick Blitz** | Four hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
+| **Five Letters** | Word guessing: 800 hand-picked answers, 8.5k valid guesses, duplicate-aware scoring, hard mode, stats and best streak |
+| **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
+| **Memory Match** | 3 board sizes, 12 vector symbols, flip animations, moves counter, best time per size |
+| **Minesweeper** | 3 board sizes, first click always safe (and opens an area), flags, chording, best time per size |
+| **Paddle Duel** | 2 players on one keyboard, or a CPU that predicts bounces (3 levels, simulation-tested); spin; longest-rally record |
+| **Skyhop** | One-button flyer through neon gates, parallax skyline, capped difficulty ramp |
+| **Snake** | Queued turns, speeds up as you eat, walls or wrap-around, smooth interpolated movement |
+| **Stackfall** | Falling blocks: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview |
+| **Star Siege** | Fixed-screen shooter: formations speed up as they thin out, eroding shields, lives, waves |
+| **Sudoku** | Unique-solution generator (Easy/Medium/Hard), pencil notes, conflict highlighting, check, undo, resume |
+| **Tic-tac-toe** | Unbeatable minimax (exhaustively tested) or an easy mode; win/draw/loss record |
+
+**Tools**
+
+| App | Highlights |
+|-----|------------|
+| **Calculator** | Hand-written recursive-descent parser (no `eval`), precedence, parentheses, powers, exact decimals, history |
+| **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
+| **Unit Converter** | 8 categories with exact `Decimal` factors, every unit shown at once |
 
 ## Screenshots
 
@@ -65,22 +76,22 @@ python main.py
 |------------|------|
 | Everywhere | **Esc** pause menu / back · **F11** fullscreen |
 | Launcher   | **Arrows** select · **Enter** open · **Tab** switch category · just start typing to search |
-| Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
-| Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
-| Snake      | **Arrows/WASD** steer · **P** pause |
-| Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | 2048       | **Arrows/WASD** or drag with the mouse · **N** new |
-| Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
-| Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
-| Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
+| Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
+| Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
+| Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
+| Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
+| Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
+| Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Skyhop     | **Space**, **↑** or click to hop |
-| Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
-| Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
-| Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
-| Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
+| Snake      | **Arrows/WASD** steer · **P** pause |
+| Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
+| Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
+| Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
+| Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 
 ### Development
 
@@ -154,7 +165,10 @@ core/
 screens/                launcher, settings, high scores
 apps/
   _template/            minimal app to copy
-  calculator/  snake/  star_siege/  sudoku/
+  calculator/  focus_timer/  unit_converter/                    tools
+  brick_blitz/  five_letters/  four_in_a_row/  memory_match/      games
+  minesweeper/  paddle_duel/  skyhop/  snake/  stackfall/
+  star_siege/  sudoku/  tictactoe/  twenty48/
 assets/fonts/           Inter (SIL Open Font License)
 tests/                  pytest suite (headless)
 ```
