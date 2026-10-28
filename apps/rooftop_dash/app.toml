@@ -1,0 +1,32 @@
+id = "rooftop_dash"
+name = "Rooftop Dash"
+description = "Run the rooftops: jump the gaps, hop the crates, slide under drones."
+category = "game"
+accent = "#F472B6"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+
+[[achievements]]
+id = "run_500"
+name = "Warmed up"
+description = "Score 500 in one run."
+
+[[achievements]]
+id = "run_2000"
+name = "Skyline sprinter"
+description = "Score 2,000 in one run."
+
+[[achievements]]
+id = "coins_50"
+name = "Pocket change"
+description = "Collect 50 coins in one run."
+
+[[achievements]]
+id = "drones_10"
+name = "Limbo"
+description = "Slide under 10 drones in one run."

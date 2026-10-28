@@ -25,9 +25,9 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-30 apps (27 games and 3 tools), each one a self-contained package in `apps/`.
+31 apps (28 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
-Crate Keeper, Echo Pads, Updraft, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
+Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
 
@@ -48,6 +48,7 @@ Crate Keeper, Echo Pads, Updraft, Four in a Row, Five Letters) are original take
 | **Nonogram** | Picture logic puzzles: 8 bundled pictures (names hidden until solved) and a random generator, all verified uniquely solvable by a line-logic solver; drag to paint, cross out cells, completed clues fade, colour reveal |
 | **Paddle Duel** | 2 players on one keyboard, or a CPU that predicts bounces (3 levels, simulation-tested); spin; longest-rally record |
 | **Reaction Test** | Classic: wait for green, five rounds averaged, false starts repeat the round; Targets: 15 mouse targets that always jump away; timed from input timestamps, not frames; bests in ms |
+| **Rooftop Dash** | Endless runner over a parallax skyline: variable-height jumps with coyote time and buffering, slides, crates, drones, coins; speed is a function of distance so every gap and obstacle is generated clearable (a bot test runs 150 s on every seed) |
 | **Skyhop** | One-button flyer through neon gates, parallax skyline, capped difficulty ramp |
 | **Sliding Tiles** | The 8 and 15 puzzles: shuffles checked with the inversion-parity test, multi-tile slides, gliding animation, best time per size |
 | **Snake** | Queued turns, speeds up as you eat, walls or wrap-around, smooth interpolated movement |
@@ -113,6 +114,7 @@ python main.py
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Reaction Test | Click or **Space** when it turns green · Targets: click with the mouse |
+| Rooftop Dash | **Space**/**↑**/click jump (hold for height) · **↓** slide, or drop faster in the air |
 | Skyhop     | **Space**, **↑** or click to hop |
 | Sliding Tiles | Click a tile in the gap's row or column · **arrows** slide a tile into the gap · **U** undo |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
@@ -229,7 +231,7 @@ apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/  four_in_a_row/  hangman/  memory_match/      games
-  minesweeper/  nonogram/  paddle_duel/  reaction_test/  skyhop/  sliding_tiles/  snake/  solitaire/
+  minesweeper/  nonogram/  paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/  solitaire/
   stackfall/  switchboard/
   star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  updraft/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)
