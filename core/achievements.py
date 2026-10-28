@@ -55,6 +55,7 @@ class AchievementService:
         self.storage = storage
         self.on_unlock = on_unlock
         self._defs: dict[str, dict[str, Achievement]] = {}
+        self._warned: set[str] = set()
         raw = storage.load_json(ACHIEVEMENTS_FILE)
         self._unlocked: dict[str, str] = {
             k: v for k, v in raw.items() if isinstance(k, str) and isinstance(v, str)
@@ -74,7 +75,10 @@ class AchievementService:
         """
         definition = self._defs.get(app_id, {}).get(achievement_id)
         if definition is None:
-            log.warning("Unknown achievement %r for app %r", achievement_id, app_id)
+            k = key(app_id, achievement_id)
+            if k not in self._warned:  # once: unlock checks often run every frame
+                self._warned.add(k)
+                log.warning("Unknown achievement %r for app %r", achievement_id, app_id)
             return False
         k = key(app_id, achievement_id)
         if k in self._unlocked:

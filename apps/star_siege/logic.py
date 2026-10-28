@@ -150,6 +150,8 @@ class Shield:
 
     def erode(self, box: Box) -> None:
         """Remove every cell overlapping ``box`` (enemies flying through)."""
+        if not self.cells or not self.box.intersects(box):
+            return  # the common case: the enemy is nowhere near this shield
         self.cells = {cell for cell in self.cells if not self.cell_box(*cell).intersects(box)}
 
 
