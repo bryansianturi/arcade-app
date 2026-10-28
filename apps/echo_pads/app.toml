@@ -1,0 +1,33 @@
+id = "echo_pads"
+name = "Echo Pads"
+description = "Watch the pads light up, then play the pattern back."
+category = "game"
+accent = "#2DD4BF"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+variants = ["classic", "shuffle"]
+
+[[achievements]]
+id = "round_5"
+name = "Good ears"
+description = "Repeat a 5-step pattern."
+
+[[achievements]]
+id = "round_12"
+name = "Photographic"
+description = "Repeat a 12-step pattern."
+
+[[achievements]]
+id = "round_20"
+name = "Total recall"
+description = "Repeat a 20-step pattern."
+
+[[achievements]]
+id = "shuffle_8"
+name = "Fresh every time"
+description = "Repeat an 8-step pattern in Shuffle mode."

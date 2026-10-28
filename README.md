@@ -25,9 +25,9 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-27 apps (24 games and 3 tools), each one a self-contained package in `apps/`.
+28 apps (25 games and 3 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
-Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
+Crate Keeper, Echo Pads, Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
 
@@ -38,6 +38,7 @@ Crate Keeper, Four in a Row, Five Letters) are original takes on classic genres,
 | **Checkers** | English draughts: compulsory captures, multi-jumps chosen hop by hop, crowning, 40-move draw; animated jumps; alpha-beta computer in 3 levels; resumes your game |
 | **Chess** | Full rules (castling, en passant, promotion, checkmate, stalemate, fifty-move, threefold repetition, insufficient material), verified with perft; legal-move highlights, drag or click, notation history, undo, flip; alpha-beta engine in 3 levels on a background thread; resumes your game |
 | **Crate Keeper** | Crate-pushing puzzles: 15 original levels loaded from JSON files (each proven solvable by a solver in the tests), unlock as you go, undo, restart, best moves per level |
+| **Echo Pads** | Memory pattern game: four pads in a plus so the arrows map onto them; Classic grows the pattern by one, Shuffle draws a new one each round; playback speeds up as it grows; the missed pad is ringed |
 | **Firefly** | Maze chase in a night garden: four shades with their own hunting styles (stalker, ambusher, flanker, wanderer), scatter/chase phases, lanterns that turn the tables, levels that speed up |
 | **Five Letters** | Word guessing: 800 hand-picked answers, 8.5k valid guesses, duplicate-aware scoring, hard mode, stats and best streak |
 | **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
@@ -99,6 +100,7 @@ python main.py
 | Checkers   | Click a piece, then each landing square · **arrows** + **Space** · **U** undo |
 | Chess      | Click or drag a piece, then a highlighted square · **arrows** + **Space** · **U** undo · **F** flip board |
 | Crate Keeper | **Arrows/WASD** walk and push · **U**/**Backspace** undo · **R** restart · **Esc** level list |
+| Echo Pads  | **Arrows** or click the pads · **Space** start
 | Firefly    | **Arrows/WASD** steer (turns are remembered until the next junction) |
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
@@ -222,7 +224,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
-  brick_blitz/  checkers/  chess/  crate_keeper/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
+  brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
   minesweeper/  nonogram/  paddle_duel/  reaction_test/  skyhop/  sliding_tiles/  snake/  solitaire/
   stackfall/  switchboard/
   star_siege/  sudoku/  tictactoe/  twenty48/  typing_test/  void_drift/
