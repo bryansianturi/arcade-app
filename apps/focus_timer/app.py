@@ -283,14 +283,14 @@ class FocusTimerApp(BaseApp):
             f"Long break after every {pomo.long_every} focus sessions",
             t.font(t.size.caption),
             p.text_muted,
-            (RIGHT_X, 430),
+            (RIGHT_X, 446),
         )
         draw.text(
             surface,
             "Space start/pause · R reset · S skip · Tab stopwatch",
             t.font(t.size.caption),
             p.text_muted,
-            (RIGHT_X, 470),
+            (RIGHT_X, 480),
         )
 
     def _draw_stopwatch(self, surface: pygame.Surface, t: Theme) -> None:
