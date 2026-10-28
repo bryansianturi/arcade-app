@@ -28,7 +28,7 @@ from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
 
-ACCENT: Color = (56, 189, 248)
+ACCENT: Color = (37, 99, 235)
 ROW_COLORS: tuple[Color, ...] = (
     (251, 113, 133),
     (251, 146, 60),

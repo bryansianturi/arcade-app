@@ -14,7 +14,7 @@ from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, Grid, TextInput, draw_panel
 
-ACCENT: Color = (14, 165, 233)
+ACCENT: Color = (5, 150, 105)
 SIDEBAR_X, SIDEBAR_W = 48, 210
 MIDDLE_X, MIDDLE_W = 290, 420
 RESULTS = pygame.Rect(740, 96, 492, 580)

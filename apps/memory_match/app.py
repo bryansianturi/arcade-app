@@ -14,7 +14,7 @@ from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
 
-ACCENT: Color = (236, 72, 153)
+ACCENT: Color = (234, 88, 12)
 BOARD_AREA = pygame.Rect(60, 60, 780, 600)
 SIDE_X = 900
 FLIP_SECONDS = 0.18
@@ -146,7 +146,7 @@ class MemoryMatchApp(BaseApp):
             card.center = (rect.centerx + (i * 2 - 1) * w * 0.55, rect.centery)
             pygame.draw.rect(
                 surface,
-                (255, 255, 255) if symbol is not None else (131, 24, 67),
+                (255, 255, 255) if symbol is not None else (124, 45, 18),
                 card,
                 border_radius=4,
             )

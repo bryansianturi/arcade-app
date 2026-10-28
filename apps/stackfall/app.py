@@ -22,7 +22,7 @@ from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import ButtonMenu, draw_panel
 
-ACCENT: Color = (168, 85, 247)
+ACCENT: Color = (192, 38, 211)
 COLORS: dict[Kind, Color] = {
     "I": (34, 211, 238),
     "O": (250, 204, 21),

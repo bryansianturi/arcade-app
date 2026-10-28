@@ -14,7 +14,7 @@ from core.registry import register_app
 from core.theme import Color, Theme, lerp_color
 from core.widgets import Button, SegmentedControl
 
-ACCENT: Color = (234, 179, 8)
+ACCENT: Color = (202, 138, 4)
 NUMBER_COLORS: tuple[Color, ...] = (
     (96, 165, 250),
     (74, 222, 128),
