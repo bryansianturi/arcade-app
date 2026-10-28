@@ -107,6 +107,10 @@ python tools/build_web.py --serve    # builds, then serves it at http://localhos
 `dist/web/` is a static site: upload it to any static host. `dist/arcade-web.zip` is the
 same files zipped for [itch.io](https://itch.io) (upload as an HTML game, viewport 1280×720).
 The page fetches the Python and pygame runtime from pygbag's CDN, so players need to be online.
+The first visit downloads about 11 MB (9 MB of it is the Python runtime itself) and later visits
+load from the browser cache in a second or two. To keep that first wait short, the build trims
+the fonts to the characters the arcade uses, and its page (`tools/web/arcade.tmpl`) starts every
+download at once and shows a progress card.
 
 In the browser, saves go to the browser's local storage, window size and fullscreen are left
 to the browser, and computer opponents think for at most 1.5 seconds a move.

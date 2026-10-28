@@ -43,6 +43,10 @@ files = ["main.py", "core", "screens", "apps", "tests", "tools"]
 exclude = ["^build/", "^dist/", "^tools/web/"]  # build output, vendored CPython source
 
 [[tool.mypy.overrides]]
+module = ["fontTools", "fontTools.*"]  # build-only (requirements-web.txt), untyped
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
 warn_unreachable = false  # tests mutate state through calls, which mypy can't follow

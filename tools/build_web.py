@@ -10,6 +10,11 @@ is copied into a staging folder first, so the virtualenv, tests and caches
 never end up in the download.
 ``dist/web/`` is a static site (upload it anywhere); ``dist/arcade-web.zip`` is
 the same files zipped for itch.io.
+
+To keep the first load quick, the fonts are cut down to the characters the
+arcade uses, and the page (``tools/web/arcade.tmpl``, based on pygbag's default
+template) shows a progress card and starts every big download at once instead
+of one after another.
 """
 
 from __future__ import annotations
@@ -26,7 +31,8 @@ STAGING = ROOT / "build" / "arcade"
 DIST = ROOT / "dist"
 INCLUDE = ("main.py", "core", "screens", "apps", "assets")
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "_template")
-#: CPython 3.12's ``Lib/_pydecimal.py`` and its license, vendored unchanged.
+#: CPython 3.12's ``Lib/_pydecimal.py`` and its license (vendored unchanged), and
+#: the page template.
 VENDOR = ROOT / "tools" / "web"
 
 
@@ -41,6 +47,7 @@ def stage() -> None:
         else:
             shutil.copy2(src, STAGING / name)
     make_favicon(STAGING / "favicon.png")
+    subset_fonts(STAGING / "assets" / "fonts")
     # The browser's own ``decimal`` is a stub, so bundle the pure-Python one (see
     # core.web). It must match the browser's Python (3.12), not the one building.
     shutil.copy2(VENDOR / "_pydecimal.py", STAGING / "_pydecimal.py")
@@ -64,8 +71,49 @@ def make_favicon(path: Path) -> None:
     pygame.quit()
 
 
+def used_characters() -> set[str]:
+    """Every character the arcade can draw: ASCII and Latin (for typed text), plus
+    any other character in the code, manifests and word lists (arrows, ×, ●...)."""
+    chars = {chr(c) for c in (*range(0x20, 0x7F), *range(0xA0, 0x180))}
+    for path in STAGING.rglob("*"):
+        if path.suffix in (".py", ".toml", ".txt") and path.name != "_pydecimal.py":
+            chars |= {c for c in path.read_text(encoding="utf-8") if c.isprintable()}
+    return chars
+
+
+def subset_fonts(fonts: Path) -> None:
+    """Shrink each bundled font to :func:`used_characters` (about 400 KB → 110 KB each)."""
+    from fontTools import subset
+
+    unicodes = sorted(ord(c) for c in used_characters())
+    options = subset.Options()
+    options.layout_features = ["*"]  # keep kerning and ligatures
+    options.name_IDs = ["*"]
+    options.notdef_outline = True
+    for path in sorted(fonts.glob("*.ttf")):
+        before = path.stat().st_size
+        font = subset.load_font(str(path), options)
+        subsetter = subset.Subsetter(options)
+        subsetter.populate(unicodes=unicodes)
+        subsetter.subset(font)
+        subset.save_font(font, str(path), options)
+        print(f"{path.name}: {before // 1024} KB -> {path.stat().st_size // 1024} KB")
+
+
 def pygbag(*args: str) -> None:
-    cmd = [sys.executable, "-m", "pygbag", "--ume_block", "0", "--title", "Arcade", *args]
+    template = VENDOR / "arcade.tmpl"
+    cmd = [
+        sys.executable,
+        "-m",
+        "pygbag",
+        "--ume_block",
+        "0",
+        "--title",
+        "Arcade",
+        "--template",
+        str(template),
+        *args,
+    ]
     subprocess.run([*cmd, str(STAGING)], check=True, cwd=ROOT)
 
 
