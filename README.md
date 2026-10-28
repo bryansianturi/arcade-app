@@ -32,6 +32,7 @@ as simple as dropping a folder into `apps/`.
 | **Brick Blitz** | Game | Original brick breaker: 4 hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
 | **Paddle Duel** | Game | Original paddle game: 2 players on one keyboard or vs a CPU that predicts bounces (3 levels, simulation-tested), spin, longest-rally record |
 | **Skyhop**     | Game | Original one-button flyer: neon gates, parallax night skyline, capped difficulty ramp (speed up, gaps shrink) |
+| **Five Letters** | Game | Word-guessing with 800 hand-picked answers, 8.5k valid guesses, correct duplicate-letter scoring, hard mode, flip animations, stats and best streak |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -72,6 +73,7 @@ python main.py
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Skyhop     | **Space**, **↑** or click to hop |
+| Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
@@ -189,4 +191,5 @@ Tip: run `ARCADE_SHOW_TEMPLATE=1 python main.py` to see the template itself in t
 ## License
 
 [MIT](LICENSE). The bundled [Inter](https://rsms.me/inter/) font is licensed under the
-[SIL Open Font License 1.1](assets/fonts/OFL.txt).
+[SIL Open Font License 1.1](assets/fonts/OFL.txt). Five Letters' guess list comes from Webster's Second
+International Dictionary (1934, public domain), as distributed with BSD systems.
