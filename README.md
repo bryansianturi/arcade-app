@@ -31,6 +31,7 @@ as simple as dropping a folder into `apps/`.
 | **Stackfall**  | Game | Original falling-block puzzle: 7-bag randomizer, wall kicks, lock delay, ghost piece, hold, 5-piece preview, custom key repeat |
 | **Brick Blitz** | Game | Original brick breaker: 4 hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
 | **Paddle Duel** | Game | Original paddle game: 2 players on one keyboard or vs a CPU that predicts bounces (3 levels, simulation-tested), spin, longest-rally record |
+| **Skyhop**     | Game | Original one-button flyer: neon gates, parallax night skyline, capped difficulty ramp (speed up, gaps shrink) |
 | **Star Siege** | Game | Original fixed-screen shooter: formations that speed up as they thin out, eroding shields, lives, waves, extra lives |
 
 ## Screenshots
@@ -70,6 +71,7 @@ python main.py
 | Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
+| Skyhop     | **Space**, **↑** or click to hop |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) |
 
 ### Development
