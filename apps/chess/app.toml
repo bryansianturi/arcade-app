@@ -1,0 +1,23 @@
+id = "chess"
+name = "Chess"
+description = "Full rules, move history and a computer opponent at three levels."
+category = "game"
+accent = "#92400E"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[[achievements]]
+id = "win"
+name = "Checkmate!"
+description = "Beat the computer."
+
+[[achievements]]
+id = "win_hard"
+name = "Deep thinker"
+description = "Beat the computer on Hard."
+
+[[achievements]]
+id = "promote"
+name = "Promotion"
+description = "Promote a pawn."
