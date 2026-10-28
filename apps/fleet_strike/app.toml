@@ -1,0 +1,33 @@
+id = "fleet_strike"
+name = "Fleet Strike"
+description = "Hide your fleet, hunt theirs. Three levels of computer admiral."
+category = "game"
+accent = "#38BDF8"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "lower"
+format = "points"
+variants = ["easy", "normal", "hard"]
+
+[[achievements]]
+id = "first_win"
+name = "Admiral"
+description = "Win a game."
+
+[[achievements]]
+id = "win_hard"
+name = "Outgunned the odds"
+description = "Beat the Hard admiral."
+
+[[achievements]]
+id = "sharpshooter"
+name = "Sharpshooter"
+description = "Win using 45 shots or fewer."
+
+[[achievements]]
+id = "iron_hull"
+name = "Iron hull"
+description = "Win without losing a single ship."
