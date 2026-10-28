@@ -1,0 +1,27 @@
+id = "firefly"
+name = "Firefly"
+description = "Collect the light, dodge the shades, grab a lantern to turn the tables."
+category = "game"
+accent = "#BEF264"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.0"
+
+[scores]
+order = "higher"
+format = "points"
+
+[[achievements]]
+id = "clear_1"
+name = "Lights on"
+description = "Clear a maze."
+
+[[achievements]]
+id = "combo_4"
+name = "Shade sweep"
+description = "Catch all four shades with one lantern."
+
+[[achievements]]
+id = "level_3"
+name = "Night shift"
+description = "Reach level 3."

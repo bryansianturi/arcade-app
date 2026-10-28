@@ -25,9 +25,9 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-17 apps (14 games and 3 tools), each one a self-contained package in `apps/`.
-The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Four in a Row,
-Five Letters) are original takes on classic genres, with their own names, art and tuning.
+18 apps (15 games and 3 tools), each one a self-contained package in `apps/`.
+The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
+Four in a Row, Five Letters) are original takes on classic genres, with their own names, art and tuning.
 
 **Games**
 
@@ -35,6 +35,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 |-----|------------|
 | **2048** | Animated slides, merges and spawns; keyboard or mouse swipe; resume an unfinished game |
 | **Brick Blitz** | Four hand-made layouts, multi-hit and steel bricks, paddle-angle control, keyboard or mouse, sub-stepped collisions |
+| **Firefly** | Maze chase in a night garden: four shades with their own hunting styles (stalker, ambusher, flanker, wanderer), scatter/chase phases, lanterns that turn the tables, levels that speed up |
 | **Five Letters** | Word guessing: 800 hand-picked answers, 8.5k valid guesses, duplicate-aware scoring, hard mode, stats and best streak |
 | **Four in a Row** | Negamax with alpha-beta (up to 7 moves deep) on a background thread, 3 levels, falling-disc animation |
 | **Memory Match** | 3 board sizes, 12 vector symbols, flip animations, moves counter, best time per size |
@@ -86,6 +87,7 @@ python main.py
 | 2048       | **Arrows/WASD** or drag with the mouse · **N** new |
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
+| Firefly    | **Arrows/WASD** steer (turns are remembered until the next junction) |
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
@@ -202,7 +204,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 apps/
   _template/            minimal app to copy
   calculator/  focus_timer/  unit_converter/                    tools
-  brick_blitz/  five_letters/  four_in_a_row/  memory_match/      games
+  brick_blitz/  firefly/  five_letters/  four_in_a_row/  memory_match/      games
   minesweeper/  paddle_duel/  skyhop/  snake/  stackfall/
   star_siege/  sudoku/  tictactoe/  twenty48/  void_drift/
 assets/fonts/           Inter (SIL Open Font License)

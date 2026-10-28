@@ -125,16 +125,21 @@ def text(
     content: str,
     font: Font,
     color: RGB | RGBA,
-    pos: tuple[int, int],
+    pos: tuple[float, float],
     anchor: Anchor = "topleft",
 ) -> pygame.Rect:
-    """Render ``content`` and blit it anchored at ``pos``. Returns the drawn rect."""
+    """Render ``content`` and blit it anchored at ``pos``. Returns the drawn rect.
+
+    Anchoring uses the exact (fractional) text size, so centred text stays centred
+    at any render scale.
+    """
     image = font.render(content, True, color)
     if len(color) == 4:
         image.set_alpha(color[3])
-    rect = image.get_rect(**{anchor: pos})
-    surface.blit(image, rect)
-    return rect
+    frect = pygame.FRect(0, 0, image.width, image.height)
+    setattr(frect, anchor, pos)
+    surface.blit(image, frect.topleft)
+    return pygame.Rect(round(frect.x), round(frect.y), round(frect.width), round(frect.height))
 
 
 def fit_text(content: str, font: Font, max_width: int) -> str:
