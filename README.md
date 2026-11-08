@@ -21,7 +21,7 @@ as simple as dropping a folder into `apps/`.
 - **Settings**: dark/light theme, window size presets, fullscreen (F11), animations, controls and a developer mode (debug overlay, F5 hot reload).
 - **Screenshots**: F12 saves a PNG to the data folder.
 - **Modern look**: flat design, rounded corners, soft shadows, hover/press states and screen transitions; all graphics are drawn in code and rendered at native resolution (sharp on Retina displays).
-- **Quality**: type hints throughout, `mypy --strict`, `ruff`, ~500 pytest tests, GitHub Actions CI.
+- **Quality**: type hints throughout, `mypy --strict`, `ruff`, ~1,000 pytest tests, GitHub Actions CI.
 
 ### Apps
 
@@ -279,7 +279,9 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  algo_visualizer/  calculator/  color_picker/  dice_roller/  focus_timer/  game_of_life/  mandelbrot/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
+  algo_visualizer/  calculator/  color_picker/  dice_roller/  focus_timer/           tools
+  game_of_life/  mandelbrot/  notes/  password_generator/  spin_wheel/
+  unit_converter/  world_clock/
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
