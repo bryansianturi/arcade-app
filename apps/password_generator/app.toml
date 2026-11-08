@@ -1,0 +1,8 @@
+id = "password_generator"
+name = "Password Generator"
+description = "Strong random passwords, copied in one click."
+category = "tool"
+accent = "#7C3AED"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"

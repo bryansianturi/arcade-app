@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-33 apps (29 games and 4 tools), each one a self-contained package in `apps/`.
+34 apps (29 games and 5 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -71,6 +71,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | **Calculator** | Hand-written recursive-descent parser (no `eval`), precedence, parentheses, powers, exact decimals, history |
 | **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
+| **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
 | **Unit Converter** | 8 categories with exact `Decimal` factors, every unit shown at once |
 
 ## Screenshots
@@ -142,6 +143,7 @@ See `core/web.py` for the details.
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
 | Notes      | Type and **Enter** to add · **↓/↑** select · **Space** tick · **E**/double-click edit · **Del** delete · **Ctrl+↑/↓** reorder |
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
+| Password Generator | **Space** new · **C** or click the password to copy · **←/→** length · **1–5** options |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
 | Reaction Test | Click or **Space** when it turns green · Targets: click with the mouse |
 | Rooftop Dash | **Space**/**↑**/click jump (hold for height) · **↓** slide, or drop faster in the air |
@@ -256,12 +258,13 @@ core/
   theme.py, draw.py     design tokens and drawing helpers (shadows, rounded rects, text, icons)
   storage.py            JSON saves: high scores, settings, per-app data (localStorage in a browser)
   settings.py           typed user settings
-  widgets/              Button, Card, Label, Grid, Toggle, TextInput, SegmentedControl, ButtonMenu...
+  clipboard.py          copy text to the clipboard (desktop or browser)
+  widgets/              Button, Card, Label, Grid, Toggle, Slider, TextInput, SegmentedControl, ButtonMenu...
 screens/                launcher, settings, controls, high scores, achievements, stats
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  focus_timer/  notes/  unit_converter/            tools
+  calculator/  focus_timer/  notes/  password_generator/  unit_converter/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
