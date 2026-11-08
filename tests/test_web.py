@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from core import background, web
@@ -122,3 +126,26 @@ def test_loading_card_calls_are_no_ops_on_the_desktop() -> None:
     web.loading_progress("Loading games…", 0.5)
     web.loading_failed("boom")
     web.loading_done()
+
+
+def test_web_build_bundles_world_clock_zones(tmp_path: Path) -> None:
+    """The browser has no time zone database; the build ships World Clock's zones."""
+    pytest.importorskip("tzdata")
+    from apps.world_clock.logic import CITIES
+    from tools.build_web import bundle_time_zones, world_clock_zones
+
+    assert world_clock_zones() == [c.zone for c in CITIES]
+    bundle_time_zones(tmp_path)
+    files = list((tmp_path / "tzdata").rglob("*"))
+    assert len([f for f in files if f.is_file()]) < 80  # not the whole database
+    script = (
+        "import sys, zoneinfo; sys.path.insert(0, sys.argv[1]); zoneinfo.reset_tzpath([]);"
+        "print(zoneinfo.ZoneInfo('America/Argentina/Buenos_Aires').key)"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-S", "-c", script, str(tmp_path)],  # -S: no site-packages
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.strip() == "America/Argentina/Buenos_Aires"

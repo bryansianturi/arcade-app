@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-36 apps (29 games and 7 tools), each one a self-contained package in `apps/`.
+37 apps (29 games and 8 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -75,6 +75,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
 | **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
 | **Unit Converter** | 8 categories with exact `Decimal` factors, every unit shown at once |
+| **World Clock** | Local time plus up to six cities (43 to choose from, accent-insensitive search) with day/night analog faces, time difference and daylight saving via `zoneinfo`; 12/24-hour; countdowns to named events with validation, quick fills and "days ago" once passed |
 
 ## Screenshots
 
@@ -118,7 +119,8 @@ download at once and shows a progress card.
 
 In the browser, saves go to the browser's local storage (if the browser blocks it, saves last
 for that visit and a toast says so), window size and fullscreen are left to the browser, and
-computer opponents think for at most 1.5 seconds a move. If start-up fails, the loading card
+computer opponents think for at most 1.5 seconds a move. Browsers have no time zone database,
+so the build bundles just the zones World Clock offers from `tzdata`. If start-up fails, the loading card
 shows the error instead of waiting forever.
 See `core/web.py` for the details.
 
@@ -164,6 +166,7 @@ See `core/web.py` for the details.
 | Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 | Updraft    | **←/→** or **A/D** steer · **Space** start |
 | Void Drift | **←/→** turn · **↑** thrust · **Space** fire (hold to auto-fire) · **↓** warp |
+| World Clock | Clocks: **Space** or click + to add a city · **H** 12/24-hour · hover a card to remove · Countdowns: **Tab** next field · **Enter** add |
 
 These are the default keys. Arrows/WASD, Space/Enter and Esc are the shared **actions** (up, down,
 left, right, action, pause) and can be rebound in **Settings → Controls**. A connected **gamepad**
@@ -268,7 +271,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  unit_converter/   tools
+  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  unit_converter/  world_clock/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/

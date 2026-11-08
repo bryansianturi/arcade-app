@@ -1,0 +1,8 @@
+id = "world_clock"
+name = "World Clock"
+description = "Time around the world and countdowns to your events."
+category = "tool"
+accent = "#0891B2"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"

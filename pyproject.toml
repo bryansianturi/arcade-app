@@ -5,7 +5,7 @@ description = "An extensible all-in-one desktop arcade of small games and tools,
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
-dependencies = ["pygame-ce>=2.5,<3"]
+dependencies = ["pygame-ce>=2.5,<3", "tzdata>=2024.1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
@@ -43,7 +43,7 @@ files = ["main.py", "core", "screens", "apps", "tests", "tools"]
 exclude = ["^build/", "^dist/", "^tools/web/"]  # build output, vendored CPython source
 
 [[tool.mypy.overrides]]
-module = ["fontTools", "fontTools.*"]  # build-only (requirements-web.txt), untyped
+module = ["fontTools", "fontTools.*", "tzdata"]  # untyped (tzdata is just data files)
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

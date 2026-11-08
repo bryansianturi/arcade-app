@@ -5,7 +5,8 @@
     python tools/build_web.py --serve    # build and try it at http://localhost:8000
 
 Only what the game needs (``main.py``, ``core``, ``screens``, ``apps``,
-``assets``, plus CPython 3.12's pure-Python ``_pydecimal`` from ``tools/web``)
+``assets``, CPython 3.12's pure-Python ``_pydecimal`` from ``tools/web``, and
+World Clock's time zones from ``tzdata``)
 is copied into a staging folder first, so the virtualenv, tests and caches
 never end up in the download.
 ``dist/web/`` is a static site (upload it anywhere); ``dist/arcade-web.zip`` is
@@ -22,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -55,6 +57,42 @@ def stage() -> None:
     # core.web). It must match the browser's Python (3.12), not the one building.
     shutil.copy2(VENDOR / "_pydecimal.py", STAGING / "_pydecimal.py")
     shutil.copy2(VENDOR / "PYTHON-LICENSE.txt", STAGING / "PYTHON-LICENSE.txt")
+    bundle_time_zones(STAGING)
+
+
+def world_clock_zones() -> list[str]:
+    """The IANA zones World Clock offers, read from its source without importing it."""
+    source = (ROOT / "apps" / "world_clock" / "logic.py").read_text(encoding="utf-8")
+    return re.findall(r'City\("[^"]+", "([^"]+)"', source)
+
+
+def bundle_time_zones(staging: Path) -> None:
+    """Copy just World Clock's zones from the ``tzdata`` package into ``staging``.
+
+    The browser has no time zone database, and the full package is about 450
+    files. ``zoneinfo`` finds the cut-down copy the same way it finds the real
+    one. Without ``tzdata`` installed, World Clock falls back to fixed offsets.
+    """
+    try:
+        import tzdata
+    except ImportError:
+        print("tzdata isn't installed; World Clock will use fixed UTC offsets in the browser")
+        return
+    source = Path(tzdata.__file__).parent
+    target = staging / "tzdata"
+    for name in ("__init__.py", "zoneinfo/__init__.py", "LICENSE"):
+        if (source / name).exists():
+            (target / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source / name, target / name)
+    for zone in world_clock_zones():
+        path = Path("zoneinfo", *zone.split("/"))
+        (target / path).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / path, target / path)
+        # zoneinfo imports each folder ("tzdata.zoneinfo.America") as a package.
+        for folder in path.parents:
+            init = folder / "__init__.py"
+            if folder.parts and (source / init).exists():
+                shutil.copy2(source / init, target / init)
 
 
 def make_favicon(path: Path) -> None:
