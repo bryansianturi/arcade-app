@@ -40,7 +40,7 @@ from core.storage import ScoreOrder
 
 #: Version of the app-facing API (BaseApp, AppContext, services, manifest schema).
 #: Bump the minor version for additions and the major version for breaking changes.
-FRAMEWORK_VERSION = "1.1"
+FRAMEWORK_VERSION = "1.2"
 
 MANIFEST_NAME = "app.toml"
 

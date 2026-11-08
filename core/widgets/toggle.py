@@ -9,7 +9,7 @@ import pygame
 from core import draw, gfx
 from core.canvas import Canvas
 from core.input import is_action
-from core.theme import Theme, lerp_color
+from core.theme import Color, Theme, lerp_color
 from core.widgets.base import Widget, approach
 
 
@@ -25,10 +25,12 @@ class Toggle(Widget):
         pos: tuple[int, int],
         value: bool = False,
         on_change: Callable[[bool], None] | None = None,
+        accent: Color | None = None,
     ) -> None:
         super().__init__(theme, (pos[0], pos[1], self.WIDTH, self.HEIGHT))
         self.value = value
         self.on_change = on_change
+        self.accent = accent
         self._knob_t = 1.0 if value else 0.0
 
     def toggle(self) -> None:
@@ -55,10 +57,11 @@ class Toggle(Widget):
 
     def draw(self, surface: Canvas) -> None:
         p = self.theme.palette
-        track = lerp_color(p.surface_hover, p.primary, self._knob_t)
+        accent = self.accent or p.primary
+        track = lerp_color(p.surface_hover, accent, self._knob_t)
         draw.rounded_rect(surface, self.rect, track, self.HEIGHT // 2)
         if self.focused:
-            draw.rounded_rect(surface, self.rect.inflate(6, 6), p.primary, self.HEIGHT // 2 + 3, 2)
+            draw.rounded_rect(surface, self.rect.inflate(6, 6), accent, self.HEIGHT // 2 + 3, 2)
         r = self.HEIGHT // 2 - 3
         travel = self.WIDTH - 2 * (r + 3)
         cx = self.rect.x + 3 + r + round(travel * self._knob_t)
