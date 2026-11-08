@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-39 apps (29 games and 10 tools), each one a self-contained package in `apps/`.
+40 apps (29 games and 11 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -68,6 +68,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 
 | App | Highlights |
 |-----|------------|
+| **Algorithm Visualizer** | Pathfinding (BFS, Dijkstra, A*) on a grid you draw walls and costly mud on, with draggable start/goal, mazes and scatter; sorting (bubble, insertion, merge, quick) on 8–120 bars from random, reversed or nearly sorted; run, step or finish, 2–630 steps/s; live counts of visits, path cost, comparisons, swaps and writes. Algorithms are plug-ins: one decorated generator each |
 | **Calculator** | Hand-written recursive-descent parser (no `eval`), precedence, parentheses, powers, exact decimals, history |
 | **Color Picker** | Saturation/value square and hue strip, RGB sliders, hex entry; copy hex, RGB or HSL; WCAG contrast against white and black text; five-color palettes in six harmonies (complement, analogous, triadic, split, square, shades) |
 | **Dice Roller** | Any mix of d4–d20 (up to 12) plus a modifier, or type notation like 3d6+2; range and average; tumbling roll animation; roll history. Coin tab: animated flip, heads/tails tally, streaks |
@@ -133,6 +134,7 @@ See `core/web.py` for the details.
 | Everywhere | **Esc** pause menu / back · **F11** fullscreen · **F12** screenshot · **F5** reload the current app (developer mode) |
 | Launcher   | **Arrows** select · **Enter** open · **Ctrl+D** favorite · **Tab** switch category · just start typing to search |
 | 2048       | **Arrows/WASD** or drag with the mouse · **N** new |
+| Algorithm Visualizer | **Space** run/pause · **→** step · **F** finish · **R** reset · **↑/↓** speed · **1–4** algorithm · **Tab** switch mode · grid: drag to draw, right-drag erase, **M** maze, **C** clear · bars: **S** shuffle |
 | Brick Blitz | **←/→** or mouse to move · **Space** / click to launch |
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
 | Checkers   | Click a piece, then each landing square · **arrows** + **Space** · **U** undo |
@@ -275,7 +277,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  color_picker/  dice_roller/  focus_timer/  game_of_life/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
+  algo_visualizer/  calculator/  color_picker/  dice_roller/  focus_timer/  game_of_life/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
@@ -329,6 +331,28 @@ and one achievement). To create your own:
 10. **Test it.** `tests/test_apps_smoke.py` automatically runs every discovered app headless with random input (also at 1.5× and 2× scale) and checks that every achievement you unlock is declared. Add a `tests/test_my_game.py` for your logic; the `tap`/`hold`/`feed` helpers in `tests/conftest.py` send keys through the same action mapping as the real main loop.
 
 Tip: run `ARCADE_SHOW_TEMPLATE=1 python main.py` to see the template itself in the launcher.
+
+**Adding an algorithm to the Algorithm Visualizer** doesn't touch the app at all. Write a generator
+that does the work and yields a step whenever there is something to show, and register it with a
+decorator. It gets a button automatically:
+
+```python
+# apps/algo_visualizer/sorting.py
+@sorting_algorithm("Selection")
+def selection_sort(values: list[int]) -> Iterator[SortStep]:
+    for i in range(len(values)):
+        low = i
+        for j in range(i + 1, len(values)):
+            yield Compare(low, j)
+            if values[j] < values[low]:
+                low = j
+        if low != i:
+            values[i], values[low] = values[low], values[i]
+            yield Swap(i, low)
+```
+
+Pathfinders work the same way with `@pathfinding_algorithm(...)`, taking a `Grid` and yielding
+`Visit`, `Frontier` and finally `Found(path)` or `NotFound()` (see `apps/algo_visualizer/logic.py`).
 
 ## License
 

@@ -1,0 +1,8 @@
+id = "algo_visualizer"
+name = "Algorithm Visualizer"
+description = "Watch BFS, A*, quicksort and friends work step by step."
+category = "tool"
+accent = "#9333EA"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"
