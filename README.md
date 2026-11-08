@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-35 apps (29 games and 6 tools), each one a self-contained package in `apps/`.
+36 apps (29 games and 7 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -70,6 +70,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 |-----|------------|
 | **Calculator** | Hand-written recursive-descent parser (no `eval`), precedence, parentheses, powers, exact decimals, history |
 | **Color Picker** | Saturation/value square and hue strip, RGB sliders, hex entry; copy hex, RGB or HSL; WCAG contrast against white and black text; five-color palettes in six harmonies (complement, analogous, triadic, split, square, shades) |
+| **Dice Roller** | Any mix of d4–d20 (up to 12) plus a modifier, or type notation like 3d6+2; range and average; tumbling roll animation; roll history. Coin tab: animated flip, heads/tails tally, streaks |
 | **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
 | **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
@@ -134,6 +135,7 @@ See `core/web.py` for the details.
 | Chess      | Click or drag a piece, then a highlighted square · **arrows** + **Space** · **U** undo · **F** flip board |
 | Color Picker | Drag in the square or strip · **←/→** hue · **↑/↓** brightness · **Space** random · **C** copy hex · **H** harmony · **1–5** copy a swatch · right-click a swatch to use it |
 | Crate Keeper | **Arrows/WASD** walk and push · **U**/**Backspace** undo · **R** restart · **Esc** level list |
+| Dice Roller | Click a die to add · right-click or **Shift+1–6** remove · **1–6** add · **↑/↓** modifier · **Space** roll/flip · **←/→** dice/coin · **Backspace** clear |
 | Echo Pads  | **Arrows** or click the pads · **Space** start
 | Firefly    | **Arrows/WASD** steer (turns are remembered until the next junction) |
 | Five Letters | Type letters · **Enter** submit · **Backspace** delete (or use the on-screen keyboard) |
@@ -266,7 +268,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  color_picker/  focus_timer/  notes/  password_generator/  unit_converter/   tools
+  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  unit_converter/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
