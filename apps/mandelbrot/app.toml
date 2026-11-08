@@ -1,0 +1,8 @@
+id = "mandelbrot"
+name = "Mandelbrot Explorer"
+description = "Zoom into the Mandelbrot set. Rendered progressively."
+category = "tool"
+accent = "#4338CA"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"
