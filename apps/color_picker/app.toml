@@ -1,0 +1,8 @@
+id = "color_picker"
+name = "Color Picker"
+description = "Pick colors, copy hex or RGB, build palettes."
+category = "tool"
+accent = "#E11D48"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"

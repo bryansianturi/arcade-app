@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-34 apps (29 games and 5 tools), each one a self-contained package in `apps/`.
+35 apps (29 games and 6 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -69,6 +69,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | App | Highlights |
 |-----|------------|
 | **Calculator** | Hand-written recursive-descent parser (no `eval`), precedence, parentheses, powers, exact decimals, history |
+| **Color Picker** | Saturation/value square and hue strip, RGB sliders, hex entry; copy hex, RGB or HSL; WCAG contrast against white and black text; five-color palettes in six harmonies (complement, analogous, triadic, split, square, shades) |
 | **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
 | **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
@@ -131,6 +132,7 @@ See `core/web.py` for the details.
 | Calculator | Type the expression · **Enter** evaluate · **Backspace** delete · **Del** clear · **^** power |
 | Checkers   | Click a piece, then each landing square · **arrows** + **Space** · **U** undo |
 | Chess      | Click or drag a piece, then a highlighted square · **arrows** + **Space** · **U** undo · **F** flip board |
+| Color Picker | Drag in the square or strip · **←/→** hue · **↑/↓** brightness · **Space** random · **C** copy hex · **H** harmony · **1–5** copy a swatch · right-click a swatch to use it |
 | Crate Keeper | **Arrows/WASD** walk and push · **U**/**Backspace** undo · **R** restart · **Esc** level list |
 | Echo Pads  | **Arrows** or click the pads · **Space** start
 | Firefly    | **Arrows/WASD** steer (turns are remembered until the next junction) |
@@ -141,25 +143,25 @@ See `core/web.py` for the details.
 | Hangman    | Type or click letters · **?** hint · **Enter** next word |
 | Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
-| Notes      | Type and **Enter** to add · **↓/↑** select · **Space** tick · **E**/double-click edit · **Del** delete · **Ctrl+↑/↓** reorder |
 | Nonogram   | **Left click** fill · **right click** cross · drag to paint · **arrows** + **Space** / **X** · **U** undo |
-| Password Generator | **Space** new · **C** or click the password to copy · **←/→** length · **1–5** options |
+| Notes      | Type and **Enter** to add · **↓/↑** select · **Space** tick · **E**/double-click edit · **Del** delete · **Ctrl+↑/↓** reorder |
 | Paddle Duel | Left **W/S** · right **↑/↓** (vs CPU: either set) |
+| Password Generator | **Space** new · **C** or click the password to copy · **←/→** length · **1–5** options |
 | Reaction Test | Click or **Space** when it turns green · Targets: click with the mouse |
 | Rooftop Dash | **Space**/**↑**/click jump (hold for height) · **↓** slide, or drop faster in the air |
 | Skyhop     | **Space**, **↑** or click to hop |
 | Sliding Tiles | Click a tile in the gap's row or column · **arrows** slide a tile into the gap · **U** undo |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
-| Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Solitaire  | Drag cards · double/right-click sends a card home · **D** draw · **U**/**Ctrl+Z** undo · **F** send home · **A** finish · **N** new · keyboard: **arrows** choose, **Space** pick up/put down |
+| Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) · **R** watch your best run |
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
 | Switchboard | Click a light, or **arrows** + **Space** · **H** hint · **U** undo · **N** new puzzle |
 | Tic-tac-toe | Click or **1–9** · **Arrows** + **Enter** · **N** new round |
 | Typing Test | Type · **Space** next word · **Backspace** (with **Ctrl/Alt/⌘**: whole word) · **Tab** restart |
+| Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 | Updraft    | **←/→** or **A/D** steer · **Space** start |
 | Void Drift | **←/→** turn · **↑** thrust · **Space** fire (hold to auto-fire) · **↓** warp |
-| Unit Converter | Type a value · **↑/↓** category · **←/→** unit · click a result to convert from it |
 
 These are the default keys. Arrows/WASD, Space/Enter and Esc are the shared **actions** (up, down,
 left, right, action, pause) and can be rebound in **Settings → Controls**. A connected **gamepad**
@@ -264,7 +266,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  focus_timer/  notes/  password_generator/  unit_converter/   tools
+  calculator/  color_picker/  focus_timer/  notes/  password_generator/  unit_converter/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
