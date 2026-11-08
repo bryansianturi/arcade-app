@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-37 apps (29 games and 8 tools), each one a self-contained package in `apps/`.
+38 apps (29 games and 9 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -74,6 +74,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
 | **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
+| **Spin Wheel** | Up to 20 options; the winner is drawn fairly before the spin, which is then planned to stop on it (tested on every slice count); eased spin with a ticking pointer, confetti, optional remove-the-winner mode |
 | **Unit Converter** | 8 categories with exact `Decimal` factors, every unit shown at once |
 | **World Clock** | Local time plus up to six cities (43 to choose from, accent-insensitive search) with day/night analog faces, time difference and daylight saving via `zoneinfo`; 12/24-hour; countdowns to named events with validation, quick fills and "days ago" once passed |
 
@@ -157,6 +158,7 @@ See `core/web.py` for the details.
 | Sliding Tiles | Click a tile in the gap's row or column · **arrows** slide a tile into the gap · **U** undo |
 | Snake      | **Arrows/WASD** steer · **P** pause · **R** watch your best run (on the start card) |
 | Solitaire  | Drag cards · double/right-click sends a card home · **D** draw · **U**/**Ctrl+Z** undo · **F** send home · **A** finish · **N** new · keyboard: **arrows** choose, **Space** pick up/put down |
+| Spin Wheel | **Space** or click the wheel to spin · type to add an option · **Enter** add · hover an option to remove it |
 | Stackfall  | **←/→** move · **↓** soft drop · **↑/X** rotate · **Z** rotate back · **Space** hard drop · **C** hold · **P** pause |
 | Star Siege | **←/→** or **A/D** move · **Space** fire (hold to auto-fire) · **R** watch your best run |
 | Sudoku     | **Arrows/WASD** move · **1–9** place · **0/Backspace** erase · **P** notes · **U** or **Ctrl+Z** undo · **C** check · **N** new |
@@ -271,7 +273,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  unit_converter/  world_clock/   tools
+  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
