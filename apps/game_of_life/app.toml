@@ -1,0 +1,8 @@
+id = "game_of_life"
+name = "Game of Life"
+description = "Draw cells and watch them evolve. Classic patterns included."
+category = "tool"
+accent = "#16A34A"
+version = "1.0.0"
+author = "Arcade contributors"
+min_framework = "1.2"

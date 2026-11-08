@@ -25,7 +25,7 @@ as simple as dropping a folder into `apps/`.
 
 ### Apps
 
-38 apps (29 games and 9 tools), each one a self-contained package in `apps/`.
+39 apps (29 games and 10 tools), each one a self-contained package in `apps/`.
 The arcade-genre games (Stackfall, Brick Blitz, Paddle Duel, Skyhop, Star Siege, Void Drift, Firefly,
 Crate Keeper, Echo Pads, Updraft, Rooftop Dash, Fleet Strike, Four in a Row,
 Five Letters) are original takes on classic genres, with their own names, art and tuning.
@@ -72,6 +72,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 | **Color Picker** | Saturation/value square and hue strip, RGB sliders, hex entry; copy hex, RGB or HSL; WCAG contrast against white and black text; five-color palettes in six harmonies (complement, analogous, triadic, split, square, shades) |
 | **Dice Roller** | Any mix of d4–d20 (up to 12) plus a modifier, or type notation like 3d6+2; range and average; tumbling roll animation; roll history. Coin tab: animated flip, heads/tails tally, streaks |
 | **Focus Timer** | Pomodoro cycles and a lap stopwatch; wall-clock based so it keeps running while you play; visual alerts (no sound) |
+| **Game of Life** | 88×58 grid (wrap-around or walled), draw and erase by dragging, play/pause/step, 1–30 generations a second; four rules (Conway, HighLife, Day & Night, Seeds) in B/S notation; eight classic patterns parsed from RLE (glider gun, pulsar, acorn...) to place and rotate; the patterns' periods and lifetimes are checked in tests |
 | **Notes** | To-do list: add, edit in place, tick off, delete, reorder, All/Active/Done filters, clear done; saved between sessions |
 | **Password Generator** | Length 4–64, character sets, look-alike filter; every chosen set guaranteed; OS secure randomness; entropy-based strength meter with time to crack; one-click copy; recent list kept in memory only |
 | **Spin Wheel** | Up to 20 options; the winner is drawn fairly before the spin, which is then planned to stop on it (tested on every slice count); eased spin with a ticking pointer, confetti, optional remove-the-winner mode |
@@ -145,6 +146,7 @@ See `core/web.py` for the details.
 | Fleet Strike | Placing: drag ships · **R**/right-click rotate · **Space** start · Battle: click a cell, or **arrows** + **Space** |
 | Focus Timer | **Space** start/pause · **R** reset · **S** skip · **L** lap · **Tab** switch |
 | Four in a Row | Click a column or **1–7** · **←/→** + **Enter** · **N** new round |
+| Game of Life | Click/drag draw · right-drag erase · **Space** play · **→** step · **↑/↓** speed · **R** random (rotate while placing) · **C** clear · **W** wrap · **1–8** patterns |
 | Hangman    | Type or click letters · **?** hint · **Enter** next word |
 | Memory Match | Click a card, or **arrows** + **Space** · **N** new game |
 | Minesweeper | **Left click** reveal · **Right click** flag · click a number to chord · **Arrows** + **Space** / **F** · **N** new |
@@ -273,7 +275,7 @@ screens/                launcher, settings, controls, high scores, achievements,
 tools/build_web.py      builds the browser version (tools/web/ holds CPython 3.12's _pydecimal)
 apps/
   _template/            minimal app to copy
-  calculator/  color_picker/  dice_roller/  focus_timer/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
+  calculator/  color_picker/  dice_roller/  focus_timer/  game_of_life/  notes/  password_generator/  spin_wheel/  unit_converter/  world_clock/   tools
   brick_blitz/  checkers/  chess/  crate_keeper/  echo_pads/  firefly/  five_letters/      games
   fleet_strike/  four_in_a_row/  hangman/  memory_match/  minesweeper/  nonogram/
   paddle_duel/  reaction_test/  rooftop_dash/  skyhop/  sliding_tiles/  snake/
