@@ -4,7 +4,7 @@ An all-in-one desktop arcade of small games and tools, built with Python and [py
 One window, one main loop, a launcher to pick from, and a plugin system that makes adding a new app
 as simple as dropping a folder into `apps/`.
 
-![CI](https://github.com/OWNER/arcade-app/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/bryansianturi/arcade-app/actions/workflows/ci.yml/badge.svg)
 
 ## Features
 
@@ -94,7 +94,7 @@ Five Letters) are original takes on classic genres, with their own names, art an
 Requires **Python 3.11+**.
 
 ```bash
-git clone https://github.com/OWNER/arcade-app.git
+git clone https://github.com/bryansianturi/arcade-app.git
 cd arcade-app
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -112,6 +112,12 @@ pip install -r requirements-web.txt
 python tools/build_web.py            # builds dist/web/ and dist/arcade-web.zip
 python tools/build_web.py --serve    # builds, then serves it at http://localhost:8000
 ```
+
+**Play it now:** <https://bryansianturi.github.io/arcade-app/>
+
+Every push to `main` publishes that page with GitHub Pages (`.github/workflows/pages.yml`: run
+the tests, build, deploy). In a fork, first set **Settings → Pages → Source** to
+**GitHub Actions**.
 
 `dist/web/` is a static site: upload it to any static host. `dist/arcade-web.zip` is the
 same files zipped for [itch.io](https://itch.io) (upload as an HTML game, viewport 1280×720).
